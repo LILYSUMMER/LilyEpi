@@ -10,8 +10,16 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- 초기 NFC 안내 화면 -->
-    <div id="nfc-screen" class="fullscreen-overlay">
+    <!-- 스플래시 화면 -->
+    <div id="splash-screen" class="fullscreen-overlay">
+        <div class="splash-content">
+            <h1 class="logo">EPISAPCE</h1>
+            <p class="subtitle">첫번째 에피소드 : 이중섭</p>
+        </div>
+    </div>
+
+    <!-- NFC 안내 화면 -->
+    <div id="nfc-screen" class="fullscreen-overlay hidden">
         <div class="instruction-box">
             <img src="assets/nfc-icon.png" alt="NFC 태그" class="instruction-icon">
             <p>NFC 태그를 찍어주세요</p>

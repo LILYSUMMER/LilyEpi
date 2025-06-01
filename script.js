@@ -18,11 +18,22 @@ const arElements = {
 };
 
 // DOM 요소
+const splashScreen = document.getElementById('splash-screen');
 const nfcScreen = document.getElementById('nfc-screen');
 const startScreen = document.getElementById('start-screen');
 const arScene = document.getElementById('ar-scene');
 const startButton = document.getElementById('start-ar');
 const character = document.getElementById('character');
+
+// 스플래시 화면 표시 후 NFC 화면으로 전환
+function initializeApp() {
+    // 2초 후에 스플래시 화면을 숨기고 NFC 화면 표시
+    setTimeout(() => {
+        splashScreen.classList.add('hidden');
+        nfcScreen.classList.remove('hidden');
+        initNFC();
+    }, 2000);
+}
 
 // NFC 관련 기능
 async function initNFC() {
@@ -99,10 +110,10 @@ function handleMotion(event) {
     }
 }
 
-// 페이지 로드 시 초기화
+// 이벤트 리스너
 document.addEventListener('DOMContentLoaded', () => {
-    // NFC 초기화
-    initNFC();
+    // 앱 초기화
+    initializeApp();
     
     // AR 시작 버튼 이벤트
     startButton.addEventListener('click', startAR);
