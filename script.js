@@ -280,86 +280,161 @@ AFRAME.registerComponent('gesture-detector', {
     }
 });
 
-window.onload = () => {
-    // GPS 권한 상태 확인 및 요청 함수
-    async function requestGPSPermission() {
-        try {
-            // 먼저 권한 상태 확인
-            const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-            
-            if (permissionStatus.state === 'denied') {
-                alert('GPS 기능이 차단되어 있습니다. 브라우저 설정에서 위치 권한을 허용해주세요.');
-                return false;
-            }
+// GPS 및 센서 권한 요청을 위한 UI 생성
+function createPermissionUI() {
+    const permissionDiv = document.createElement('div');
+    permissionDiv.style.position = 'fixed';
+    permissionDiv.style.top = '50%';
+    permissionDiv.style.left = '50%';
+    permissionDiv.style.transform = 'translate(-50%, -50%)';
+    permissionDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    permissionDiv.style.padding = '20px';
+    permissionDiv.style.borderRadius = '10px';
+    permissionDiv.style.color = 'white';
+    permissionDiv.style.textAlign = 'center';
+    permissionDiv.style.zIndex = '10000';
+    permissionDiv.id = 'permission-ui';
 
-            // HTTPS 확인
-            if (window.location.protocol !== 'https:') {
-                alert('GPS 기능은 HTTPS에서만 사용 가능합니다.');
-                return false;
-            }
+    const title = document.createElement('h2');
+    title.textContent = 'AR 체험을 위한 권한이 필요합니다';
+    title.style.marginBottom = '20px';
 
-            return new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        console.log('GPS 권한 획득 성공');
-                        resolve(position);
-                    },
-                    (error) => {
-                        console.error('GPS 오류:', error);
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                alert('GPS 권한이 거부되었습니다. 위치 권한을 허용해주세요.');
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                alert('현재 위치를 확인할 수 없습니다. GPS 신호가 약한 곳일 수 있습니다.');
-                                break;
-                            case error.TIMEOUT:
-                                alert('GPS 위치 확인 시간이 초과되었습니다. 다시 시도해주세요.');
-                                break;
-                            default:
-                                alert('GPS 오류가 발생했습니다: ' + error.message);
-                        }
-                        reject(error);
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        maximumAge: 0,
-                        timeout: 27000
-                    }
-                );
-            });
-        } catch (error) {
-            console.error('GPS 권한 요청 오류:', error);
-            alert('GPS 권한 요청 중 오류가 발생했습니다.');
-            return false;
+    const gpsButton = document.createElement('button');
+    gpsButton.textContent = 'GPS 권한 허용';
+    gpsButton.style.padding = '10px 20px';
+    gpsButton.style.marginBottom = '10px';
+    gpsButton.style.backgroundColor = '#4CAF50';
+    gpsButton.style.border = 'none';
+    gpsButton.style.borderRadius = '5px';
+    gpsButton.style.color = 'white';
+    gpsButton.style.cursor = 'pointer';
+    gpsButton.style.width = '100%';
+
+    const sensorButton = document.createElement('button');
+    sensorButton.textContent = '동작 센서 권한 허용';
+    sensorButton.style.padding = '10px 20px';
+    sensorButton.style.backgroundColor = '#2196F3';
+    sensorButton.style.border = 'none';
+    sensorButton.style.borderRadius = '5px';
+    sensorButton.style.color = 'white';
+    sensorButton.style.cursor = 'pointer';
+    sensorButton.style.width = '100%';
+
+    const status = document.createElement('p');
+    status.style.marginTop = '10px';
+    status.style.fontSize = '14px';
+    status.id = 'permission-status';
+
+    permissionDiv.appendChild(title);
+    permissionDiv.appendChild(gpsButton);
+    permissionDiv.appendChild(sensorButton);
+    permissionDiv.appendChild(status);
+
+    document.body.appendChild(permissionDiv);
+
+    return { permissionDiv, gpsButton, sensorButton, status };
+}
+
+// 권한 상태 확인
+async function checkPermissions() {
+    let gpsGranted = false;
+    let sensorGranted = false;
+
+    // GPS 권한 확인
+    try {
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+        gpsGranted = permissionStatus.state === 'granted';
+    } catch (error) {
+        console.error('GPS 권한 확인 실패:', error);
+    }
+
+    // 센서 권한 확인
+    try {
+        const permissionStatus = await navigator.permissions.query({ name: 'accelerometer' });
+        sensorGranted = permissionStatus.state === 'granted';
+    } catch (error) {
+        // iOS에서는 DeviceOrientationEvent.requestPermission()을 사용
+        if (typeof DeviceOrientationEvent !== 'undefined' && 
+            typeof DeviceOrientationEvent.requestPermission === 'function') {
+            sensorGranted = false;
+        } else {
+            // 이외의 경우는 권한이 필요 없는 것으로 간주
+            sensorGranted = true;
         }
     }
 
-    // AR 씬 초기화 함수
-    async function initARScene(position) {
-        document.querySelector('a-scene').addEventListener('loaded', () => {
-            console.log('AR Scene loaded');
-            
-            // 각 AR 요소에 대해 엔티티 생성
-            Object.keys(arElements).forEach(key => {
-                const element = arElements[key];
-                const entity = document.createElement('a-entity');
-                entity.setAttribute('gltf-model', 'assets/character.glb');
-                entity.setAttribute('scale', '0.5 0.5 0.5');
-                entity.setAttribute('animation-mixer', { clip: 'idle' });
-                entity.setAttribute('gps-entity-place', {
-                    latitude: element.latitude,
-                    longitude: element.longitude
-                });
-                entity.setAttribute('look-at', '[gps-camera]');
-                entity.setAttribute('visible', 'false');
-                document.querySelector('a-scene').appendChild(entity);
-                element.element = entity;
-            });
-        });
+    return { gpsGranted, sensorGranted };
+}
+
+// 권한 요청 처리
+async function handlePermissions() {
+    const ui = createPermissionUI();
+    const { gpsGranted, sensorGranted } = await checkPermissions();
+
+    if (gpsGranted && sensorGranted) {
+        ui.permissionDiv.remove();
+        initializeAR();
+        return;
     }
 
-    // GPS 권한 요청 및 AR 초기화
+    // GPS 권한 요청 버튼 처리
+    ui.gpsButton.addEventListener('click', async () => {
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true
+                });
+            });
+            ui.status.textContent = 'GPS 권한이 허용되었습니다.';
+            ui.gpsButton.style.backgroundColor = '#4CAF50';
+            ui.gpsButton.disabled = true;
+            
+            // 모든 권한이 허용되었는지 확인
+            const { sensorGranted } = await checkPermissions();
+            if (sensorGranted) {
+                ui.permissionDiv.remove();
+                initializeAR();
+            }
+        } catch (error) {
+            ui.status.textContent = 'GPS 권한 요청 실패: ' + error.message;
+            ui.gpsButton.style.backgroundColor = '#f44336';
+        }
+    });
+
+    // 센서 권한 요청 버튼 처리
+    ui.sensorButton.addEventListener('click', async () => {
+        try {
+            if (typeof DeviceOrientationEvent !== 'undefined' && 
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                const permission = await DeviceOrientationEvent.requestPermission();
+                if (permission === 'granted') {
+                    ui.status.textContent = '동작 센서 권한이 허용되었습니다.';
+                    ui.sensorButton.style.backgroundColor = '#4CAF50';
+                    ui.sensorButton.disabled = true;
+
+                    // 모든 권한이 허용되었는지 확인
+                    const { gpsGranted } = await checkPermissions();
+                    if (gpsGranted) {
+                        ui.permissionDiv.remove();
+                        initializeAR();
+                    }
+                }
+            } else {
+                // 권한이 필요없는 경우
+                ui.sensorButton.style.backgroundColor = '#4CAF50';
+                ui.sensorButton.disabled = true;
+                ui.status.textContent = '동작 센서 사용 가능';
+            }
+        } catch (error) {
+            ui.status.textContent = '동작 센서 권한 요청 실패: ' + error.message;
+            ui.sensorButton.style.backgroundColor = '#f44336';
+        }
+    });
+}
+
+// AR 초기화 함수
+function initializeAR() {
+    // 기존의 AR 초기화 코드
     requestGPSPermission().then((position) => {
         if (position) {
             initARScene(position);
@@ -445,4 +520,9 @@ window.onload = () => {
         }
         lastTouchTime = currentTime;
     });
+}
+
+// 페이지 로드 시 권한 처리 시작
+window.onload = () => {
+    handlePermissions();
 }; 
