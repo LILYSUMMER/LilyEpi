@@ -17,22 +17,68 @@ const arElements = {
     }
 };
 
+// 다국어 텍스트
+const i18n = {
+    ko: {
+        subtitle: "첫번째 에피소드 : 이중섭",
+        start: "시작하기"
+    },
+    en: {
+        subtitle: "First Episode : Lee Jung-seop",
+        start: "Start"
+    },
+    ja: {
+        subtitle: "第一話：イ・ジュンソプ",
+        start: "スタート"
+    },
+    zh: {
+        subtitle: "第一集：李仲燮",
+        start: "开始"
+    }
+};
+
 // DOM 요소
+const languageScreen = document.getElementById('language-screen');
 const splashScreen = document.getElementById('splash-screen');
 const nfcScreen = document.getElementById('nfc-screen');
 const startScreen = document.getElementById('start-screen');
 const arScene = document.getElementById('ar-scene');
+const startExperienceButton = document.getElementById('start-experience');
 const startButton = document.getElementById('start-ar');
 const character = document.getElementById('character');
+const startUI = document.getElementById('start-ui');
 
-// 스플래시 화면 표시 후 NFC 화면으로 전환
-function initializeApp() {
-    // 2초 후에 스플래시 화면을 숨기고 NFC 화면 표시
+// 현재 선택된 언어
+let currentLanguage = 'ko';
+
+// 언어 변경 함수
+function changeLanguage(lang) {
+    currentLanguage = lang;
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        element.textContent = i18n[lang][key];
+    });
+}
+
+// 스플래시 화면으로 전환
+function showSplashScreen() {
+    languageScreen.classList.add('hidden');
+    splashScreen.classList.remove('hidden');
+}
+
+// 시작 UI 표시
+function showStartUI() {
+    startUI.classList.remove('hidden');
     setTimeout(() => {
-        splashScreen.classList.add('hidden');
-        nfcScreen.classList.remove('hidden');
-        initNFC();
-    }, 2000);
+        startUI.classList.add('visible');
+    }, 100);
+}
+
+// 스플래시 화면에서 NFC 화면으로 전환
+function startExperience() {
+    splashScreen.classList.add('hidden');
+    nfcScreen.classList.remove('hidden');
+    initNFC();
 }
 
 // NFC 관련 기능
@@ -59,10 +105,11 @@ function showStartScreen() {
     startScreen.classList.remove('hidden');
 }
 
+// AR 시작
 function startAR() {
-    startScreen.classList.add('hidden');
+    splashScreen.classList.add('hidden');
     arScene.classList.remove('hidden');
-    initAR();
+    character.setAttribute('visible', true);
 }
 
 // AR 초기화 및 모션 감지 설정
@@ -112,15 +159,30 @@ function handleMotion(event) {
 
 // 이벤트 리스너
 document.addEventListener('DOMContentLoaded', () => {
-    // 앱 초기화
-    initializeApp();
-    
-    // AR 시작 버튼 이벤트
-    startButton.addEventListener('click', startAR);
-    
+    // 언어 선택 버튼 이벤트
+    document.querySelectorAll('.language-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const lang = e.target.getAttribute('data-lang');
+            changeLanguage(lang);
+            showSplashScreen();
+        });
+    });
+
+    // 스플래시 화면 터치 이벤트
+    splashScreen.addEventListener('click', () => {
+        if (!startUI.classList.contains('visible')) {
+            showStartUI();
+        }
+    });
+
+    // 시작 버튼 이벤트
+    document.getElementById('start-experience').addEventListener('click', (e) => {
+        e.stopPropagation(); // 스플래시 화면 클릭 이벤트 전파 방지
+        startAR();
+    });
+
     // AR 마커 이벤트
     const marker = document.querySelector('a-marker');
-    
     marker.addEventListener('markerFound', () => {
         console.log('마커 인식됨');
         character.setAttribute('visible', true);

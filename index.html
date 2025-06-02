@@ -10,11 +10,27 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- 언어 선택 화면 -->
+    <div id="language-screen" class="fullscreen-overlay">
+        <div class="language-content">
+            <h2 class="language-title">Select Language / 言語選択 / 选择语言</h2>
+            <div class="language-buttons">
+                <button class="language-button" data-lang="ko">한국어</button>
+                <button class="language-button" data-lang="en">English</button>
+                <button class="language-button" data-lang="ja">日本語</button>
+                <button class="language-button" data-lang="zh">中文</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 스플래시 화면 -->
-    <div id="splash-screen" class="fullscreen-overlay">
+    <div id="splash-screen" class="fullscreen-overlay hidden">
         <div class="splash-content">
             <h1 class="logo">EPISAPCE</h1>
-            <p class="subtitle">첫번째 에피소드 : 이중섭</p>
+            <p class="subtitle" data-i18n="subtitle">첫번째 에피소드 : 이중섭</p>
+            <div id="start-ui" class="start-ui hidden">
+                <button id="start-experience" class="start-button" data-i18n="start">시작하기</button>
+            </div>
         </div>
     </div>
 
@@ -54,7 +70,8 @@
                           gltf-model="assets/character.glb"
                           scale="0.5 0.5 0.5"
                           animation-mixer="clip: idle"
-                          gesture-handler>
+                          gesture-handler
+                          visible="false">
                 </a-entity>
             </a-entity>
         </a-marker>
