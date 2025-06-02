@@ -2,17 +2,23 @@
 const arElements = {
     artwork: {
         element: null,
-        triggerDistance: 2,
+        latitude: 33.236691,  // 지정된 위치
+        longitude: 126.481064,
+        triggerDistance: 20,  // 미터 단위
         description: "이중섭의 '황소' 작품"
     },
     dolHareubang: {
         element: null,
-        triggerDistance: 2,
+        latitude: 33.236691,  // 같은 위치에 배치
+        longitude: 126.481064,
+        triggerDistance: 20,
         description: "제주의 상징, 돌하르방"
     },
     story: {
         element: null,
-        triggerDistance: 2,
+        latitude: 33.236691,  // 같은 위치에 배치
+        longitude: 126.481064,
+        triggerDistance: 20,
         description: "강정마을의 전설"
     }
 };
@@ -242,12 +248,20 @@ function hideElement(element) {
     }, 300);
 }
 
-// 거리 계산 함수
-function calculateDistance(position1, position2) {
-    const dx = position1.x - position2.x;
-    const dy = position1.y - position2.y;
-    const dz = position1.z - position2.z;
-    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+// GPS 좌표 간 거리 계산 함수 (미터 단위)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // 지구의 반지름 (미터)
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; // 미터 단위 거리
 }
 
 // 제스처 컴포넌트 등록
@@ -267,46 +281,161 @@ AFRAME.registerComponent('gesture-detector', {
 });
 
 window.onload = () => {
-    // GPS 권한 요청
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function (position) {
-            // GPS 좌표 얻기 성공
-            document.querySelector('a-scene').addEventListener('loaded', () => {
-                console.log('AR Scene loaded');
-                
-                // 현재 위치 로깅
-                console.log('Your location:', position.coords.latitude, position.coords.longitude);
-                
-                // 모델의 위치를 현재 GPS 좌표로 업데이트
-                const character = document.querySelector('#character');
-                character.setAttribute('gps-entity-place', {
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                });
+    // GPS 권한 상태 확인 및 요청 함수
+    async function requestGPSPermission() {
+        try {
+            // 먼저 권한 상태 확인
+            const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+            
+            if (permissionStatus.state === 'denied') {
+                alert('GPS 기능이 차단되어 있습니다. 브라우저 설정에서 위치 권한을 허용해주세요.');
+                return false;
+            }
+
+            // HTTPS 확인
+            if (window.location.protocol !== 'https:') {
+                alert('GPS 기능은 HTTPS에서만 사용 가능합니다.');
+                return false;
+            }
+
+            return new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        console.log('GPS 권한 획득 성공');
+                        resolve(position);
+                    },
+                    (error) => {
+                        console.error('GPS 오류:', error);
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                alert('GPS 권한이 거부되었습니다. 위치 권한을 허용해주세요.');
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                alert('현재 위치를 확인할 수 없습니다. GPS 신호가 약한 곳일 수 있습니다.');
+                                break;
+                            case error.TIMEOUT:
+                                alert('GPS 위치 확인 시간이 초과되었습니다. 다시 시도해주세요.');
+                                break;
+                            default:
+                                alert('GPS 오류가 발생했습니다: ' + error.message);
+                        }
+                        reject(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 27000
+                    }
+                );
             });
-        }, function(error) {
-            console.error('Error getting location:', error);
-            alert('GPS 위치를 가져올 수 없습니다. GPS 권한을 확인해주세요.');
-        }, {
-            enableHighAccuracy: true, // 높은 정확도 사용
-            maximumAge: 0, // 캐시된 위치정보를 사용하지 않음
-            timeout: 27000 // 27초 타임아웃
+        } catch (error) {
+            console.error('GPS 권한 요청 오류:', error);
+            alert('GPS 권한 요청 중 오류가 발생했습니다.');
+            return false;
+        }
+    }
+
+    // AR 씬 초기화 함수
+    async function initARScene(position) {
+        document.querySelector('a-scene').addEventListener('loaded', () => {
+            console.log('AR Scene loaded');
+            
+            // 각 AR 요소에 대해 엔티티 생성
+            Object.keys(arElements).forEach(key => {
+                const element = arElements[key];
+                const entity = document.createElement('a-entity');
+                entity.setAttribute('gltf-model', 'assets/character.glb');
+                entity.setAttribute('scale', '0.5 0.5 0.5');
+                entity.setAttribute('animation-mixer', { clip: 'idle' });
+                entity.setAttribute('gps-entity-place', {
+                    latitude: element.latitude,
+                    longitude: element.longitude
+                });
+                entity.setAttribute('look-at', '[gps-camera]');
+                entity.setAttribute('visible', 'false');
+                document.querySelector('a-scene').appendChild(entity);
+                element.element = entity;
+            });
         });
     }
+
+    // GPS 권한 요청 및 AR 초기화
+    requestGPSPermission().then((position) => {
+        if (position) {
+            initARScene(position);
+            
+            // 디버그 정보 표시
+            const debugDiv = document.createElement('div');
+            debugDiv.style.position = 'fixed';
+            debugDiv.style.bottom = '20px';
+            debugDiv.style.left = '20px';
+            debugDiv.style.backgroundColor = 'rgba(0,0,0,0.7)';
+            debugDiv.style.color = 'white';
+            debugDiv.style.padding = '10px';
+            debugDiv.style.fontFamily = 'monospace';
+            debugDiv.style.zIndex = '9999';
+            document.body.appendChild(debugDiv);
+
+            // 실시간 GPS 업데이트
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    // 현재 위치와 각 AR 요소와의 거리 계산
+                    let debugInfo = `현재 위치:<br>
+                        위도: ${position.coords.latitude.toFixed(6)}<br>
+                        경도: ${position.coords.longitude.toFixed(6)}<br>
+                        정확도: ${position.coords.accuracy.toFixed(2)}m<br><br>
+                        AR 오브젝트 위치:<br>`;
+                    
+                    Object.keys(arElements).forEach(key => {
+                        const element = arElements[key];
+                        const distance = calculateDistance(
+                            position.coords.latitude,
+                            position.coords.longitude,
+                            element.latitude,
+                            element.longitude
+                        );
+                        
+                        debugInfo += `${element.description}:<br>
+                            - 위도: ${element.latitude}<br>
+                            - 경도: ${element.longitude}<br>
+                            - 거리: ${distance.toFixed(2)}m<br>
+                            - 표시 범위: ${element.triggerDistance}m<br><br>`;
+                        
+                        // 거리에 따라 오브젝트 표시/숨김
+                        if (element.element) {
+                            element.element.setAttribute('visible', distance <= element.triggerDistance);
+                        }
+                    });
+                    
+                    debugDiv.innerHTML = debugInfo;
+                },
+                (error) => {
+                    console.error('GPS 업데이트 오류:', error);
+                    debugDiv.innerHTML = 'GPS 신호 오류 발생';
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 27000
+                }
+            );
+        }
+    }).catch((error) => {
+        console.error('GPS 초기화 실패:', error);
+    });
 
     // AR 화면 제스처 인식
     let touchCount = 0;
     let lastTouchTime = 0;
-    const DOUBLE_TAP_DELAY = 300; // 더블 탭 인식 시간 (밀리초)
+    const DOUBLE_TAP_DELAY = 300;
 
     document.querySelector('a-scene').addEventListener('touchstart', (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTouchTime;
         
         if (tapLength < DOUBLE_TAP_DELAY && tapLength > 0) {
-            // 더블 탭 감지
             touchCount++;
-            if (touchCount >= 3) { // 3번 이상의 빠른 터치로 오브젝트 표시
+            if (touchCount >= 3) {
                 const character = document.querySelector('#character');
                 character.setAttribute('visible', true);
                 touchCount = 0;
@@ -316,30 +445,4 @@ window.onload = () => {
         }
         lastTouchTime = currentTime;
     });
-
-    // 디버그 정보 표시
-    const debugDiv = document.createElement('div');
-    debugDiv.style.position = 'fixed';
-    debugDiv.style.bottom = '20px';
-    debugDiv.style.left = '20px';
-    debugDiv.style.backgroundColor = 'rgba(0,0,0,0.7)';
-    debugDiv.style.color = 'white';
-    debugDiv.style.padding = '10px';
-    debugDiv.style.fontFamily = 'monospace';
-    document.body.appendChild(debugDiv);
-
-    // GPS 위치 업데이트 모니터링
-    if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition((position) => {
-            debugDiv.innerHTML = `
-                Latitude: ${position.coords.latitude.toFixed(6)}<br>
-                Longitude: ${position.coords.longitude.toFixed(6)}<br>
-                Accuracy: ${position.coords.accuracy.toFixed(2)}m
-            `;
-        }, null, {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 27000
-        });
-    }
 }; 
