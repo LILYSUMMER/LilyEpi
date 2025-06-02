@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Epispace - 제주 문화 AR 체험</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-location-only.js"></script>
     <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -26,7 +26,7 @@
     <!-- 스플래시 화면 -->
     <div id="splash-screen" class="fullscreen-overlay hidden">
         <div class="splash-content">
-            <h1 class="logo">EPISAPCE</h1>
+            <h1 class="logo">EPISPACE</h1>
             <p class="subtitle" data-i18n="subtitle">첫번째 에피소드 : 이중섭</p>
             <div id="start-ui" class="start-ui hidden">
                 <button id="start-experience" class="start-button" data-i18n="start">시작하기</button>
@@ -51,30 +51,28 @@
     </div>
 
     <!-- AR 씬 -->
-    <a-scene id="ar-scene" 
-             embedded
-             arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
+    <a-scene id="ar-scene"
              vr-mode-ui="enabled: false"
-             gesture-detector
+             embedded
+             arjs='sourceType: webcam; debugUIEnabled: false; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960;'
+             renderer='antialias: true; alpha: true'
              class="hidden">
         
         <!-- 카메라 -->
-        <a-entity camera position="0 1.6 0"></a-entity>
+        <a-camera gps-camera rotation-reader></a-camera>
 
-        <!-- AR 마커 -->
-        <a-marker type="pattern" preset="custom" url="assets/marker.patt">
-            <!-- 3D 모델 컨테이너 -->
-            <a-entity id="model-container" position="0 0 0">
-                <!-- 3D 캐릭터 모델 -->
-                <a-entity id="character"
-                          gltf-model="assets/character.glb"
-                          scale="0.5 0.5 0.5"
-                          animation-mixer="clip: idle"
-                          gesture-handler
-                          visible="false">
-                </a-entity>
+        <!-- GPS 기반 엔티티들 -->
+        <a-entity id="model-container">
+            <a-entity id="character"
+                      gltf-model="assets/character.glb"
+                      scale="0.5 0.5 0.5"
+                      animation-mixer="clip: idle"
+                      gps-entity-place="latitude: 33.499; longitude: 126.531;"
+                      position="0 0 0"
+                      look-at="[gps-camera]"
+                      visible="true">
             </a-entity>
-        </a-marker>
+        </a-entity>
     </a-scene>
 
     <script src="script.js"></script>

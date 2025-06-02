@@ -264,4 +264,82 @@ AFRAME.registerComponent('gesture-detector', {
     onTouchEnd: function(event) {
         character.setAttribute('animation-mixer', { clip: 'idle' });
     }
-}); 
+});
+
+window.onload = () => {
+    // GPS 권한 요청
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            // GPS 좌표 얻기 성공
+            document.querySelector('a-scene').addEventListener('loaded', () => {
+                console.log('AR Scene loaded');
+                
+                // 현재 위치 로깅
+                console.log('Your location:', position.coords.latitude, position.coords.longitude);
+                
+                // 모델의 위치를 현재 GPS 좌표로 업데이트
+                const character = document.querySelector('#character');
+                character.setAttribute('gps-entity-place', {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            });
+        }, function(error) {
+            console.error('Error getting location:', error);
+            alert('GPS 위치를 가져올 수 없습니다. GPS 권한을 확인해주세요.');
+        }, {
+            enableHighAccuracy: true, // 높은 정확도 사용
+            maximumAge: 0, // 캐시된 위치정보를 사용하지 않음
+            timeout: 27000 // 27초 타임아웃
+        });
+    }
+
+    // AR 화면 제스처 인식
+    let touchCount = 0;
+    let lastTouchTime = 0;
+    const DOUBLE_TAP_DELAY = 300; // 더블 탭 인식 시간 (밀리초)
+
+    document.querySelector('a-scene').addEventListener('touchstart', (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTouchTime;
+        
+        if (tapLength < DOUBLE_TAP_DELAY && tapLength > 0) {
+            // 더블 탭 감지
+            touchCount++;
+            if (touchCount >= 3) { // 3번 이상의 빠른 터치로 오브젝트 표시
+                const character = document.querySelector('#character');
+                character.setAttribute('visible', true);
+                touchCount = 0;
+            }
+        } else {
+            touchCount = 1;
+        }
+        lastTouchTime = currentTime;
+    });
+
+    // 디버그 정보 표시
+    const debugDiv = document.createElement('div');
+    debugDiv.style.position = 'fixed';
+    debugDiv.style.bottom = '20px';
+    debugDiv.style.left = '20px';
+    debugDiv.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    debugDiv.style.color = 'white';
+    debugDiv.style.padding = '10px';
+    debugDiv.style.fontFamily = 'monospace';
+    document.body.appendChild(debugDiv);
+
+    // GPS 위치 업데이트 모니터링
+    if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition((position) => {
+            debugDiv.innerHTML = `
+                Latitude: ${position.coords.latitude.toFixed(6)}<br>
+                Longitude: ${position.coords.longitude.toFixed(6)}<br>
+                Accuracy: ${position.coords.accuracy.toFixed(2)}m
+            `;
+        }, null, {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 27000
+        });
+    }
+}; 
