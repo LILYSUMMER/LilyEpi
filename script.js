@@ -380,22 +380,70 @@ async function handlePermissions() {
     // GPS 권한 요청 버튼 처리
     ui.gpsButton.addEventListener('click', async () => {
         try {
-            const position = await new Promise((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    enableHighAccuracy: true
+            // iOS Safari에서는 사용자 제스처(클릭)가 필요함
+            if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+                ui.status.textContent = 'GPS 권한 요청 중...';
+                // iOS에서는 watchPosition을 먼저 호출하는 것이 더 안정적
+                const watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        navigator.geolocation.clearWatch(watchId);
+                        ui.status.textContent = 'GPS 권한이 허용되었습니다.';
+                        ui.gpsButton.style.backgroundColor = '#4CAF50';
+                        ui.gpsButton.disabled = true;
+                        
+                        // 모든 권한이 허용되었는지 확인
+                        checkPermissions().then(({ sensorGranted }) => {
+                            if (sensorGranted) {
+                                ui.permissionDiv.remove();
+                                initializeAR();
+                            }
+                        });
+                    },
+                    (error) => {
+                        console.error('GPS 오류:', error);
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                ui.status.textContent = 'GPS 권한이 거부되었습니다. 설정에서 위치 권한을 허용해주세요.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                ui.status.textContent = '위치를 확인할 수 없습니다. GPS 신호가 약한 곳일 수 있습니다.';
+                                break;
+                            case error.TIMEOUT:
+                                ui.status.textContent = 'GPS 위치 확인 시간이 초과되었습니다.';
+                                break;
+                            default:
+                                ui.status.textContent = 'GPS 오류: ' + error.message;
+                        }
+                        ui.gpsButton.style.backgroundColor = '#f44336';
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 10000
+                    }
+                );
+            } else {
+                // 다른 브라우저에서는 기존 방식 사용
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 10000
+                    });
                 });
-            });
-            ui.status.textContent = 'GPS 권한이 허용되었습니다.';
-            ui.gpsButton.style.backgroundColor = '#4CAF50';
-            ui.gpsButton.disabled = true;
-            
-            // 모든 권한이 허용되었는지 확인
-            const { sensorGranted } = await checkPermissions();
-            if (sensorGranted) {
-                ui.permissionDiv.remove();
-                initializeAR();
+                ui.status.textContent = 'GPS 권한이 허용되었습니다.';
+                ui.gpsButton.style.backgroundColor = '#4CAF50';
+                ui.gpsButton.disabled = true;
+                
+                // 모든 권한이 허용되었는지 확인
+                const { sensorGranted } = await checkPermissions();
+                if (sensorGranted) {
+                    ui.permissionDiv.remove();
+                    initializeAR();
+                }
             }
         } catch (error) {
+            console.error('GPS 권한 요청 오류:', error);
             ui.status.textContent = 'GPS 권한 요청 실패: ' + error.message;
             ui.gpsButton.style.backgroundColor = '#f44336';
         }
