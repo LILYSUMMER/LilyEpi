@@ -26,7 +26,7 @@ const server = https.createServer(options, function (req, res) {
     // 요청된 URL을 파일 경로로 변환
     let filePath = '.' + req.url;
     if (filePath === './') {
-        filePath = './index.html';
+        filePath = './landing.html';
     }
 
     // CORS 헤더 추가

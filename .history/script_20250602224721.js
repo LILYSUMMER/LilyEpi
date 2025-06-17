@@ -113,7 +113,7 @@ function showStartScreen() {
 
 // AR 시작
 function startAR() {
-    startScreen.classList.add('hidden');
+    splashScreen.classList.add('hidden');
     arScene.classList.remove('hidden');
     character.setAttribute('visible', true);
 }

@@ -2,10 +2,6 @@
 body {
     margin: 0;
     font-family: 'Noto Sans KR', sans-serif;
-}
-
-/* AR 전용 스타일 - AR 페이지에서만 적용 */
-body.ar-mode {
     overflow: hidden;
 }
 
