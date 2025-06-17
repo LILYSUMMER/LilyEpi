@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epispace - NFC와 AR로 만나는 제주 특성화 거리의 새로운 경험</title>
+    <meta name="description" content="제주 특성화 거리를 NFC와 AR 기술로 재탄생시키는 Epispace. 가족 단위 관광객을 위한 체험형 스토리텔링과 지자체를 위한 데이터 기반 거리 활성화 솔루션을 제공합니다.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero__title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero__subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .hero__cta {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn--primary {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn--primary:hover {
+            background: #ee5a24;
+            transform: translateY(-2px);
+        }
+
+        .btn--secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn--secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn--ar {
+            background: linear-gradient(45deg, #00d4aa, #0099cc);
+            color: white;
+            font-size: 1.2rem;
+            padding: 20px 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn--ar:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 80px 0;
+        }
+
+        .section__title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 60px;
+            font-weight: 700;
+        }
+
+        /* Problem Section */
+        .problem {
+            background: #f8f9fa;
+        }
+
+        .problem__table {
+            overflow-x: auto;
+        }
+
+        .problem__table table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .problem__table th,
+        .problem__table td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .problem__table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Solution Section */
+        .solution__steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+        }
+
+        .step__icon {
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .step p {
+            color: #666;
+        }
+
+        /* Value Section */
+        .value {
+            background: #f8f9fa;
+        }
+
+        .value__slider {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .value__card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .value__card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .value__card ul {
+            list-style: none;
+        }
+
+        .value__card li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .value__card li:before {
+            content: "✓";
+            color: #00d4aa;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Traction Section */
+        .traction__metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+
+        .metric {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .metric h3 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .metric p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Testimonials Section */
+        .testimonials {
+            background: #f8f9fa;
+        }
+
+        .testimonials__grid {
+            display: grid;
+            gap: 40px;
+        }
+
+        .testimonial {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .testimonial:before {
+            content: """;
+            font-size: 4rem;
+            color: #667eea;
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            opacity: 0.3;
+        }
+
+        .testimonial p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .testimonial cite {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* FAQ Section */
+        .faq__list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq__item {
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .faq__item summary {
+            padding: 20px;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .faq__item summary:after {
+            content: "+";
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .faq__item[open] summary:after {
+            content: "-";
+        }
+
+        .faq__item p {
+            padding: 20px;
+            color: #666;
+        }
+
+        /* CTA Section */
+        .cta {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .cta__buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .btn--kakao {
+            background: #fee500;
+            color: #3c1e1e;
+        }
+
+        .btn--download {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            padding: 60px 0 20px;
+        }
+
+        .footer__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer h3, .footer h4 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .footer ul {
+            list-style: none;
+        }
+
+        .footer a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: white;
+        }
+
+        .footer__bottom {
+            border-top: 1px solid #555;
+            padding-top: 20px;
+            text-align: center;
+            color: #ccc;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero__title {
+                font-size: 2.5rem;
+            }
+            
+            .hero__subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .section__title {
+                font-size: 2rem;
+            }
+            
+            .hero__cta,
+            .cta__buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <h1 class="hero__title">공간과 이야기와 기술의 만남</h1>
+            <p class="hero__subtitle">NFC와 AR로 지역 특성화 거리를 깨우다</p>
+            <div class="hero__cta">
+                <a href="#demo" class="btn btn--primary">체험 영상 보기</a>
+                <a href="#contact" class="btn btn--secondary">데모 문의하기</a>
+                <a href="index.html" class="btn btn--ar">AR 체험하기</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem & Insight Section -->
+    <section class="section problem" id="problem">
+        <div class="container">
+            <h2 class="section__title">지역 특성화 거리의 새로운 도전</h2>
+            <div class="problem__table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>문제</th>
+                            <th>기존 한계</th>
+                            <th>기회 포인트</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>거리 활성화 부족</td>
+                            <td>일회성 조성, 유지관리 미흡</td>
+                            <td>지속가능한 방문자 유입</td>
+                        </tr>
+                        <tr>
+                            <td>체험형 콘텐츠 부족</td>
+                            <td>정적 전시 위주</td>
+                            <td>AR 기반 인터랙티브 체험</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section solution" id="solution">
+        <div class="container">
+            <h2 class="section__title">Epispace가 하는 일</h2>
+            <div class="solution__steps">
+                <div class="step">
+                    <div class="step__icon">1</div>
+                    <h3>NFC 태그 스캔</h3>
+                    <p>설치·로그인 없이 즉시 웹 AR 실행</p>
+                </div>
+                <div class="step">
+                    <div class="step__icon">2</div>
+                    <h3>스토리텔링 미션</h3>
+                    <p>지역 스토리 기반 미니게임 제공</p>
+                </div>
+                <div class="step">
+                    <div class="step__icon">3</div>
+                    <h3>리워드 발급</h3>
+                    <p>체험 완료 시 굿즈·스탬프·쿠폰 제공</p>
+                </div>
+                <div class="step">
+                    <div class="step__icon">4</div>
+                    <h3>데이터 시각화</h3>
+                    <p>방문·체류·매출 데이터 분석</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition Section -->
+    <section class="section value" id="value">
+        <div class="container">
+            <h2 class="section__title">Epispace의 가치</h2>
+            <div class="value__slider">
+                <div class="value__card">
+                    <h3>가족 관광객</h3>
+                    <ul>
+                        <li>놀이 + 교육 통합 체험</li>
+                        <li>AR 포토존</li>
+                        <li>기념 굿즈</li>
+                    </ul>
+                </div>
+                <div class="value__card">
+                    <h3>지자체/로컬 비즈</h3>
+                    <ul>
+                        <li>거리 활성화</li>
+                        <li>유입 데이터 분석</li>
+                        <li>확장 가능한 IP 스토리</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Traction Section -->
+    <section class="section traction" id="traction">
+        <div class="container">
+            <h2 class="section__title">Epispace의 성장</h2>
+            <div class="traction__metrics">
+                <div class="metric">
+                    <h3>2025.07</h3>
+                    <p>베타 버전 출시</p>
+                </div>
+                <div class="metric">
+                    <h3>10,000+</h3>
+                    <p>목표 사용자</p>
+                </div>
+                <div class="metric">
+                    <h3>3억원</h3>
+                    <p>예상 매출 (2026)</p>
+                </div>
+                <div class="metric">
+                    <h3>2명</h3>
+                    <p>신규 고용</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section testimonials" id="testimonials">
+        <div class="container">
+            <h2 class="section__title">파트너의 목소리</h2>
+            <div class="testimonials__grid">
+                <blockquote class="testimonial">
+                    <p>"지역문화 해설에 혁신을 더했다!"</p>
+                    <cite>이중섭 미술관 학예연구사</cite>
+                </blockquote>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section faq" id="faq">
+        <div class="container">
+            <h2 class="section__title">자주 묻는 질문</h2>
+            <div class="faq__list">
+                <details class="faq__item">
+                    <summary>앱 설치가 꼭 필요한가요?</summary>
+                    <p>아니요, NFC 태그만으로 즉시 체험하실 수 있습니다.</p>
+                </details>
+                <details class="faq__item">
+                    <summary>지자체 도입 절차는 어떻게 되나요?</summary>
+                    <p>초기 상담 → 현장 분석 → 맞춤형 솔루션 제안 → 계약 → 구축 순으로 진행됩니다.</p>
+                </details>
+                <details class="faq__item">
+                    <summary>AR 체험은 어떻게 하나요?</summary>
+                    <p>위의 "AR 체험하기" 버튼을 클릭하시면 GPS 기반 AR 체험을 바로 시작하실 수 있습니다.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta" id="cta">
+        <div class="container">
+            <h2 class="section__title">지금 시작하세요</h2>
+            <div class="cta__buttons">
+                <a href="mailto:contact@epispace.kr" class="btn btn--primary">이메일 문의</a>
+                <a href="tel:064-XXX-XXXX" class="btn btn--secondary">전화 문의</a>
+                <a href="#" class="btn btn--kakao">카카오 채널</a>
+                <a href="index.html" class="btn btn--ar">AR 체험하기</a>
+            </div>
+            <a href="#" class="btn btn--download">지역 담당자용 제안서 PDF 받기</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__grid">
+                <div class="footer__company">
+                    <h3>Epispace</h3>
+                    <p>제주특별자치도 제주시 XXX</p>
+                    <p>사업자등록번호: XXX-XX-XXXXX</p>
+                </div>
+                <div class="footer__links">
+                    <h4>바로가기</h4>
+                    <ul>
+                        <li><a href="#hero">홈</a></li>
+                        <li><a href="#solution">솔루션</a></li>
+                        <li><a href="index.html">AR 체험</a></li>
+                    </ul>
+                </div>
+                <div class="footer__contact">
+                    <h4>문의</h4>
+                    <p>투자/언론: press@epispace.kr</p>
+                    <p>일반문의: contact@epispace.kr</p>
+                </div>
+                <div class="footer__social">
+                    <h4>소셜 미디어</h4>
+                    <div class="social__links">
+                        <a href="#" aria-label="Instagram">Instagram</a>
+                        <a href="#" aria-label="LinkedIn">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer__bottom">
+                <p>&copy; 2024 Epispace. All rights reserved.</p>
+                <a href="/privacy">개인정보 처리방침</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 페이지 로드 시 애니메이션
+        window.addEventListener('load', function() {
+            const elements = document.querySelectorAll('.hero__title, .hero__subtitle, .hero__cta');
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                element.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html> 
