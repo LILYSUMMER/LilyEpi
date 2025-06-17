@@ -734,7 +734,7 @@
                 <a href="mailto:contact@epispace.kr" class="btn btn--primary">이메일 문의</a>
                 <a href="tel:064-XXX-XXXX" class="btn btn--secondary">전화 문의</a>
                 <a href="#" class="btn btn--kakao">카카오 채널</a>
-                <a href="ar.html" class="btn btn--ar" target="_blank">AR 체험하기</a>
+                <a href="ar.html" class="btn btn--ar">AR 체험하기</a>
             </div>
             <a href="#" class="btn btn--download">지역 담당자용 제안서 PDF 받기</a>
         </div>
@@ -788,16 +788,6 @@
                         block: 'start'
                     });
                 }
-            });
-        });
-
-        // AR 체험하기 버튼 이벤트 리스너
-        document.querySelectorAll('a[href="ar.html"]').forEach(button => {
-            button.addEventListener('click', function(e) {
-                console.log('AR 체험하기 버튼 클릭됨');
-                // 새 탭에서 열리도록 설정
-                window.open('ar.html', '_blank');
-                e.preventDefault();
             });
         });
 

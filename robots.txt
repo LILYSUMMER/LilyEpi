@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# 사이트맵 위치
+Sitemap: https://epispace.kr/sitemap.xml
+
+# 크롤링 지연 시간 (초)
+Crawl-delay: 1
+
+# 특정 파일/폴더 제외 (필요시)
+# Disallow: /private/
+# Disallow: /admin/
+# Disallow: /temp/
+
+# 이미지, CSS, JS 파일 허용
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.ico$
+Allow: /*.woff$
+Allow: /*.woff2$
+Allow: /*.ttf$
+Allow: /*.eot$ 

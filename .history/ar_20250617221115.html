@@ -151,13 +151,7 @@
              arjs="sourceType: webcam; 
                    debugUIEnabled: true; 
                    videoTexture: true;
-                   faceingMode: environment;
-                   renderer: antialias: true; alpha: true;">
-        
-        <!-- 카메라 영상 배경 -->
-        <a-sky id="camera-background" 
-               material="shader: flat; src: #camera-video; transparent: true;">
-        </a-sky>
+                   faceingMode: environment;">
         
         <!-- 카메라 -->
         <a-camera id="camera" 
@@ -212,14 +206,6 @@
             </a-text>
         </a-entity>
     </a-scene>
-
-    <!-- 카메라 비디오 요소 (AR.js가 사용) -->
-    <video id="camera-video" 
-           autoplay 
-           muted 
-           playsinline 
-           style="display: none;">
-    </video>
 
     <script src="script.js"></script>
 </body>

@@ -151,13 +151,17 @@
              arjs="sourceType: webcam; 
                    debugUIEnabled: true; 
                    videoTexture: true;
-                   faceingMode: environment;
-                   renderer: antialias: true; alpha: true;">
+                   faceingMode: environment;">
         
         <!-- 카메라 영상 배경 -->
-        <a-sky id="camera-background" 
-               material="shader: flat; src: #camera-video; transparent: true;">
-        </a-sky>
+        <a-video id="camera-background"
+                 src="#camera-video"
+                 position="0 0 -1"
+                 rotation="-90 0 0"
+                 width="2"
+                 height="2"
+                 material="shader: flat; transparent: true; opacity: 0.8">
+        </a-video>
         
         <!-- 카메라 -->
         <a-camera id="camera" 

@@ -276,14 +276,22 @@ async function initCameraStream() {
     try {
         console.log('카메라 스트림 초기화 시작...');
         
+        // 맥북/데스크톱 환경을 위한 카메라 설정
+        const constraints = {
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280, min: 640 },
+                height: { ideal: 720, min: 480 },
+                frameRate: { ideal: 30, min: 15 }
+            },
+            audio: false
+        };
+        
         // 카메라 스트림 요청
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment'
-            } 
-        });
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
         console.log('카메라 스트림 성공:', stream);
+        console.log('비디오 트랙:', stream.getVideoTracks());
         
         // 비디오 요소에 스트림 연결
         const videoElement = document.getElementById('camera-video');
@@ -295,13 +303,52 @@ async function initCameraStream() {
             // 비디오 로드 완료 대기
             videoElement.onloadedmetadata = function() {
                 console.log('비디오 메타데이터 로드 완료');
-                videoElement.play();
+                console.log('비디오 크기:', videoElement.videoWidth, 'x', videoElement.videoHeight);
+                videoElement.play().then(() => {
+                    console.log('비디오 재생 시작됨');
+                }).catch(error => {
+                    console.error('비디오 재생 실패:', error);
+                });
+            };
+            
+            // 비디오 오류 처리
+            videoElement.onerror = function(error) {
+                console.error('비디오 오류:', error);
+            };
+            
+            // 비디오 재생 상태 확인
+            videoElement.onplay = function() {
+                console.log('비디오 재생 중');
+            };
+            
+            videoElement.onpause = function() {
+                console.log('비디오 일시정지됨');
             };
         }
         
     } catch (error) {
         console.error('카메라 스트림 초기화 실패:', error);
-        alert('카메라를 초기화할 수 없습니다. 페이지를 새로고침하고 다시 시도해주세요.');
+        
+        // 구체적인 오류 메시지 제공
+        let errorMessage = '카메라를 초기화할 수 없습니다.';
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage = '카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = '카메라를 찾을 수 없습니다. 카메라가 연결되어 있는지 확인해주세요.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = '카메라가 다른 애플리케이션에서 사용 중입니다. 다른 앱을 종료하고 다시 시도해주세요.';
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage = '카메라가 요청된 해상도를 지원하지 않습니다.';
+        }
+        
+        alert(errorMessage + '\n\n페이지를 새로고침하고 다시 시도해주세요.');
+        
+        // 맥북에서 카메라 접근 문제인 경우 안내
+        if (navigator.platform.includes('Mac')) {
+            console.log('맥북 환경에서 카메라 접근 문제가 발생했습니다.');
+            console.log('시스템 환경설정 > 보안 및 개인 정보 보호 > 카메라에서 브라우저 권한을 확인해주세요.');
+        }
     }
 }
 

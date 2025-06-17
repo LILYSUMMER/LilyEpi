@@ -228,235 +228,20 @@ function showStartScreen() {
 function startAR() {
     startScreen.classList.add('hidden');
     arScene.classList.remove('hidden');
-    initARScene();
+    initAR();
 }
 
-// AR 씬 초기화
-function initARScene() {
-    console.log('AR 씬 초기화 시작...');
-    
-    const arScene = document.getElementById('ar-scene');
-    if (!arScene) {
-        console.error('AR 씬을 찾을 수 없습니다.');
-        return;
-    }
-    
-    // AR 씬 로드 완료 대기
-    arScene.addEventListener('loaded', function() {
-        console.log('AR 씬 로드 완료');
-        
-        // 카메라 스트림 초기화
-        initCameraStream();
-        
-        // 표면 감지 이벤트 설정
-        setupSurfaceDetection();
-        
-        // AR 콘텐츠 이벤트 설정
-        setupARContentEvents();
-    });
-    
-    // AR 씬 렌더링 시작 대기
-    arScene.addEventListener('renderstart', function() {
-        console.log('AR 씬 렌더링 시작');
-    });
-    
-    // AR 씬 카메라 초기화 대기
-    arScene.addEventListener('camera-init', function() {
-        console.log('AR 카메라 초기화 완료');
-    });
-    
-    // AR 씬 카메라 스트림 시작 대기
-    arScene.addEventListener('camera-stream', function() {
-        console.log('AR 카메라 스트림 시작');
-    });
-}
-
-// 카메라 스트림 초기화
-async function initCameraStream() {
-    try {
-        console.log('카메라 스트림 초기화 시작...');
-        
-        // 카메라 스트림 요청
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment'
-            } 
-        });
-        
-        console.log('카메라 스트림 성공:', stream);
-        
-        // 비디오 요소에 스트림 연결
-        const videoElement = document.getElementById('camera-video');
-        if (videoElement) {
-            videoElement.srcObject = stream;
-            videoElement.style.display = 'block';
-            console.log('비디오 요소에 스트림 연결됨');
-            
-            // 비디오 로드 완료 대기
-            videoElement.onloadedmetadata = function() {
-                console.log('비디오 메타데이터 로드 완료');
-                videoElement.play();
-            };
-        }
-        
-    } catch (error) {
-        console.error('카메라 스트림 초기화 실패:', error);
-        alert('카메라를 초기화할 수 없습니다. 페이지를 새로고침하고 다시 시도해주세요.');
-    }
-}
-
-// AR 콘텐츠 이벤트 설정
-function setupARContentEvents() {
-    console.log('AR 콘텐츠 이벤트 설정 시작...');
-    
-    const artwork = document.getElementById('artwork');
-    const description = document.getElementById('description');
-    
-    if (!artwork || !description) {
-        console.log('AR 콘텐츠 요소를 찾을 수 없음');
-        return;
-    }
-    
+// AR 초기화 및 모션 감지 설정
+function initAR() {
     // 디바이스 방향 감지 설정
     if (window.DeviceOrientationEvent) {
         window.addEventListener('deviceorientation', handleOrientation);
-        console.log('디바이스 방향 감지 설정 완료');
-    } else {
-        console.log('디바이스 방향 감지 지원 안됨');
     }
 
     // 디바이스 모션 감지 설정
     if (window.DeviceMotionEvent) {
         window.addEventListener('devicemotion', handleMotion);
-        console.log('디바이스 모션 감지 설정 완료');
-    } else {
-        console.log('디바이스 모션 감지 지원 안됨');
     }
-    
-    // AR 요소 확인
-    setTimeout(() => {
-        if (artwork) {
-            console.log('AR 작품 요소 찾음:', artwork);
-        } else {
-            console.log('AR 작품 요소를 찾을 수 없음');
-        }
-        
-        if (description) {
-            console.log('AR 설명 요소 찾음:', description);
-        } else {
-            console.log('AR 설명 요소를 찾을 수 없음');
-        }
-    }, 1000);
-}
-
-// 표면 감지 설정
-function setupSurfaceDetection() {
-    const cursor = document.getElementById('cursor');
-    const surfacePlane = document.getElementById('surface-plane');
-    const artwork = document.getElementById('artwork');
-    const description = document.getElementById('description');
-    
-    if (!cursor || !surfacePlane || !artwork || !description) {
-        console.log('표면 감지 요소를 찾을 수 없음');
-        return;
-    }
-    
-    console.log('표면 감지 설정 시작...');
-    
-    // 표면 감지 이벤트
-    cursor.addEventListener('raycaster-intersected', function(event) {
-        console.log('표면 감지됨:', event.detail.intersection);
-        const intersection = event.detail.intersection;
-        
-        // 감지된 표면 위치에 오브젝트 배치
-        placeObjectOnSurface(intersection.point);
-    });
-    
-    // 표면 감지 해제 이벤트
-    cursor.addEventListener('raycaster-intersected-cleared', function(event) {
-        console.log('표면 감지 해제됨');
-    });
-    
-    // 클릭 이벤트 (표면에 오브젝트 배치)
-    cursor.addEventListener('click', function(event) {
-        console.log('표면 클릭됨');
-        const raycaster = cursor.components.raycaster;
-        if (raycaster.intersectedEls.length > 0) {
-            const intersection = raycaster.intersections[0];
-            placeObjectOnSurface(intersection.point);
-        }
-    });
-}
-
-// 표면에 오브젝트 배치
-function placeObjectOnSurface(point) {
-    const artwork = document.getElementById('artwork');
-    const description = document.getElementById('description');
-    
-    if (!artwork || !description) {
-        console.log('오브젝트 요소를 찾을 수 없음');
-        return;
-    }
-    
-    console.log('오브젝트 배치 위치:', point);
-    
-    // 오브젝트를 감지된 표면 위치에 배치
-    artwork.setAttribute('position', {
-        x: point.x,
-        y: point.y + 0.25, // 바닥에서 약간 위로
-        z: point.z
-    });
-    
-    description.setAttribute('position', {
-        x: point.x,
-        y: point.y + 1.25, // 오브젝트 위에 텍스트 배치
-        z: point.z
-    });
-    
-    // 오브젝트 표시
-    artwork.setAttribute('visible', true);
-    description.setAttribute('visible', true);
-    
-    // 배치 애니메이션
-    artwork.setAttribute('animation', {
-        property: 'scale',
-        from: '0 0 0',
-        to: '0.5 0.5 0.5',
-        dur: 500,
-        easing: 'easeOutQuad'
-    });
-}
-
-// 카메라 움직임에 따른 표면 감지
-function handleCameraMovement() {
-    const camera = document.getElementById('camera');
-    const surfacePlane = document.getElementById('surface-plane');
-    
-    if (!camera || !surfacePlane) return;
-    
-    // 카메라 위치에 따라 표면 평면 위치 조정
-    const cameraPosition = camera.getAttribute('position');
-    const cameraRotation = camera.getAttribute('rotation');
-    
-    // 카메라가 바라보는 방향으로 표면 평면 배치
-    const distance = 5; // 카메라에서 5미터 앞
-    const radian = (cameraRotation.y * Math.PI) / 180;
-    
-    const surfaceX = cameraPosition.x + Math.sin(radian) * distance;
-    const surfaceZ = cameraPosition.z + Math.cos(radian) * distance;
-    
-    surfacePlane.setAttribute('position', {
-        x: surfaceX,
-        y: 0, // 바닥 높이
-        z: surfaceZ
-    });
-    
-    // 표면 평면을 카메라 방향으로 회전
-    surfacePlane.setAttribute('rotation', {
-        x: -90,
-        y: cameraRotation.y,
-        z: 0
-    });
 }
 
 // 디바이스 방향 처리
@@ -471,9 +256,6 @@ function handleOrientation(event) {
             z: 0
         });
     }
-    
-    // 카메라 움직임에 따른 표면 감지 업데이트
-    handleCameraMovement();
 }
 
 // 디바이스 모션 처리
@@ -501,24 +283,6 @@ function handleMotion(event) {
                 easing: 'linear'
             });
         }
-    }
-    
-    // 카메라 움직임에 따른 표면 감지 업데이트
-    handleCameraMovement();
-}
-
-// 표면 감지 활성화
-function activateSurfaceDetection() {
-    const surfacePlane = document.getElementById('surface-plane');
-    if (surfacePlane) {
-        // 표면 감지 평면을 보이게 설정
-        surfacePlane.setAttribute('visible', true);
-        console.log('표면 감지 활성화됨');
-        
-        // 초기 표면 감지 설정
-        setTimeout(() => {
-            handleCameraMovement();
-        }, 1000);
     }
 }
 

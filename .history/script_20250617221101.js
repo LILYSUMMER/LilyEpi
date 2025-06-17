@@ -276,28 +276,22 @@ async function initCameraStream() {
     try {
         console.log('카메라 스트림 초기화 시작...');
         
-        // 카메라 스트림 요청
+        // AR.js가 자동으로 카메라를 처리하도록 함
+        // 권한만 미리 요청
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
-                facingMode: 'environment'
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 960 }
             } 
         });
         
         console.log('카메라 스트림 성공:', stream);
         
-        // 비디오 요소에 스트림 연결
-        const videoElement = document.getElementById('camera-video');
-        if (videoElement) {
-            videoElement.srcObject = stream;
-            videoElement.style.display = 'block';
-            console.log('비디오 요소에 스트림 연결됨');
-            
-            // 비디오 로드 완료 대기
-            videoElement.onloadedmetadata = function() {
-                console.log('비디오 메타데이터 로드 완료');
-                videoElement.play();
-            };
-        }
+        // AR.js가 카메라를 사용할 수 있도록 스트림을 즉시 중지
+        stream.getTracks().forEach(track => track.stop());
+        
+        console.log('AR.js가 카메라를 자동으로 처리하도록 설정됨');
         
     } catch (error) {
         console.error('카메라 스트림 초기화 실패:', error);

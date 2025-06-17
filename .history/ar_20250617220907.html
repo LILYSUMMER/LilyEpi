@@ -150,14 +150,17 @@
              embedded
              arjs="sourceType: webcam; 
                    debugUIEnabled: true; 
+                   sourceWidth: 1280; 
+                   sourceHeight: 960; 
+                   displayWidth: 1280; 
+                   displayHeight: 960;
                    videoTexture: true;
+                   cameraParametersUrl: https://raw.githack.com/AR-js-org/AR.js/master/data/data/camera_para.dat;
+                   maxDetectionRate: 60;
+                   canvasWidth: 1280;
+                   canvasHeight: 960;
                    faceingMode: environment;
                    renderer: antialias: true; alpha: true;">
-        
-        <!-- 카메라 영상 배경 -->
-        <a-sky id="camera-background" 
-               material="shader: flat; src: #camera-video; transparent: true;">
-        </a-sky>
         
         <!-- 카메라 -->
         <a-camera id="camera" 
@@ -213,12 +216,12 @@
         </a-entity>
     </a-scene>
 
-    <!-- 카메라 비디오 요소 (AR.js가 사용) -->
+    <!-- 카메라 영상 표시용 비디오 요소 (숨김) -->
     <video id="camera-video" 
            autoplay 
            muted 
            playsinline 
-           style="display: none;">
+           style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;">
     </video>
 
     <script src="script.js"></script>

@@ -578,7 +578,7 @@
             <div class="hero__cta">
                 <a href="#demo" class="btn btn--primary">체험 영상 보기</a>
                 <a href="#contact" class="btn btn--secondary">데모 문의하기</a>
-                <a href="ar.html" class="btn btn--ar" target="_blank">AR 체험하기</a>
+                <a href="ar.html" class="btn btn--ar">AR 체험하기</a>
             </div>
         </div>
     </section>
@@ -734,7 +734,7 @@
                 <a href="mailto:contact@epispace.kr" class="btn btn--primary">이메일 문의</a>
                 <a href="tel:064-XXX-XXXX" class="btn btn--secondary">전화 문의</a>
                 <a href="#" class="btn btn--kakao">카카오 채널</a>
-                <a href="ar.html" class="btn btn--ar" target="_blank">AR 체험하기</a>
+                <a href="ar.html" class="btn btn--ar">AR 체험하기</a>
             </div>
             <a href="#" class="btn btn--download">지역 담당자용 제안서 PDF 받기</a>
         </div>
@@ -746,7 +746,7 @@
             <div class="footer__grid">
                 <div class="footer__company">
                     <h3>Epispace</h3>
-                    <p>제주특별자치도 서귀포시 말질로 161번길 10-1</p>
+                    <p>제주특별자치도 제주시 XXX</p>
                     <p>사업자등록번호: XXX-XX-XXXXX</p>
                 </div>
                 <div class="footer__links">
@@ -759,7 +759,8 @@
                 </div>
                 <div class="footer__contact">
                     <h4>문의</h4>
-                    <p>contact@epispace.kr</p>
+                    <p>투자/언론: press@epispace.kr</p>
+                    <p>일반문의: contact@epispace.kr</p>
                 </div>
                 <div class="footer__social">
                     <h4>소셜 미디어</h4>
@@ -788,16 +789,6 @@
                         block: 'start'
                     });
                 }
-            });
-        });
-
-        // AR 체험하기 버튼 이벤트 리스너
-        document.querySelectorAll('a[href="ar.html"]').forEach(button => {
-            button.addEventListener('click', function(e) {
-                console.log('AR 체험하기 버튼 클릭됨');
-                // 새 탭에서 열리도록 설정
-                window.open('ar.html', '_blank');
-                e.preventDefault();
             });
         });
 

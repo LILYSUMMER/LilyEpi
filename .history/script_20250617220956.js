@@ -228,47 +228,9 @@ function showStartScreen() {
 function startAR() {
     startScreen.classList.add('hidden');
     arScene.classList.remove('hidden');
-    initARScene();
-}
-
-// AR 씬 초기화
-function initARScene() {
-    console.log('AR 씬 초기화 시작...');
-    
-    const arScene = document.getElementById('ar-scene');
-    if (!arScene) {
-        console.error('AR 씬을 찾을 수 없습니다.');
-        return;
-    }
-    
-    // AR 씬 로드 완료 대기
-    arScene.addEventListener('loaded', function() {
-        console.log('AR 씬 로드 완료');
-        
-        // 카메라 스트림 초기화
-        initCameraStream();
-        
-        // 표면 감지 이벤트 설정
-        setupSurfaceDetection();
-        
-        // AR 콘텐츠 이벤트 설정
-        setupARContentEvents();
-    });
-    
-    // AR 씬 렌더링 시작 대기
-    arScene.addEventListener('renderstart', function() {
-        console.log('AR 씬 렌더링 시작');
-    });
-    
-    // AR 씬 카메라 초기화 대기
-    arScene.addEventListener('camera-init', function() {
-        console.log('AR 카메라 초기화 완료');
-    });
-    
-    // AR 씬 카메라 스트림 시작 대기
-    arScene.addEventListener('camera-stream', function() {
-        console.log('AR 카메라 스트림 시작');
-    });
+    initAR();
+    initCameraStream();
+    activateSurfaceDetection();
 }
 
 // 카메라 스트림 초기화
@@ -276,28 +238,22 @@ async function initCameraStream() {
     try {
         console.log('카메라 스트림 초기화 시작...');
         
-        // 카메라 스트림 요청
+        // AR.js가 자동으로 카메라를 처리하도록 함
+        // 권한만 미리 요청
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
-                facingMode: 'environment'
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 960 }
             } 
         });
         
         console.log('카메라 스트림 성공:', stream);
         
-        // 비디오 요소에 스트림 연결
-        const videoElement = document.getElementById('camera-video');
-        if (videoElement) {
-            videoElement.srcObject = stream;
-            videoElement.style.display = 'block';
-            console.log('비디오 요소에 스트림 연결됨');
-            
-            // 비디오 로드 완료 대기
-            videoElement.onloadedmetadata = function() {
-                console.log('비디오 메타데이터 로드 완료');
-                videoElement.play();
-            };
-        }
+        // AR.js가 카메라를 사용할 수 있도록 스트림을 즉시 중지
+        stream.getTracks().forEach(track => track.stop());
+        
+        console.log('AR.js가 카메라를 자동으로 처리하도록 설정됨');
         
     } catch (error) {
         console.error('카메라 스트림 초기화 실패:', error);
@@ -305,17 +261,9 @@ async function initCameraStream() {
     }
 }
 
-// AR 콘텐츠 이벤트 설정
-function setupARContentEvents() {
-    console.log('AR 콘텐츠 이벤트 설정 시작...');
-    
-    const artwork = document.getElementById('artwork');
-    const description = document.getElementById('description');
-    
-    if (!artwork || !description) {
-        console.log('AR 콘텐츠 요소를 찾을 수 없음');
-        return;
-    }
+// AR 초기화 및 모션 감지 설정
+function initAR() {
+    console.log('AR 초기화 시작...');
     
     // 디바이스 방향 감지 설정
     if (window.DeviceOrientationEvent) {
@@ -333,8 +281,14 @@ function setupARContentEvents() {
         console.log('디바이스 모션 감지 지원 안됨');
     }
     
+    // 표면 감지 설정
+    setupSurfaceDetection();
+    
     // AR 요소 확인
     setTimeout(() => {
+        const artwork = document.getElementById('artwork');
+        const description = document.getElementById('description');
+        
         if (artwork) {
             console.log('AR 작품 요소 찾음:', artwork);
         } else {

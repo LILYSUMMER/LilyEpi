@@ -791,16 +791,6 @@
             });
         });
 
-        // AR 체험하기 버튼 이벤트 리스너
-        document.querySelectorAll('a[href="ar.html"]').forEach(button => {
-            button.addEventListener('click', function(e) {
-                console.log('AR 체험하기 버튼 클릭됨');
-                // 새 탭에서 열리도록 설정
-                window.open('ar.html', '_blank');
-                e.preventDefault();
-            });
-        });
-
         // 페이지 로드 시 애니메이션
         window.addEventListener('load', function() {
             const elements = document.querySelectorAll('.hero__title, .hero__subtitle, .hero__cta');
