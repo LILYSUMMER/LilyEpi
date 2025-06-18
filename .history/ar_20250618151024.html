@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    
+    <!-- Primary Meta Tags -->
+    <title>Epispace AR 체험 - 제주 이중섭 미술관 AR 체험</title>
+    <meta name="title" content="Epispace AR 체험 - 제주 이중섭 미술관 AR 체험">
+    <meta name="description" content="NFC와 AR 기술을 활용한 제주 이중섭 미술관 인터랙티브 체험. 스마트폰으로 실제 위치에서 AR 콘텐츠를 체험해보세요.">
+    <meta name="keywords" content="제주, AR, NFC, 이중섭, 미술관, 체험, 관광, 문화, 기술, 인터랙티브">
+    <meta name="author" content="Epispace">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Korean">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://epispace.kr/ar">
+    <meta property="og:title" content="Epispace AR 체험 - 제주 이중섭 미술관 AR 체험">
+    <meta property="og:description" content="NFC와 AR 기술을 활용한 제주 이중섭 미술관 인터랙티브 체험. 스마트폰으로 실제 위치에서 AR 콘텐츠를 체험해보세요.">
+    <meta property="og:image" content="https://epispace.kr/assets/ar-experience.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Epispace">
+    <meta property="og:locale" content="ko_KR">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://epispace.kr/ar">
+    <meta property="twitter:title" content="Epispace AR 체험 - 제주 이중섭 미술관 AR 체험">
+    <meta property="twitter:description" content="NFC와 AR 기술을 활용한 제주 이중섭 미술관 인터랙티브 체험. 스마트폰으로 실제 위치에서 AR 콘텐츠를 체험해보세요.">
+    <meta property="twitter:image" content="https://epispace.kr/assets/ar-experience.jpg">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Epispace AR">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://epispace.kr/ar">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://aframe.io">
+    <link rel="preconnect" href="https://raw.githack.com">
+    <link rel="dns-prefetch" href="https://aframe.io">
+    <link rel="dns-prefetch" href="https://raw.githack.com">
+    
+    <!-- AR Libraries -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Structured Data for AR Experience -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "TouristAttraction",
+        "name": "제주 이중섭 미술관 AR 체험",
+        "description": "NFC와 AR 기술을 활용한 이중섭 미술관 인터랙티브 체험",
+        "url": "https://epispace.kr/ar",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "제주시",
+            "addressRegion": "제주특별자치도",
+            "addressCountry": "KR"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 33.236691,
+            "longitude": 126.481064
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "KRW",
+            "availability": "https://schema.org/InStock"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "150"
+        }
+    }
+    </script>
+</head>
+<body class="ar-mode">
+    <!-- 언어 선택 화면 -->
+    <div id="language-screen" class="fullscreen-overlay">
+        <div class="language-content">
+            <h2 class="language-title">Select Language / 言語選択 / 选择语言</h2>
+            <div class="language-buttons">
+                <button class="language-button" data-lang="ko">한국어</button>
+                <button class="language-button" data-lang="en">English</button>
+                <button class="language-button" data-lang="ja">日本語</button>
+                <button class="language-button" data-lang="zh">中文</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 스플래시 화면 -->
+    <div id="splash-screen" class="fullscreen-overlay hidden">
+        <div class="splash-content">
+            <h1 class="logo">EPISPACE</h1>
+            <p class="subtitle" data-i18n="subtitle">첫번째 에피소드 : 이중섭</p>
+            <div id="start-ui" class="start-ui hidden">
+                <button id="start-experience" class="start-button" data-i18n="start">시작하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NFC 안내 화면 -->
+    <div id="nfc-screen" class="fullscreen-overlay hidden">
+        <div class="instruction-box">
+            <!-- <img src="assets/nfc-icon.png" alt="NFC 태그" class="instruction-icon"> -->
+            <div class="instruction-icon">📱</div>
+            <p data-i18n="nfc-instruction">NFC 태그를 찍어주세요</p>
+        </div>
+    </div>
+
+    <!-- 권한 요청 화면 -->
+    <div id="permission-screen" class="fullscreen-overlay hidden">
+        <div class="instruction-box">
+            <h3 data-i18n="permission-title">권한 요청</h3>
+            <p data-i18n="permission-description">AR 체험을 위해 다음 권한이 필요합니다:</p>
+            <ul class="permission-list">
+                <li data-i18n="camera-permission">📷 카메라 - AR 콘텐츠 표시</li>
+                <li data-i18n="motion-permission">📱 동작 센서 - 기기 움직임 감지</li>
+            </ul>
+            <button id="request-permissions" class="start-button" data-i18n="allow-permissions">권한 허용</button>
+        </div>
+    </div>
+
+    <!-- AR 시작 전 안내 화면 -->
+    <div id="start-screen" class="fullscreen-overlay hidden">
+        <div class="instruction-box">
+            <p data-i18n="ar-instruction">휴대폰을 조작하여 AR 콘텐츠를 체험하세요</p>
+            <button id="start-ar" class="start-button" data-i18n="start-ar">AR 시작하기</button>
+        </div>
+    </div>
+
+    <!-- AR 씬 -->
+    <a-scene id="ar-scene"
+             vr-mode-ui="enabled: false"
+             embedded
+             arjs="sourceType: webcam; facingMode: environment;">
+        
+        <!-- 카메라 영상 배경 -->
+        <!-- <a-sky id="camera-background" 
+               material="shader: flat; src: #camera-video; transparent: true;">
+        </a-sky> -->
+        
+        <!-- 카메라 -->
+        <a-camera id="camera" 
+                  look-controls="enabled: false"
+                  arjs-look-controls="smoothingFactor: 0.1"
+                  position="0 1.6 0">
+            
+            <!-- AR 커서 (표면 감지용) -->
+            <a-cursor id="cursor" 
+                      raycaster="objects: .surface"
+                      animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
+                      animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
+                      event-set__1="_event: mouseenter; color: #FFFFFF"
+                      event-set__2="_event: mouseleave; color: #000000"
+                      event-set__3="_event: click; color: #FF0000">
+            </a-cursor>
+        </a-camera>
+
+        <!-- 표면 감지용 평면 (투명) -->
+        <a-plane id="surface-plane"
+                 class="surface"
+                 material="color: transparent; opacity: 0"
+                 position="0 0 -5"
+                 rotation="-90 0 0"
+                 width="10"
+                 height="10"
+                 visible="false">
+        </a-plane>
+
+        <!-- AR 콘텐츠 -->
+        <a-entity id="ar-content">
+            <!-- 이중섭 작품 모델 -->
+            <a-box id="artwork"
+                   class="clickable"
+                   material="color: #8B4513"
+                   scale="0.5 0.5 0.5"
+                   position="0 0 -3"
+                   animation="property: rotation; to: 0 360 0; loop: true; dur: 10000"
+                   visible="true"
+                   gesture-detector>
+            </a-box>
+            
+            <!-- 설명 텍스트 -->
+            <a-text id="description"
+                    value="이중섭 - 황소"
+                    position="0 1 -3"
+                    align="center"
+                    color="#FFFFFF"
+                    font="kelsonsans"
+                    scale="0.5 0.5 0.5"
+                    visible="true">
+            </a-text>
+        </a-entity>
+    </a-scene>
+
+    <!-- 카메라 비디오 요소 (AR.js가 사용) -->
+    <!-- <video id="camera-video" 
+           autoplay 
+           muted 
+           playsinline 
+           style="display: none;">
+    </video> -->
+
+    <script src="script.js"></script>
+    <script>
+    if (navigator.xr && navigator.xr.isSessionSupported) {
+      navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+        if (supported) {
+          // 시작 버튼 클릭 시
+          navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['local', 'hit-test'] })
+            .then(onSessionStarted);
+        } else {
+          // iOS fallback
+          document.getElementById('model-viewer').style.display = 'block';
+        }
+      });
+    }
+    </script>
+</body>
+</html> 

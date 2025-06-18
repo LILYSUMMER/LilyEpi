@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>MindAR WebAR Minimal Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.7.0/dist/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    body { margin:0; background:#000; }
+    #ar-ui { position:fixed;top:20px;left:0;width:100%;z-index:10;text-align:center;}
+    #ar-ui button {font-size:1.1em;padding:0.7em 1.5em;margin:0 0.5em;border:none;border-radius:8px;background:#1976d2;color:#fff;}
+    #ar-ui button:active {background:#1565c0;}
+  </style>
+</head>
+<body>
+  <div id="ar-ui">
+    <button id="start">Start AR</button>
+    <button id="stop">Stop AR</button>
+    <div style="color:#fff;font-size:0.95em;margin-top:8px;">HTTPS 환경 필요 (로컬은 http://localhost 허용)</div>
+  </div>
+  <mindar-image imageTargetSrc="target.mind" uiScanning="no" id="mindar">
+    <a-scene mindar-image embedded color-space="sRGB" vr-mode-ui="enabled:false" device-orientation-permission-ui="enabled:false">
+      <a-assets></a-assets>
+      <a-entity mindar-image-target="targetIndex:0">
+        <a-box color="#2196f3" depth="0.5" height="0.5" width="0.5" position="0 0.25 0"></a-box>
+      </a-entity>
+      <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+    </a-scene>
+  </mindar-image>
+  <script>
+    const mindar = document.querySelector("#mindar");
+    document.getElementById("start").onclick = ()=>mindar.start();
+    document.getElementById("stop").onclick = ()=>{mindar.stop(); mindar.pause();};
+  </script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+// 기존 AR 관련 코드는 ar.js로 이동됨. 필요시 다국어/공통 UI만 유지.
+
 // AR 요소들의 상태를 관리하는 객체
 const arElements = {
     artwork: {

@@ -1,0 +1,303 @@
+/* 전체 페이지 스타일 */
+body {
+    margin: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* AR 전용 스타일 - AR 페이지에서만 적용 */
+body.ar-mode {
+    overflow: hidden;
+}
+
+/* 전체 화면 오버레이 */
+.fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 언어 선택 화면 스타일 */
+.language-content {
+    text-align: center;
+    color: white;
+    padding: 2rem;
+}
+
+.language-title {
+    font-size: 1.8em;
+    margin-bottom: 2rem;
+    font-weight: normal;
+}
+
+.language-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.language-button {
+    padding: 1.2rem;
+    font-size: 1.2em;
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.language-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+/* 로딩 화면 스타일 */
+#loading-screen {
+    background: #4A4A4A;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-content p {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+/* 스플래시 화면 스타일 */
+#splash-screen {
+    background: #4A4A4A;
+    cursor: pointer;
+}
+
+.splash-content {
+    text-align: center;
+    color: white;
+}
+
+.logo {
+    font-size: 3.5em;
+    font-weight: bold;
+    margin: 0;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    margin: 0;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+
+.start-ui {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+.start-ui.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* AR 씬 스타일 */
+#ar-scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* 안내 박스 스타일 */
+.instruction-box {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 80%;
+    color: #333;
+}
+
+.instruction-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+}
+
+.instruction-box p {
+    margin: 0;
+    font-size: 1.2em;
+    color: #333;
+    line-height: 1.5;
+}
+
+.instruction-box h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5em;
+    color: #667eea;
+}
+
+/* 권한 목록 스타일 */
+.permission-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.permission-list li {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #eee;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+}
+
+.permission-list li:last-child {
+    border-bottom: none;
+}
+
+.permission-list li::before {
+    content: "✓";
+    color: #00d4aa;
+    font-weight: bold;
+    margin-right: 0.5rem;
+    font-size: 1.2em;
+}
+
+/* 시작 버튼 스타일 */
+.start-button {
+    margin-top: 1.5rem;
+    padding: 1rem 2.5rem;
+    font-size: 1.2em;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.start-button:hover {
+    background-color: #5a6fd8;
+    transform: scale(1.05);
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+    .language-title {
+        font-size: 1.5em;
+        margin-bottom: 1.5rem;
+    }
+
+    .language-button {
+        padding: 1rem;
+        font-size: 1em;
+    }
+
+    .logo {
+        font-size: 2.5em;
+    }
+
+    .subtitle {
+        font-size: 1em;
+        margin-bottom: 1.5rem;
+    }
+
+    .instruction-box {
+        padding: 1.5rem;
+        max-width: 90%;
+    }
+
+    .permission-list li {
+        font-size: 1em;
+        padding: 0.6rem 0;
+    }
+
+    .start-button {
+        padding: 0.8rem 2rem;
+        font-size: 1.1em;
+    }
+}
+
+#ar-canvas {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#start-btn {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    z-index: 10;
+    padding: 1.2rem 2.5rem;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+#model-viewer {
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    background: #000;
+} 
