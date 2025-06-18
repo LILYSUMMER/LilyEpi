@@ -1,5 +1,5 @@
-import * as THREE from './assets/three.module.js';
-import { GLTFLoader } from './assets/GLTFLoader.js';
+import * as THREE from './assets/three/three.module.js';
+import { GLTFLoader } from './assets/three/GLTFLoader.js';
 
 const startBtn = document.getElementById('start-btn');
 const canvas = document.getElementById('ar-canvas');
