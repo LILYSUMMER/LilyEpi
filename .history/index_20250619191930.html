@@ -271,17 +271,20 @@
             <!-- Timeline Steps -->
             <div class="relative">
                 <!-- Connection Line -->
-                <div class="hidden"></div>
+                <div class="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 transform -translate-y-1/2 z-0"></div>
                 
-                <div class="grid md:grid-cols-3 gap-12 relative z-10">
+                <div class="grid md:grid-cols-3 gap-8 relative z-10">
                     <!-- Step 1: NFC 태그 스캔 -->
-                    <div class="text-center scroll-fade bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="text-center scroll-fade">
                         <div class="relative mb-8">
                             <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-xl transform hover:scale-110 transition-transform duration-300">
                                 <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
+                            </div>
+                            <div class="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
+                                1
                             </div>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-4">NFC 태그 스캔</h3>
@@ -296,13 +299,16 @@
                     </div>
 
                     <!-- Step 2: AR 미션·포토존 체험 -->
-                    <div class="text-center scroll-fade bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="text-center scroll-fade">
                         <div class="relative mb-8">
                             <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto shadow-xl transform hover:scale-110 transition-transform duration-300">
                                 <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
                                 </svg>
+                            </div>
+                            <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
+                                2
                             </div>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-4">AR 미션·포토존 체험</h3>
@@ -317,13 +323,16 @@
                     </div>
 
                     <!-- Step 3: 리워드 쿠폰 자동 발급 -->
-                    <div class="text-center scroll-fade bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="text-center scroll-fade">
                         <div class="relative mb-8">
                             <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto shadow-xl transform hover:scale-110 transition-transform duration-300">
                                 <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
+                            </div>
+                            <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
+                                3
                             </div>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-900 mb-4">리워드 쿠폰 자동 발급</h3>
@@ -460,14 +469,11 @@
                 지속가능한 관광 발전을 위한 파트너십을 기다립니다.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center scroll-fade">
-                <a href="mailto:contact@epispace.kr?subject=Epispace 협업 문의&body=안녕하세요, Epispace와의 협업을 문의드립니다.%0D%0A%0D%0A기관/회사명:%0D%0A담당자명:%0D%0A연락처:%0D%0A협업 희망 분야:%0D%0A%0D%0A협업 제안 내용:%0D%0A%0D%0A감사합니다." class="bg-epispace text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-orange-500 transition-colors inline-block text-center">
+                <a href="mailto:contact@epispace.kr?subject=Epispace 협업 문의&body=안녕하세요, Epispace와의 협업을 문의드립니다.%0D%0A%0D%0A기관/회사명:%0D%0A담당자명:%0D%0A연락처:%0D%0A협업 희망 분야:%0D%0A%0D%0A협업 제안 내용:%0D%0A%0D%0A감사합니다." class="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-orange-600 transition-colors inline-block">
                     협업 문의하기
                 </a>
-                <a href="https://drive.google.com/file/d/1mcovaTRW_W4P7u6S3iOnKjYqjgqBYPL5/view?usp=share_link" target="_blank" rel="noopener noreferrer" class="border border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors inline-block text-center group">
+                <a href="./assets/epispace-business-proposal.pdf" target="_blank" class="border border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors inline-block">
                     사업 제안서 PDF 다운로드
-                    <svg class="w-5 h-5 inline-block ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
                 </a>
             </div>
         </div>
