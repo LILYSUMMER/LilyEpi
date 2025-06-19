@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Epispace | 앱 설치 없이 즐기는 제주 AR 여행</title>
+  <meta name="description" content="앱 설치 없이 브라우저에서 바로 즐기는 Jeju AR 여행, Epispace">
+  <meta name="theme-color" content="#FF6B00">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans KR', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: '#FF6B00',
+            secondary: '#00B894',
+            dark: '#222222',
+            light: '#F5F5F5',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Noto Sans KR', 'Inter', sans-serif; }
+    .nav-bg {
+      transition: background 0.3s;
+      background: transparent;
+    }
+    .nav-bg.scrolled {
+      background: #fff;
+      box-shadow: 0 2px 8px 0 rgba(34,34,34,0.04);
+    }
+  </style>
+</head>
+<body class="bg-light text-dark">
+  <!-- Sticky Navigation -->
+  <nav id="mainNav" class="nav-bg fixed top-0 left-0 w-full z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
+      <span class="text-2xl font-bold text-primary">Epispace</span>
+      <div class="hidden md:flex gap-8 text-base font-medium">
+        <a href="#features" class="hover:text-primary transition">핵심 기능</a>
+        <a href="#how" class="hover:text-primary transition">작동 방식</a>
+        <a href="#testimonials" class="hover:text-primary transition">후기</a>
+        <a href="#contact" class="hover:text-primary transition">문의</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center justify-center pt-24 pb-16 bg-light overflow-hidden">
+    <!-- 배경 이미지 (WebP, lazy) -->
+    <img src="<placeholder>" data-src="/assets/jeju-hero-bg.webp" alt="제주 AR 배경" class="absolute inset-0 w-full h-full object-cover object-center opacity-80 -z-10" loading="lazy" />
+    <!-- 그라디언트 오버레이 -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-light -z-10"></div>
+    <!-- Lottie 애니메이션 Placeholder -->
+    <div class="absolute right-8 bottom-8 w-40 h-40 md:w-64 md:h-64 pointer-events-none select-none">
+      <div class="w-full h-full flex items-center justify-center bg-white/30 rounded-full">
+        <span class="text-xs text-gray-500">Lottie <br> <placeholder></span>
+      </div>
+    </div>
+    <!-- Hero Content -->
+    <div class="relative z-10 text-center max-w-2xl mx-auto">
+      <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-6 text-white drop-shadow-lg">
+        앱 설치 없이<br>브라우저에서 바로 즐기는<br><span class="text-primary">Jeju AR 여행</span>
+      </h1>
+      <p class="text-lg md:text-2xl text-light mb-8 font-medium">
+        미래형 제주 관광, Epispace와 함께 경험하세요.
+      </p>
+      <a href="#features" class="inline-block bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:bg-orange-600 transition">
+        체험 시작하기
+      </a>
+    </div>
+  </section>
+
+  <script>
+    // Sticky Nav 색상 전환
+    window.addEventListener('scroll', function() {
+      const nav = document.getElementById('mainNav');
+      if(window.scrollY > 10) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    });
+  </script>
+</body>
+</html> 

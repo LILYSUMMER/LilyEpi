@@ -171,7 +171,7 @@
 </head>
 <body class="font-sans text-gray-800">
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-sm z-50 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
@@ -188,22 +188,20 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
-        <div class="absolute inset-0 bg-[url('assets/jeju-hero-bg.png')] bg-cover bg-center opacity-80"></div>
+        <div class="absolute inset-0 bg-[url('assets/jeju-hero-bg.png')] bg-cover bg-center"></div>
         <div class="hero-gradient"></div>
-        <div class="hero-content flex flex-col items-center justify-center min-h-screen text-center">
-            <div class="bg-black/40 backdrop-blur-sm px-8 py-6 rounded-2xl">
-                <h1 class="hero-title">
-                    제주의 새로운 시선<br>
-                    AR로 다시 보다
-                </h1>
-                <p class="hero-subtitle">
-                    앱 설치 없이 브라우저에서 바로 만나는<br>
-                    신개념 제주 관광 경험
-                </p>
-                <a href="#demo" class="cta-button">
-                    체험 시작하기
-                </a>
-            </div>
+        <div class="hero-content flex flex-col items-center justify-center min-h-screen">
+            <h1 class="hero-title text-center">
+                제주의 새로운 시선<br>
+                AR로 다시 보다
+            </h1>
+            <p class="hero-subtitle text-center">
+                앱 설치 없이 브라우저에서 바로 만나는<br>
+                신개념 제주 관광 경험
+            </p>
+            <a href="#demo" class="cta-button">
+                체험 시작하기
+            </a>
         </div>
     </section>
 
