@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR AR 비디오 플레이어</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        #startButton {
+            padding: 20px 40px;
+            font-size: 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 20px;
+        }
+        
+        #startButton:hover {
+            background: #0056b3;
+        }
+        
+        #startButton:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        #status {
+            margin: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        #container {
+            width: 100%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h1>WebXR AR 비디오 플레이어</h1>
+        <p id="status">WebXR 지원 확인 중...</p>
+        <button id="startButton" disabled>AR 시작</button>
+    </div>
+    
+    <div id="container"></div>
+    
+    <script type="module">
+        // Three.js import (CDN 사용)
+        import * as THREE from 'https://cdn.skypack.dev/three@0.168.0';
+        
+        class ARVideoPlayer {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.video = null;
+                this.videoMesh = null;
+                this.anchor = null;
+                this.anchorSpace = null;
+                this.session = null;
+                this.isSessionActive = false;
+                this.planeDetected = false;
+                
+                // 16:9 비율, 대각선 1m 크기 계산
+                const diagonal = 1.0; // 1미터
+                const aspectRatio = 16 / 9;
+                this.videoWidth = diagonal * Math.cos(Math.atan(9/16));
+                this.videoHeight = this.videoWidth / aspectRatio;
+                
+                this.init();
+            }
+            
+            async init() {
+                // WebXR 지원 확인
+                if (!navigator.xr) {
+                    this.updateStatus('이 브라우저는 WebXR을 지원하지 않습니다');
+                    return;
+                }
+                
+                try {
+                    // immersive-ar 세션 지원 확인
+                    const supported = await navigator.xr.isSessionSupported('immersive-ar');
+                    if (!supported) {
+                        this.updateStatus('이 기기는 AR을 지원하지 않습니다');
+                        return;
+                    }
+                    
+                    this.updateStatus('AR 사용 가능');
+                    this.enableStartButton();
+                } catch (error) {
+                    console.error('WebXR 초기화 오류:', error);
+                    this.updateStatus('WebXR 초기화에 실패했습니다');
+                }
+            }
+            
+            updateStatus(message) {
+                document.getElementById('status').textContent = message;
+            }
+            
+            enableStartButton() {
+                const button = document.getElementById('startButton');
+                button.disabled = false;
+                button.onclick = () => this.startARSession();
+            }
+            
+            async startARSession() {
+                try {
+                    this.updateStatus('AR 세션 시작 중...');
+                    
+                    // WebXR 세션 요청 (평면 탐지 활성화)
+                    this.session = await navigator.xr.requestSession('immersive-ar', {
+                        requiredFeatures: ['local'],
+                        optionalFeatures: ['plane-detection', 'anchors']
+                    });
+                    
+                    this.isSessionActive = true;
+                    
+                    // 세션 종료 이벤트 리스너
+                    this.session.addEventListener('end', () => {
+                        this.onSessionEnd();
+                    });
+                    
+                    // Three.js 초기화
+                    await this.initThreeJS();
+                    
+                    // 비디오 설정
+                    this.setupVideo();
+                    
+                    // 평면 탐지 시작
+                    this.startPlaneDetection();
+                    
+                    this.updateStatus('AR 세션 활성화됨 - 바닥을 찾는 중...');
+                    
+                } catch (error) {
+                    console.error('AR 세션 시작 오류:', error);
+                    this.updateStatus('AR 세션 시작에 실패했습니다');
+                }
+            }
+            
+            async initThreeJS() {
+                // 씬 생성
+                this.scene = new THREE.Scene();
+                
+                // 카메라 생성
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                
+                // 렌더러 생성 및 WebXR 설정
+                this.renderer = new THREE.WebGLRenderer({ 
+                    antialias: true, 
+                    alpha: true 
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.xr.enabled = true;
+                
+                // 컨테이너에 렌더러 추가
+                const container = document.getElementById('container');
+                container.appendChild(this.renderer.domElement);
+                container.style.display = 'block';
+                
+                // UI 숨기기
+                document.getElementById('ui').style.display = 'none';
+                
+                // WebXR 세션 설정
+                await this.renderer.xr.setSession(this.session);
+                
+                // 조명 설정
+                this.setupLighting();
+                
+                // 렌더 루프 시작
+                this.renderer.setAnimationLoop(() => this.render());
+            }
+            
+            setupLighting() {
+                // 앰비언트 라이트
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
+                
+                // 디렉셔널 라이트
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(1, 1, 1);
+                this.scene.add(directionalLight);
+            }
+            
+            setupVideo() {
+                // 비디오 엘리먼트 생성
+                this.video = document.createElement('video');
+                this.video.src = './video.mp4';
+                this.video.crossOrigin = 'anonymous';
+                this.video.loop = true;
+                this.video.muted = true;
+                this.video.playsInline = true;
+                
+                // 비디오 자동 재생 시도
+                this.video.play().catch(error => {
+                    console.warn('비디오 자동 재생 실패:', error);
+                });
+            }
+            
+            createVideoMesh(position, orientation) {
+                // 비디오 텍스처 생성
+                const videoTexture = new THREE.VideoTexture(this.video);
+                videoTexture.minFilter = THREE.LinearFilter;
+                videoTexture.magFilter = THREE.LinearFilter;
+                
+                // 머티리얼 생성
+                const material = new THREE.MeshBasicMaterial({
+                    map: videoTexture,
+                    side: THREE.DoubleSide
+                });
+                
+                // 지오메트리 생성 (16:9 비율, 대각선 1m)
+                const geometry = new THREE.PlaneGeometry(this.videoWidth, this.videoHeight);
+                
+                // 메쉬 생성
+                this.videoMesh = new THREE.Mesh(geometry, material);
+                
+                // 위치 설정 (바닥에서 약간 위로, Z축 방향으로 세워서)
+                this.videoMesh.position.copy(position);
+                this.videoMesh.position.y += this.videoHeight / 2;
+                
+                // 회전 설정 (사용자를 향하도록)
+                this.videoMesh.lookAt(this.camera.position);
+                this.videoMesh.rotateY(Math.PI); // 180도 회전으로 올바른 방향 설정
+                
+                this.scene.add(this.videoMesh);
+                
+                this.updateStatus('비디오 메쉬가 배치되었습니다');
+            }
+            
+            startPlaneDetection() {
+                // 프레임마다 평면 탐지 확인
+                this.session.requestReferenceSpace('local').then(refSpace => {
+                    this.referenceSpace = refSpace;
+                });
+            }
+            
+            render() {
+                if (!this.isSessionActive) return;
+                
+                const frame = this.renderer.xr.getFrame();
+                if (!frame) return;
+                
+                // 평면이 아직 탐지되지 않았다면 탐지 시도
+                if (!this.planeDetected && frame.detectedPlanes) {
+                    this.detectHorizontalPlanes(frame);
+                }
+                
+                // 씬 렌더링
+                this.renderer.render(this.scene, this.camera);
+            }
+            
+            async detectHorizontalPlanes(frame) {
+                const planes = frame.detectedPlanes;
+                
+                for (const plane of planes) {
+                    // 수평 평면만 선택
+                    if (plane.orientation === 'horizontal') {
+                        console.log('수평 평면 탐지됨');
+                        
+                        try {
+                            // 평면의 중앙 위치 계산
+                            const pose = frame.getPose(plane.planeSpace, this.referenceSpace);
+                            if (pose) {
+                                const position = new THREE.Vector3(
+                                    pose.transform.position.x,
+                                    pose.transform.position.y,
+                                    pose.transform.position.z
+                                );
+                                
+                                // XRAnchor 생성
+                                const anchor = await frame.createAnchor(pose.transform, this.referenceSpace);
+                                if (anchor) {
+                                    this.anchor = anchor;
+                                    this.planeDetected = true;
+                                    
+                                    // 비디오 메쉬 생성
+                                    this.createVideoMesh(position, pose.transform.orientation);
+                                    
+                                    console.log('앵커 생성 완료, 비디오 배치됨');
+                                    break;
+                                }
+                            }
+                        } catch (error) {
+                            console.error('앵커 생성 오류:', error);
+                        }
+                    }
+                }
+            }
+            
+            onSessionEnd() {
+                console.log('AR 세션 종료됨');
+                this.isSessionActive = false;
+                this.planeDetected = false;
+                
+                // 리소스 정리
+                this.cleanup();
+                
+                // UI 복원
+                document.getElementById('container').style.display = 'none';
+                document.getElementById('ui').style.display = 'flex';
+                this.updateStatus('AR 세션이 종료되었습니다');
+                
+                // 버튼 다시 활성화
+                this.enableStartButton();
+            }
+            
+            cleanup() {
+                // WebGL 리소스 정리
+                if (this.renderer) {
+                    this.renderer.dispose();
+                    
+                    // DOM에서 렌더러 제거
+                    const container = document.getElementById('container');
+                    if (container && this.renderer.domElement.parentNode === container) {
+                        container.removeChild(this.renderer.domElement);
+                    }
+                }
+                
+                // 씬 정리
+                if (this.scene) {
+                    this.scene.clear();
+                }
+                
+                // 비디오 정리
+                if (this.video) {
+                    this.video.pause();
+                    this.video.src = '';
+                }
+                
+                // 앵커 정리
+                if (this.anchor) {
+                    this.anchor.delete();
+                    this.anchor = null;
+                }
+                
+                // 변수 초기화
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.video = null;
+                this.videoMesh = null;
+                this.session = null;
+                this.referenceSpace = null;
+            }
+            
+            // 세션 수동 종료
+            endSession() {
+                if (this.session) {
+                    this.session.end();
+                }
+            }
+        }
+        
+        // AR 비디오 플레이어 인스턴스 생성
+        const arPlayer = new ARVideoPlayer();
+        
+        // 페이지 언로드 시 세션 정리
+        window.addEventListener('beforeunload', () => {
+            if (arPlayer) {
+                arPlayer.endSession();
+            }
+        });
+        
+    </script>
+</body>
+</html> 
