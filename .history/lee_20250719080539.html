@@ -662,67 +662,17 @@
         
         window.resetPosition = function() {
             if (app.videoScreen && app.videoPlaced) {
-                // A-Frame 애니메이션으로 부드럽게 제거
-                app.videoScreen.setAttribute('animation__scaleout', {
-                    property: 'scale',
-                    to: '0.1 0.1 0.1',
-                    dur: 400,
-                    easing: 'easeInQuad'
-                });
-                
-                setTimeout(() => {
-                    app.videoPlaced = false;
-                    app.videoScreen.setAttribute('visible', false);
-                    app.videoScreen.removeAttribute('animation');
-                    app.videoScreen.removeAttribute('animation__opacity');
-                    app.videoScreen.removeAttribute('animation__scaleout');
-                    app.videoScreen.setAttribute('scale', '1 1 1');
-                    
-                    // 고급 컨트롤러의 reset 호출 (있다면)
-                    if (app.hasAdvancedController && app.scene.components['smart-video-placer']) {
-                        app.scene.components['smart-video-placer'].reset();
-                    }
-                    
-                    app.updateStatus('📱 화면을 터치하여 비디오를 다시 배치하세요');
-                    app.debugLog('비디오 위치 초기화 완료');
-                }, 400);
+                app.videoPlaced = false;
+                app.videoScreen.setAttribute('visible', false);
+                app.updateStatus('📱 화면을 터치하여 비디오를 다시 배치하세요');
+                app.debugLog('비디오 위치 초기화');
             }
         };
         
         // 애플리케이션 시작
         let app;
-        
-        // A-Frame과 DOM이 모두 로드될 때까지 대기
-        function initializeApp() {
-            if (typeof AFRAME !== 'undefined' && document.readyState === 'complete') {
-                console.log('[AR-App] A-Frame과 DOM 로딩 완료, 앱 초기화 중...');
-                app = new ARVideoApp();
-            } else {
-                // 100ms 후 다시 시도
-                setTimeout(initializeApp, 100);
-            }
-        }
-        
-        // DOM 로딩 완료 시
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('[AR-App] DOM 로딩 완료');
-            initializeApp();
-        });
-        
-        // 모든 리소스 로딩 완료 시 (백업)
-        window.addEventListener('load', () => {
-            console.log('[AR-App] 모든 리소스 로딩 완료');
-            if (!app) {
-                initializeApp();
-            }
-        });
-        
-        // A-Frame 로딩 완료 이벤트 (백업)
-        document.addEventListener('a-frame-rendered', () => {
-            console.log('[AR-App] A-Frame 렌더링 완료');
-            if (!app) {
-                initializeApp();
-            }
+            app = new ARVideoApp();
         });
     </script>
 </body>

@@ -456,16 +456,6 @@
                 
                 this.debugLog('비디오 배치: ' + JSON.stringify(position));
                 
-                // A-Frame 특화 배치 애니메이션
-                this.animateVideoPlacement(position);
-                
-                this.videoPlaced = true;
-                
-                // 컨트롤 표시
-                document.getElementById('controls').style.display = 'block';
-            }
-            
-            animateVideoPlacement(position) {
                 // 비디오 스크린 위치 설정
                 this.videoScreen.setAttribute('position', position);
                 this.videoScreen.setAttribute('visible', true);
@@ -473,66 +463,18 @@
                 // 카메라를 향하도록 회전
                 this.videoScreen.setAttribute('look-at', '[camera]');
                 
-                // A-Frame 애니메이션 추가
-                this.videoScreen.setAttribute('scale', '0.1 0.1 0.1');
-                this.videoScreen.setAttribute('animation', {
-                    property: 'scale',
-                    to: '1 1 1',
-                    dur: 1000,
-                    easing: 'easeOutElastic'
-                });
-                
-                // 페이드 인 효과
-                setTimeout(() => {
-                    this.videoScreen.setAttribute('animation__opacity', {
-                        property: 'material.opacity',
-                        from: 0,
-                        to: 1,
-                        dur: 500,
-                        easing: 'easeOutQuad'
-                    });
-                }, 200);
-                
                 // 비디오 재생 시작
                 this.video.play().then(() => {
                     this.debugLog('비디오 재생 시작됨');
                     this.updateStatus('🎬 비디오가 배치되었습니다');
-                    
-                    // 햅틱 피드백
-                    if (navigator.vibrate) {
-                        navigator.vibrate([50, 100, 50]);
-                    }
                 }).catch(error => {
                     this.debugLog('비디오 재생 실패: ' + error.message);
                 });
-            }
-            
-            placeVideoFromEvent(event) {
-                if (this.videoPlaced) return;
                 
-                const detail = event.detail;
-                if (detail && detail.pose) {
-                    const pose = detail.pose;
-                    const position = {
-                        x: pose.transform.position.x,
-                        y: pose.transform.position.y + 0.5,
-                        z: pose.transform.position.z
-                    };
-                    this.placeVideo(position);
-                } else {
-                    // 기본 위치에 배치
-                    this.autoPlaceVideo();
-                }
-            }
-            
-            onVideoPlaced(event) {
-                this.debugLog('비디오 배치 이벤트 수신됨');
-                this.updateStatus('🎬 AR 비디오 체험을 즐기세요!');
+                this.videoPlaced = true;
                 
-                // 추가 UI 업데이트
-                setTimeout(() => {
-                    this.updateStatus('');
-                }, 3000);
+                // 컨트롤 표시
+                document.getElementById('controls').style.display = 'block';
             }
             
             onEnterAR() {
@@ -662,67 +604,17 @@
         
         window.resetPosition = function() {
             if (app.videoScreen && app.videoPlaced) {
-                // A-Frame 애니메이션으로 부드럽게 제거
-                app.videoScreen.setAttribute('animation__scaleout', {
-                    property: 'scale',
-                    to: '0.1 0.1 0.1',
-                    dur: 400,
-                    easing: 'easeInQuad'
-                });
-                
-                setTimeout(() => {
-                    app.videoPlaced = false;
-                    app.videoScreen.setAttribute('visible', false);
-                    app.videoScreen.removeAttribute('animation');
-                    app.videoScreen.removeAttribute('animation__opacity');
-                    app.videoScreen.removeAttribute('animation__scaleout');
-                    app.videoScreen.setAttribute('scale', '1 1 1');
-                    
-                    // 고급 컨트롤러의 reset 호출 (있다면)
-                    if (app.hasAdvancedController && app.scene.components['smart-video-placer']) {
-                        app.scene.components['smart-video-placer'].reset();
-                    }
-                    
-                    app.updateStatus('📱 화면을 터치하여 비디오를 다시 배치하세요');
-                    app.debugLog('비디오 위치 초기화 완료');
-                }, 400);
+                app.videoPlaced = false;
+                app.videoScreen.setAttribute('visible', false);
+                app.updateStatus('📱 화면을 터치하여 비디오를 다시 배치하세요');
+                app.debugLog('비디오 위치 초기화');
             }
         };
         
         // 애플리케이션 시작
         let app;
-        
-        // A-Frame과 DOM이 모두 로드될 때까지 대기
-        function initializeApp() {
-            if (typeof AFRAME !== 'undefined' && document.readyState === 'complete') {
-                console.log('[AR-App] A-Frame과 DOM 로딩 완료, 앱 초기화 중...');
-                app = new ARVideoApp();
-            } else {
-                // 100ms 후 다시 시도
-                setTimeout(initializeApp, 100);
-            }
-        }
-        
-        // DOM 로딩 완료 시
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('[AR-App] DOM 로딩 완료');
-            initializeApp();
-        });
-        
-        // 모든 리소스 로딩 완료 시 (백업)
-        window.addEventListener('load', () => {
-            console.log('[AR-App] 모든 리소스 로딩 완료');
-            if (!app) {
-                initializeApp();
-            }
-        });
-        
-        // A-Frame 로딩 완료 이벤트 (백업)
-        document.addEventListener('a-frame-rendered', () => {
-            console.log('[AR-App] A-Frame 렌더링 완료');
-            if (!app) {
-                initializeApp();
-            }
+            app = new ARVideoApp();
         });
     </script>
 </body>

@@ -691,38 +691,8 @@
         
         // 애플리케이션 시작
         let app;
-        
-        // A-Frame과 DOM이 모두 로드될 때까지 대기
-        function initializeApp() {
-            if (typeof AFRAME !== 'undefined' && document.readyState === 'complete') {
-                console.log('[AR-App] A-Frame과 DOM 로딩 완료, 앱 초기화 중...');
-                app = new ARVideoApp();
-            } else {
-                // 100ms 후 다시 시도
-                setTimeout(initializeApp, 100);
-            }
-        }
-        
-        // DOM 로딩 완료 시
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('[AR-App] DOM 로딩 완료');
-            initializeApp();
-        });
-        
-        // 모든 리소스 로딩 완료 시 (백업)
-        window.addEventListener('load', () => {
-            console.log('[AR-App] 모든 리소스 로딩 완료');
-            if (!app) {
-                initializeApp();
-            }
-        });
-        
-        // A-Frame 로딩 완료 이벤트 (백업)
-        document.addEventListener('a-frame-rendered', () => {
-            console.log('[AR-App] A-Frame 렌더링 완료');
-            if (!app) {
-                initializeApp();
-            }
+            app = new ARVideoApp();
         });
     </script>
 </body>
