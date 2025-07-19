@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari AR 체험</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: none;
+        }
+        
+        #video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #main-video {
+            max-width: 90%;
+            max-height: 70%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: #222;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+        
+        .info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 165, 0, 0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .welcome-message {
+            max-width: 500px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .welcome-message h2 {
+            margin: 0 0 15px 0;
+            font-size: 24px;
+            color: #fff;
+        }
+        
+        .welcome-message p {
+            margin: 0;
+            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.5;
+        }
+        
+        .feature-list {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        
+        .feature-list h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #fff;
+        }
+        
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .feature-list li {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        #three-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .loading-text {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 화면 -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2>Safari AR 체험 준비 중...</h2>
+        <div class="loading-text" id="loading-text">초기화 중...</div>
+    </div>
+    
+    <!-- 브라우저 정보 -->
+    <div class="info" id="browser-info">🍎 Safari</div>
+    
+    <!-- 모드 표시 -->
+    <div class="mode-indicator">📱 Safari 호환 모드</div>
+    
+    <!-- 3D 컨테이너 -->
+    <div id="container">
+        <div id="three-container"></div>
+    </div>
+    
+    <!-- 비디오 컨테이너 -->
+    <div id="video-container">
+        <div class="welcome-message">
+            <h2>🍎 Safari AR 체험</h2>
+            <p>Safari는 WebXR을 지원하지 않지만, 몰입감 있는 비디오 체험을 제공합니다!</p>
+            
+            <div class="feature-list">
+                <h3>✨ 체험 기능:</h3>
+                <ul>
+                    <li>HD 비디오 재생 (5.2초)</li>
+                    <li>풀스크린 모드 지원</li>
+                    <li>터치/마우스 컨트롤</li>
+                    <li>Safari 최적화</li>
+                </ul>
+            </div>
+        </div>
+        
+        <video id="main-video" controls muted playsinline>
+            <source src="assets/lee.mp4" type="video/mp4">
+            <p>비디오를 로드할 수 없습니다. 브라우저가 MP4를 지원하지 않습니다.</p>
+        </video>
+        
+        <div class="controls">
+            <button class="control-btn" onclick="toggleFullscreen()">🔍 전체화면</button>
+            <button class="control-btn" onclick="toggleVideo()">⏯️ 재생/정지</button>
+            <button class="control-btn" onclick="restartVideo()">🔄 처음부터</button>
+            <button class="control-btn" onclick="try3DMode()">🎬 3D 모드</button>
+            <a href="index.html" class="control-btn">🏠 홈으로</a>
+        </div>
+    </div>
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script>
+        // 전역 변수
+        let scene, camera, renderer, video, videoTexture, videoMesh, controls;
+        let isThreeDMode = false;
+        let initializationComplete = false;
+        
+        // 로딩 상태 업데이트
+        function updateLoadingText(text) {
+            const loadingText = document.getElementById('loading-text');
+            if (loadingText) {
+                loadingText.textContent = text;
+            }
+            console.log('Loading:', text);
+        }
+        
+        // 초기화
+        function initialize() {
+            updateLoadingText('브라우저 정보 수집 중...');
+            
+            // 브라우저 정보 표시
+            setTimeout(() => {
+                updateBrowserInfo();
+                updateLoadingText('비디오 준비 중...');
+                
+                setTimeout(() => {
+                    setupVideo();
+                    updateLoadingText('3D 엔진 준비 중...');
+                    
+                    setTimeout(() => {
+                        if (window.THREE) {
+                            setupThreeJS();
+                        } else {
+                            console.log('Three.js 사용할 수 없음, 비디오 모드만 제공');
+                        }
+                        
+                        finishLoading();
+                    }, 500);
+                }, 500);
+            }, 1000);
+        }
+        
+        function updateBrowserInfo() {
+            const ua = navigator.userAgent;
+            const isMobile = /iPhone|iPad|iPod|Android/.test(ua);
+            const browserInfo = document.getElementById('browser-info');
+            
+            if (isMobile) {
+                browserInfo.textContent = '🍎 Safari (모바일)';
+            } else {
+                browserInfo.textContent = '🍎 Safari (데스크톱)';
+            }
+            
+            console.log('User Agent:', ua);
+        }
+        
+        function setupVideo() {
+            const video = document.getElementById('main-video');
+            
+            // 비디오 이벤트 리스너
+            video.addEventListener('loadeddata', function() {
+                console.log('비디오 로드 완료');
+                updateLoadingText('비디오 로드 완료');
+            });
+            
+            video.addEventListener('error', function(e) {
+                console.error('비디오 로드 실패:', e);
+                updateLoadingText('비디오 로드 실패');
+            });
+            
+            video.addEventListener('canplay', function() {
+                console.log('비디오 재생 준비 완료');
+            });
+            
+            // 자동 재생 시도 (음소거 상태)
+            video.play().catch(error => {
+                console.log('자동 재생 실패 (사용자 상호작용 필요):', error);
+            });
+        }
+        
+        function setupThreeJS() {
+            try {
+                updateLoadingText('3D 씬 생성 중...');
+                
+                // 씬 생성
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x000000);
+                
+                // 카메라 생성
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
+                
+                // 렌더러 생성
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                
+                const container = document.getElementById('three-container');
+                container.appendChild(renderer.domElement);
+                
+                // 조명 추가
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 10, 5);
+                scene.add(directionalLight);
+                
+                // 비디오 텍스처 생성
+                video = document.getElementById('main-video');
+                videoTexture = new THREE.VideoTexture(video);
+                videoTexture.minFilter = THREE.LinearFilter;
+                videoTexture.magFilter = THREE.LinearFilter;
+                
+                // 비디오 스크린 메시
+                const screenGeometry = new THREE.PlaneGeometry(4, 2.25);
+                const screenMaterial = new THREE.MeshBasicMaterial({ 
+                    map: videoTexture,
+                    side: THREE.DoubleSide
+                });
+                
+                videoMesh = new THREE.Mesh(screenGeometry, screenMaterial);
+                videoMesh.position.z = -2;
+                scene.add(videoMesh);
+                
+                // 컨트롤 추가
+                if (THREE.OrbitControls) {
+                    controls = new THREE.OrbitControls(camera, renderer.domElement);
+                    controls.enableDamping = true;
+                    controls.dampingFactor = 0.05;
+                    controls.enableZoom = true;
+                    controls.enablePan = false;
+                }
+                
+                // 렌더 루프 시작
+                animate();
+                
+                // 리사이즈 이벤트
+                window.addEventListener('resize', onWindowResize);
+                
+                updateLoadingText('3D 모드 준비 완료');
+                console.log('Three.js 초기화 완료');
+                
+            } catch (error) {
+                console.error('Three.js 초기화 실패:', error);
+                updateLoadingText('3D 모드 초기화 실패 (비디오 모드 제공)');
+            }
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (controls) {
+                controls.update();
+            }
+            
+            if (videoMesh && isThreeDMode) {
+                videoMesh.rotation.y += 0.001;
+            }
+            
+            if (renderer && scene && camera) {
+                renderer.render(scene, camera);
+            }
+        }
+        
+        function onWindowResize() {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        
+        function finishLoading() {
+            updateLoadingText('완료!');
+            
+            setTimeout(() => {
+                const loading = document.getElementById('loading');
+                loading.style.opacity = '0';
+                
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    document.getElementById('video-container').style.display = 'flex';
+                    initializationComplete = true;
+                    console.log('초기화 완료');
+                }, 500);
+            }, 500);
+        }
+        
+        // 컨트롤 함수들
+        function toggleFullscreen() {
+            const video = document.getElementById('main-video');
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            } else if (video.mozRequestFullScreen) {
+                video.mozRequestFullScreen();
+            } else if (video.msRequestFullscreen) {
+                video.msRequestFullscreen();
+            }
+        }
+        
+        function toggleVideo() {
+            const video = document.getElementById('main-video');
+            if (video.paused) {
+                video.play().catch(error => {
+                    console.log('재생 실패:', error);
+                    alert('비디오 재생을 위해 화면을 터치해주세요.');
+                });
+            } else {
+                video.pause();
+            }
+        }
+        
+        function restartVideo() {
+            const video = document.getElementById('main-video');
+            video.currentTime = 0;
+            video.play().catch(error => {
+                console.log('재생 실패:', error);
+                alert('비디오 재생을 위해 화면을 터치해주세요.');
+            });
+        }
+        
+        function try3DMode() {
+            if (!window.THREE || !renderer) {
+                alert('3D 모드를 사용할 수 없습니다.\n\n3D 엔진 로딩에 실패했거나 지원되지 않는 브라우저입니다.');
+                return;
+            }
+            
+            isThreeDMode = !isThreeDMode;
+            
+            if (isThreeDMode) {
+                // 3D 모드 활성화
+                document.getElementById('video-container').style.display = 'none';
+                document.getElementById('container').style.display = 'block';
+                alert('3D 모드 활성화!\n\n마우스나 터치로 시점을 회전해보세요.');
+            } else {
+                // 비디오 모드로 복귀
+                document.getElementById('container').style.display = 'none';
+                document.getElementById('video-container').style.display = 'flex';
+            }
+        }
+        
+        // 에러 처리
+        window.addEventListener('error', function(error) {
+            console.error('Global error:', error);
+            const loading = document.getElementById('loading');
+            if (loading && loading.style.display !== 'none') {
+                updateLoadingText('로딩 실패 - 비디오 모드로 전환');
+                setTimeout(finishLoading, 1000);
+            }
+        });
+        
+        // 페이지 로드 완료 후 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
+        } else {
+            initialize();
+        }
+        
+    </script>
+</body>
+</html> 
