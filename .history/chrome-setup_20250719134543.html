@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome WebXR 설정 가이드</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .step {
+            background: white;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4285f4;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .step h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #e8eaed;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: #1a73e8;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: #d1edff;
+            border: 1px solid #0066cc;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌟 Chrome WebXR 설정 가이드</h1>
+    
+    <div class="warning">
+        <strong>⚠️ 중요:</strong> macOS Safari는 WebXR을 지원하지 않습니다. Chrome을 사용해주세요!
+    </div>
+    
+    <div class="step">
+        <h3>1️⃣ Chrome에서 WebXR 활성화</h3>
+        <p>Chrome 주소창에 다음 입력:</p>
+        <div class="code">chrome://flags</div>
+        <p><strong>검색할 항목들:</strong></p>
+        <ul>
+            <li><code>WebXR Device API</code> → <strong>Enabled</strong></li>
+            <li><code>WebXR Incubations</code> → <strong>Enabled</strong></li>
+            <li><code>OpenXR support</code> → <strong>Enabled</strong></li>
+        </ul>
+        <p>설정 후 Chrome 재시작 필수!</p>
+    </div>
+    
+    <div class="step">
+        <h3>2️⃣ Chrome에서 테스트</h3>
+        <a href="/webxr-test.html" class="button">WebXR 진단 테스트</a>
+        <a href="/webxr-world-tracker.html" class="button">메인 AR 앱</a>
+    </div>
+    
+    <div class="step">
+        <h3>3️⃣ 모바일에서 테스트 (진짜 AR)</h3>
+        <p><strong>Android Chrome:</strong></p>
+        <div class="code">http://172.30.1.49:8080/webxr-test.html</div>
+        
+        <p><strong>iPhone Safari:</strong></p>
+        <div class="code">http://172.30.1.49:8080/webxr-test.html</div>
+        
+        <div class="warning">
+            모바일과 PC가 같은 Wi-Fi에 연결되어 있어야 합니다.
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>4️⃣ iPhone Safari 설정 (iOS 17.4+)</h3>
+        <p><strong>설정 경로:</strong></p>
+        <ol>
+            <li>설정 → Safari</li>
+            <li>고급 → 실험적 기능</li>
+            <li>"WebXR Device API" 활성화</li>
+            <li>"WebXR Gamepad Support" 활성화</li>
+        </ol>
+    </div>
+    
+    <div class="step">
+        <h3>5️⃣ Android Chrome 설정</h3>
+        <p><strong>Chrome flags 설정:</strong></p>
+        <div class="code">chrome://flags</div>
+        <ul>
+            <li><code>WebXR Device API</code> → Enabled</li>
+            <li><code>WebXR AR Module</code> → Enabled</li>
+        </ul>
+    </div>
+    
+    <div class="success">
+        <h3>🎯 예상 결과</h3>
+        <p><strong>PC Chrome:</strong> WebXR API 지원, AR 세션 지원 안됨 (카메라 없음)</p>
+        <p><strong>Android Chrome:</strong> 모든 테스트 통과 예상</p>
+        <p><strong>iPhone Safari:</strong> iOS 17.4+에서 대부분 통과 예상</p>
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <h3>🚀 테스트 순서</h3>
+        <ol style="text-align: left; display: inline-block;">
+            <li>Chrome flags 설정 후 재시작</li>
+            <li>PC Chrome에서 WebXR 진단 테스트</li>
+            <li>모바일에서 실제 AR 테스트</li>
+            <li>문제 발생 시 로그 확인</li>
+        </ol>
+    </div>
+    
+    <script>
+        // 현재 브라우저 감지
+        function detectBrowser() {
+            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+            const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+            const isFirefox = /Firefox/.test(navigator.userAgent);
+            
+            if (isSafari && !navigator.userAgent.includes('Mobile')) {
+                document.body.insertAdjacentHTML('afterbegin', `
+                    <div style="background: #ffebee; border: 2px solid #f44336; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #d32f2f; margin-top: 0;">❌ macOS Safari 감지됨!</h3>
+                        <p><strong>WebXR이 지원되지 않습니다.</strong> Chrome을 사용해주세요.</p>
+                    </div>
+                `);
+            } else if (isChrome) {
+                document.body.insertAdjacentHTML('afterbegin', `
+                    <div style="background: #e8f5e8; border: 2px solid #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #2e7d32; margin-top: 0;">✅ Chrome 감지됨!</h3>
+                        <p>WebXR 설정 후 테스트 가능합니다.</p>
+                    </div>
+                `);
+            }
+        }
+        
+        detectBrowser();
+        
+        // 모바일 감지
+        if (/Android|iPhone|iPad/.test(navigator.userAgent)) {
+            document.body.insertAdjacentHTML('afterbegin', `
+                <div style="background: #e3f2fd; border: 2px solid #2196f3; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #1976d2; margin-top: 0;">📱 모바일 디바이스 감지됨!</h3>
+                    <p>실제 AR 기능을 테스트할 수 있습니다.</p>
+                </div>
+            `);
+        }
+    </script>
+</body>
+</html> 

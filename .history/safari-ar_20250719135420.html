@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari 호환 AR 체험</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #fallback-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #fallback-video {
+            max-width: 90%;
+            max-height: 60%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+        
+        .browser-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .ar-mode {
+            background: rgba(0, 255, 0, 0.8) !important;
+        }
+        
+        .fallback-mode {
+            background: rgba(255, 165, 0, 0.8) !important;
+        }
+        
+        #three-scene {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 화면 -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2>AR 체험 준비 중...</h2>
+        <p>브라우저 호환성 확인 중</p>
+    </div>
+    
+    <!-- 브라우저 정보 -->
+    <div class="browser-info" id="browser-info"></div>
+    
+    <!-- 모드 표시 -->
+    <div class="mode-indicator" id="mode-indicator">준비 중...</div>
+    
+    <!-- 메인 컨테이너 -->
+    <div id="container">
+        <!-- Three.js 씬 -->
+        <div id="three-scene"></div>
+    </div>
+    
+    <!-- Safari 폴백 모드 -->
+    <div id="fallback-mode">
+        <div class="info-panel">
+            <button class="close-btn" onclick="hideFallbackInfo()">×</button>
+            <h2>🍎 Safari 호환 모드</h2>
+            <p>Safari는 WebXR을 지원하지 않지만,<br>3D 비디오 체험을 제공합니다!</p>
+            <div style="margin: 20px 0;">
+                <strong>✨ 기능:</strong><br>
+                • 3D 환경에서 비디오 재생<br>
+                • 마우스/터치로 시점 회전<br>
+                • 몰입감 있는 영상 체험
+            </div>
+        </div>
+        
+        <video id="fallback-video" controls muted>
+            <source src="assets/lee.mp4" type="video/mp4">
+            비디오를 로드할 수 없습니다.
+        </video>
+        
+        <div class="controls">
+            <button class="control-btn" onclick="toggleFullscreen()">🔍 전체화면</button>
+            <button class="control-btn" onclick="toggleVideo()">⏯️ 재생/정지</button>
+            <button class="control-btn" onclick="restartVideo()">🔄 처음부터</button>
+            <button class="control-btn" onclick="tryWebXR()">🥽 WebXR 다시 시도</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        class SafariARExperience {
+            constructor() {
+                this.isWebXRSupported = false;
+                this.isARSupported = false;
+                this.currentMode = 'loading';
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.video = null;
+                this.videoMesh = null;
+                
+                this.init();
+            }
+            
+            async init() {
+                this.detectBrowser();
+                await this.checkWebXRSupport();
+                await this.initExperience();
+            }
+            
+            detectBrowser() {
+                const ua = navigator.userAgent;
+                const isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
+                const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+                const isFirefox = /Firefox/.test(ua);
+                const isMobile = /Android|iPhone|iPad/.test(ua);
+                
+                let browserInfo = '';
+                if (isChrome) browserInfo = '🌐 Chrome';
+                else if (isSafari) browserInfo = '🍎 Safari';
+                else if (isFirefox) browserInfo = '🦊 Firefox';
+                else browserInfo = '❓ Unknown';
+                
+                if (isMobile) browserInfo += ' (모바일)';
+                
+                document.getElementById('browser-info').textContent = browserInfo;
+                
+                console.log('브라우저 감지:', {
+                    isChrome, isSafari, isFirefox, isMobile,
+                    userAgent: ua
+                });
+            }
+            
+            async checkWebXRSupport() {
+                if ('xr' in navigator) {
+                    this.isWebXRSupported = true;
+                    
+                    try {
+                        this.isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                        console.log('WebXR AR 지원:', this.isARSupported);
+                    } catch (error) {
+                        console.log('AR 지원 확인 실패:', error);
+                        this.isARSupported = false;
+                    }
+                } else {
+                    console.log('WebXR 지원되지 않음');
+                    this.isWebXRSupported = false;
+                    this.isARSupported = false;
+                }
+            }
+            
+            async initExperience() {
+                if (this.isARSupported) {
+                    await this.initWebXRMode();
+                } else {
+                    await this.initFallbackMode();
+                }
+                
+                // 로딩 화면 숨기기
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 1000);
+            }
+            
+            async initWebXRMode() {
+                this.currentMode = 'webxr';
+                this.updateModeIndicator('🥽 WebXR AR 모드', 'ar-mode');
+                
+                try {
+                    // Three.js + WebXR 초기화
+                    await this.initThreeJS(true);
+                    console.log('WebXR 모드 초기화 완료');
+                } catch (error) {
+                    console.error('WebXR 초기화 실패:', error);
+                    await this.initFallbackMode();
+                }
+            }
+            
+            async initFallbackMode() {
+                this.currentMode = 'fallback';
+                this.updateModeIndicator('📱 호환 모드 (3D 비디오)', 'fallback-mode');
+                
+                // Safari 폴백 모드 표시
+                document.getElementById('fallback-mode').style.display = 'flex';
+                
+                // 3D 씬도 백그라운드에서 초기화
+                await this.initThreeJS(false);
+                
+                console.log('Safari 호환 모드 초기화 완료');
+            }
+            
+            async initThreeJS(enableWebXR = false) {
+                // Three.js 동적 로딩
+                const THREE = await import('https://cdn.skypack.dev/three@0.150.0');
+                
+                // 씬 생성
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x000000);
+                
+                // 카메라 생성
+                this.camera = new THREE.PerspectiveCamera(
+                    75, 
+                    window.innerWidth / window.innerHeight, 
+                    0.1, 
+                    1000
+                );
+                this.camera.position.z = 5;
+                
+                // 렌더러 생성
+                this.renderer = new THREE.WebGLRenderer({ 
+                    antialias: true,
+                    alpha: true
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // WebXR 설정
+                if (enableWebXR && this.isARSupported) {
+                    this.renderer.xr.enabled = true;
+                }
+                
+                document.getElementById('three-scene').appendChild(this.renderer.domElement);
+                
+                // 조명 추가
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(10, 10, 5);
+                directionalLight.castShadow = true;
+                this.scene.add(directionalLight);
+                
+                // 비디오 텍스처 생성
+                await this.createVideoMesh(THREE);
+                
+                // 컨트롤 추가
+                await this.addControls(THREE);
+                
+                // 렌더 루프 시작
+                this.animate();
+                
+                // 리사이즈 이벤트
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+            
+            async createVideoMesh(THREE) {
+                // 비디오 엘리먼트 생성
+                this.video = document.createElement('video');
+                this.video.src = 'assets/lee.mp4';
+                this.video.crossOrigin = 'anonymous';
+                this.video.loop = true;
+                this.video.muted = true;
+                this.video.playsInline = true;
+                
+                // 비디오 텍스처 생성
+                const videoTexture = new THREE.VideoTexture(this.video);
+                videoTexture.minFilter = THREE.LinearFilter;
+                videoTexture.magFilter = THREE.LinearFilter;
+                
+                // 비디오 스크린 메시 생성
+                const screenGeometry = new THREE.PlaneGeometry(4, 2.25);
+                const screenMaterial = new THREE.MeshBasicMaterial({ 
+                    map: videoTexture,
+                    side: THREE.DoubleSide
+                });
+                
+                this.videoMesh = new THREE.Mesh(screenGeometry, screenMaterial);
+                this.videoMesh.position.z = -2;
+                this.scene.add(this.videoMesh);
+                
+                // 비디오 로드 완료 이벤트
+                this.video.addEventListener('loadeddata', () => {
+                    console.log('비디오 로드 완료');
+                });
+                
+                // 자동 재생 시도
+                this.video.play().catch(error => {
+                    console.log('자동 재생 실패 (사용자 상호작용 필요):', error);
+                });
+            }
+            
+            async addControls(THREE) {
+                // OrbitControls 추가 (WebXR 모드가 아닐 때만)
+                if (this.currentMode === 'fallback') {
+                    const { OrbitControls } = await import('https://cdn.skypack.dev/three@0.150.0/examples/jsm/controls/OrbitControls.js');
+                    
+                    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                    this.controls.enableDamping = true;
+                    this.controls.dampingFactor = 0.05;
+                    this.controls.enableZoom = true;
+                    this.controls.enablePan = false;
+                    this.controls.maxPolarAngle = Math.PI;
+                }
+            }
+            
+            animate() {
+                this.renderer.setAnimationLoop(() => {
+                    // 컨트롤 업데이트
+                    if (this.controls) {
+                        this.controls.update();
+                    }
+                    
+                    // 비디오 메시 회전 (약간의 애니메이션)
+                    if (this.videoMesh) {
+                        this.videoMesh.rotation.y += 0.001;
+                    }
+                    
+                    this.renderer.render(this.scene, this.camera);
+                });
+            }
+            
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            updateModeIndicator(text, className) {
+                const indicator = document.getElementById('mode-indicator');
+                indicator.textContent = text;
+                indicator.className = `mode-indicator ${className}`;
+            }
+            
+            // 공개 메서드들
+            toggleVideo() {
+                if (this.video) {
+                    if (this.video.paused) {
+                        this.video.play();
+                    } else {
+                        this.video.pause();
+                    }
+                }
+                
+                const fallbackVideo = document.getElementById('fallback-video');
+                if (fallbackVideo.paused) {
+                    fallbackVideo.play();
+                } else {
+                    fallbackVideo.pause();
+                }
+            }
+            
+            restartVideo() {
+                if (this.video) {
+                    this.video.currentTime = 0;
+                    this.video.play();
+                }
+                
+                const fallbackVideo = document.getElementById('fallback-video');
+                fallbackVideo.currentTime = 0;
+                fallbackVideo.play();
+            }
+            
+            async tryWebXR() {
+                if (!this.isWebXRSupported) {
+                    alert('이 브라우저는 WebXR을 지원하지 않습니다.\n\nChrome으로 테스트해보세요:\n• chrome://flags에서 WebXR 활성화\n• 모바일에서 실제 AR 체험 가능');
+                    return;
+                }
+                
+                try {
+                    const session = await navigator.xr.requestSession('immersive-ar');
+                    alert('WebXR AR 세션이 시작되었습니다!');
+                    
+                    // 실제 WebXR 모드로 전환
+                    document.getElementById('fallback-mode').style.display = 'none';
+                    this.currentMode = 'webxr';
+                    this.updateModeIndicator('🥽 WebXR AR 활성', 'ar-mode');
+                    
+                } catch (error) {
+                    alert(`WebXR AR 시작 실패:\n${error.message}\n\n모바일 브라우저에서 시도해보세요.`);
+                }
+            }
+        }
+        
+        // 전역 함수들
+        window.toggleFullscreen = function() {
+            const video = document.getElementById('fallback-video');
+            if (video.requestFullscreen) {
+                video.requestFullscreen();
+            } else if (video.webkitRequestFullscreen) {
+                video.webkitRequestFullscreen();
+            }
+        };
+        
+        window.toggleVideo = function() {
+            window.arExperience.toggleVideo();
+        };
+        
+        window.restartVideo = function() {
+            window.arExperience.restartVideo();
+        };
+        
+        window.tryWebXR = function() {
+            window.arExperience.tryWebXR();
+        };
+        
+        window.hideFallbackInfo = function() {
+            document.querySelector('.info-panel').style.display = 'none';
+        };
+        
+        // AR 체험 시작
+        window.arExperience = new SafariARExperience();
+        
+    </script>
+</body>
+</html> 

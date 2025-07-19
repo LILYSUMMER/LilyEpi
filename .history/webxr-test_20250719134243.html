@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR 진단 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-item {
+            background: #2a2a2a;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #666;
+        }
+        
+        .test-item.success {
+            border-left-color: #4CAF50;
+            background: #1a2e1a;
+        }
+        
+        .test-item.error {
+            border-left-color: #f44336;
+            background: #2e1a1a;
+        }
+        
+        .test-item.warning {
+            border-left-color: #ff9800;
+            background: #2e2a1a;
+        }
+        
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .info {
+            background: #0066cc;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 WebXR 진단 테스트</h1>
+        
+        <div class="info">
+            <strong>테스트 환경:</strong><br>
+            서버: <span id="server-info">http://localhost:8080</span><br>
+            브라우저: <span id="browser-info"></span><br>
+            플랫폼: <span id="platform-info"></span><br>
+            현재 시간: <span id="current-time"></span>
+        </div>
+        
+        <div id="test-results">
+            <div class="test-item" id="webxr-support">
+                <strong>1. WebXR API 지원</strong>
+                <div id="webxr-result">확인 중...</div>
+            </div>
+            
+            <div class="test-item" id="ar-support">
+                <strong>2. AR 세션 지원</strong>
+                <div id="ar-result">확인 중...</div>
+            </div>
+            
+            <div class="test-item" id="https-check">
+                <strong>3. 보안 컨텍스트 (HTTPS/localhost)</strong>
+                <div id="https-result">확인 중...</div>
+            </div>
+            
+            <div class="test-item" id="three-js-check">
+                <strong>4. Three.js 로딩</strong>
+                <div id="three-result">확인 중...</div>
+            </div>
+            
+            <div class="test-item" id="video-check">
+                <strong>5. 비디오 파일 접근</strong>
+                <div id="video-result">확인 중...</div>
+            </div>
+            
+            <div class="test-item" id="permissions-check">
+                <strong>6. 카메라 권한</strong>
+                <div id="permissions-result">확인 중...</div>
+            </div>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button class="button" id="start-basic-ar" disabled>기본 AR 테스트</button>
+            <button class="button" id="start-video-test" disabled>비디오 테스트</button>
+            <button class="button" onclick="location.reload()">다시 테스트</button>
+        </div>
+        
+        <div class="log" id="debug-log"></div>
+        
+        <div style="margin-top: 20px;">
+            <h3>📱 모바일 브라우저 가이드</h3>
+            <div class="info">
+                <strong>Android Chrome:</strong> 버전 79+ 필요, chrome://flags에서 WebXR 활성화<br>
+                <strong>iOS Safari:</strong> iOS 17.4+ 필요, 실험적 기능 활성화 필요<br>
+                <strong>Samsung Internet:</strong> 버전 15+ 권장
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        class WebXRDiagnostics {
+            constructor() {
+                this.logs = [];
+                this.init();
+            }
+            
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] ${message}`;
+                this.logs.push(logEntry);
+                
+                const logElement = document.getElementById('debug-log');
+                logElement.textContent = this.logs.join('\n');
+                logElement.scrollTop = logElement.scrollHeight;
+                
+                console.log(logEntry);
+            }
+            
+            setTestResult(testId, status, message) {
+                const element = document.getElementById(testId);
+                const resultDiv = element.querySelector('div');
+                
+                element.className = `test-item ${status}`;
+                resultDiv.textContent = message;
+                
+                this.log(`${testId}: ${status.toUpperCase()} - ${message}`);
+            }
+            
+            async init() {
+                this.log('WebXR 진단 시작');
+                
+                // 환경 정보 수집
+                this.collectEnvironmentInfo();
+                
+                // 순차적 테스트 실행
+                await this.testWebXRSupport();
+                await this.testARSupport();
+                await this.testSecureContext();
+                await this.testThreeJS();
+                await this.testVideoAccess();
+                await this.testCameraPermissions();
+                
+                this.log('모든 테스트 완료');
+            }
+            
+            collectEnvironmentInfo() {
+                document.getElementById('browser-info').textContent = navigator.userAgent;
+                document.getElementById('platform-info').textContent = navigator.platform;
+                document.getElementById('current-time').textContent = new Date().toLocaleString();
+                
+                this.log(`브라우저: ${navigator.userAgent}`);
+                this.log(`플랫폼: ${navigator.platform}`);
+                this.log(`언어: ${navigator.language}`);
+                this.log(`온라인: ${navigator.onLine}`);
+            }
+            
+            async testWebXRSupport() {
+                if ('xr' in navigator) {
+                    this.setTestResult('webxr-support', 'success', '✅ WebXR API 지원됨');
+                    return true;
+                } else {
+                    this.setTestResult('webxr-support', 'error', '❌ WebXR API 지원되지 않음');
+                    return false;
+                }
+            }
+            
+            async testARSupport() {
+                if (!navigator.xr) {
+                    this.setTestResult('ar-support', 'error', '❌ WebXR API 없음');
+                    return false;
+                }
+                
+                try {
+                    const supported = await Promise.race([
+                        navigator.xr.isSessionSupported('immersive-ar'),
+                        new Promise(resolve => setTimeout(() => resolve(false), 5000))
+                    ]);
+                    
+                    if (supported) {
+                        this.setTestResult('ar-support', 'success', '✅ AR 세션 지원됨');
+                        document.getElementById('start-basic-ar').disabled = false;
+                        return true;
+                    } else {
+                        this.setTestResult('ar-support', 'error', '❌ AR 세션 지원되지 않음');
+                        return false;
+                    }
+                } catch (error) {
+                    this.setTestResult('ar-support', 'error', `❌ AR 지원 확인 실패: ${error.message}`);
+                    return false;
+                }
+            }
+            
+            testSecureContext() {
+                const isSecure = window.isSecureContext;
+                const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+                const isHTTPS = location.protocol === 'https:';
+                
+                if (isSecure || isLocalhost) {
+                    this.setTestResult('https-check', 'success', 
+                        `✅ 보안 컨텍스트 OK (${location.protocol}//${location.host})`);
+                    return true;
+                } else {
+                    this.setTestResult('https-check', 'error', 
+                        '❌ HTTPS 또는 localhost 필요');
+                    return false;
+                }
+            }
+            
+            async testThreeJS() {
+                try {
+                    this.log('Three.js 로딩 시도...');
+                    const THREE = await import('https://cdn.skypack.dev/three@0.150.0');
+                    
+                    if (THREE.Scene) {
+                        this.setTestResult('three-js-check', 'success', '✅ Three.js 로딩 성공');
+                        return true;
+                    } else {
+                        this.setTestResult('three-js-check', 'error', '❌ Three.js 로딩 실패');
+                        return false;
+                    }
+                } catch (error) {
+                    this.setTestResult('three-js-check', 'error', `❌ Three.js 로딩 에러: ${error.message}`);
+                    return false;
+                }
+            }
+            
+            async testVideoAccess() {
+                try {
+                    const video = document.createElement('video');
+                    video.src = 'assets/lee.mp4';
+                    video.muted = true;
+                    
+                    return new Promise((resolve) => {
+                        const timeout = setTimeout(() => {
+                            this.setTestResult('video-check', 'warning', 
+                                '⚠️ 비디오 파일 확인 불가 (assets/lee.mp4)');
+                            resolve(false);
+                        }, 3000);
+                        
+                        video.addEventListener('loadedmetadata', () => {
+                            clearTimeout(timeout);
+                            this.setTestResult('video-check', 'success', 
+                                `✅ 비디오 파일 접근 가능 (${video.duration.toFixed(1)}초)`);
+                            document.getElementById('start-video-test').disabled = false;
+                            resolve(true);
+                        });
+                        
+                        video.addEventListener('error', () => {
+                            clearTimeout(timeout);
+                            this.setTestResult('video-check', 'error', 
+                                '❌ 비디오 파일 로딩 실패');
+                            resolve(false);
+                        });
+                    });
+                    
+                } catch (error) {
+                    this.setTestResult('video-check', 'error', `❌ 비디오 테스트 에러: ${error.message}`);
+                    return false;
+                }
+            }
+            
+            async testCameraPermissions() {
+                try {
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        this.setTestResult('permissions-check', 'error', '❌ 미디어 API 지원되지 않음');
+                        return false;
+                    }
+                    
+                    // 권한 상태만 확인 (실제 카메라 접근은 하지 않음)
+                    const permissions = await navigator.permissions.query({name: 'camera'});
+                    
+                    switch (permissions.state) {
+                        case 'granted':
+                            this.setTestResult('permissions-check', 'success', '✅ 카메라 권한 허용됨');
+                            return true;
+                        case 'denied':
+                            this.setTestResult('permissions-check', 'error', '❌ 카메라 권한 거부됨');
+                            return false;
+                        case 'prompt':
+                            this.setTestResult('permissions-check', 'warning', 
+                                '⚠️ 카메라 권한 요청 필요 (AR 시작 시 요청됨)');
+                            return true;
+                        default:
+                            this.setTestResult('permissions-check', 'warning', '⚠️ 권한 상태 불명');
+                            return false;
+                    }
+                    
+                } catch (error) {
+                    this.setTestResult('permissions-check', 'warning', 
+                        '⚠️ 권한 확인 불가 (AR 시작 시 확인됨)');
+                    return false;
+                }
+            }
+            
+            async startBasicARTest() {
+                this.log('기본 AR 테스트 시작...');
+                
+                try {
+                    const session = await navigator.xr.requestSession('immersive-ar', {
+                        requiredFeatures: ['local'],
+                        optionalFeatures: ['hit-test', 'plane-detection']
+                    });
+                    
+                    this.log('✅ AR 세션 성공적으로 시작됨!');
+                    
+                    // 간단한 씬 테스트
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl', { xrCompatible: true });
+                    
+                    if (gl) {
+                        this.log('✅ WebGL XR 호환 컨텍스트 생성됨');
+                    }
+                    
+                    // 3초 후 세션 종료
+                    setTimeout(() => {
+                        session.end();
+                        this.log('✅ AR 테스트 완료 - 세션 종료됨');
+                    }, 3000);
+                    
+                } catch (error) {
+                    this.log(`❌ AR 세션 시작 실패: ${error.message}`);
+                }
+            }
+            
+            startVideoTest() {
+                this.log('비디오 테스트 시작...');
+                
+                const video = document.createElement('video');
+                video.src = 'assets/lee.mp4';
+                video.controls = true;
+                video.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 1000;
+                    max-width: 90%;
+                    max-height: 90%;
+                    background: black;
+                `;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '닫기';
+                closeBtn.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    z-index: 1001;
+                    padding: 10px;
+                    background: red;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                `;
+                
+                closeBtn.onclick = () => {
+                    document.body.removeChild(video);
+                    document.body.removeChild(closeBtn);
+                    this.log('비디오 테스트 종료');
+                };
+                
+                document.body.appendChild(video);
+                document.body.appendChild(closeBtn);
+                
+                video.play().then(() => {
+                    this.log('✅ 비디오 재생 성공');
+                }).catch(error => {
+                    this.log(`❌ 비디오 재생 실패: ${error.message}`);
+                });
+            }
+        }
+        
+        // 진단 시작
+        const diagnostics = new WebXRDiagnostics();
+        
+        // 버튼 이벤트
+        document.getElementById('start-basic-ar').onclick = () => {
+            diagnostics.startBasicARTest();
+        };
+        
+        document.getElementById('start-video-test').onclick = () => {
+            diagnostics.startVideoTest();
+        };
+        
+    </script>
+</body>
+</html> 
