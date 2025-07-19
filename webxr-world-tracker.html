@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR 월드 트래킹 시스템</title>
+    
+    <!-- 성능 모니터링 -->
+    <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            opacity: 0.8;
+            text-align: center;
+        }
+        
+        #ar-ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .ui-panel {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            pointer-events: auto;
+        }
+        
+        .top-panel {
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bottom-panel {
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .control-button {
+            width: 60px;
+            height: 60px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-button:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+        
+        .control-button:active {
+            transform: scale(0.95);
+        }
+        
+        .control-button.active {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .hit-point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ff88;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0.8;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        .placement-indicator {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #00ff88;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .placement-indicator.active {
+            opacity: 1;
+            animation: ripple 2s ease-out infinite;
+        }
+        
+        .debug-panel {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            max-width: 300px;
+        }
+        
+        .debug-item {
+            margin-bottom: 4px;
+        }
+        
+        .anchor-counter {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 3000;
+            max-width: 80%;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.4; transform: translate(-50%, -50%) scale(1.2); }
+        }
+        
+        @keyframes ripple {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 성능 최적화를 위한 하드웨어 가속 */
+        .ui-panel, .control-button, .hit-point, .placement-indicator {
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 오버레이 -->
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">WebXR 월드 트래킹 시스템 초기화 중...</div>
+    </div>
+    
+    <!-- AR UI -->
+    <div id="ar-ui" class="hidden">
+        <!-- 상단 패널 -->
+        <div class="ui-panel top-panel">
+            <div class="anchor-counter">
+                앵커: <span id="anchor-count">0</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button id="debug-toggle" class="control-button" title="디버그 정보">
+                    🔍
+                </button>
+                <button id="clear-anchors" class="control-button" title="모든 앵커 제거">
+                    🗑️
+                </button>
+                <button id="exit-ar" class="control-button" title="AR 종료">
+                    ❌
+                </button>
+            </div>
+        </div>
+        
+        <!-- 하단 패널 -->
+        <div class="ui-panel bottom-panel">
+            <button id="place-object" class="control-button" title="객체 배치">
+                📦
+            </button>
+            <button id="place-video" class="control-button active" title="비디오 배치">
+                🎬
+            </button>
+            <button id="record-btn" class="control-button" title="화면 녹화">
+                📹
+            </button>
+        </div>
+        
+        <!-- 히트 포인트 표시 -->
+        <div id="hit-indicator" class="hit-point hidden"></div>
+        
+        <!-- 배치 가이드 -->
+        <div id="placement-guide" class="placement-indicator"></div>
+        
+        <!-- 디버그 패널 -->
+        <div id="debug-panel" class="debug-panel hidden">
+            <div class="debug-item">FPS: <span id="fps-counter">60</span></div>
+            <div class="debug-item">메모리: <span id="memory-usage">0</span>MB</div>
+            <div class="debug-item">트래킹: <span id="tracking-state">초기화 중</span></div>
+            <div class="debug-item">평면: <span id="plane-count">0</span>개</div>
+            <div class="debug-item">히트 테스트: <span id="hit-test-state">비활성</span></div>
+            <div class="debug-item">앵커 상태: <span id="anchor-state">대기 중</span></div>
+            <div class="debug-item">조명: <span id="light-estimation">미사용</span></div>
+        </div>
+    </div>
+    
+    <!-- Three.js WebXR -->
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.150.0';
+        
+        class WebXRWorldTracker {
+            constructor() {
+                // 코어 시스템
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.session = null;
+                this.referenceSpace = null;
+                
+                // 트래킹 시스템
+                this.anchors = new Map();
+                this.hitTestSource = null;
+                this.hitTestSourceRequested = false;
+                this.reticle = null;
+                this.controller = null;
+                
+                // 상태 관리
+                this.isSessionActive = false;
+                this.placementMode = 'video'; // 'video', 'object'
+                this.isRecording = false;
+                this.debugMode = false;
+                
+                // 성능 모니터링
+                this.stats = null;
+                this.frameCount = 0;
+                this.lastTime = 0;
+                
+                // 라이팅 및 환경
+                this.lightProbe = null;
+                this.environmentMap = null;
+                
+                // 비디오 시스템
+                this.video = null;
+                this.videoTexture = null;
+                
+                // 제스처 컨트롤
+                this.gestureController = null;
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    this.updateLoadingText('WebXR 지원 확인 중...');
+                    await this.checkWebXRSupport();
+                    
+                    this.updateLoadingText('Three.js 초기화 중...');
+                    this.initThreeJS();
+                    
+                    this.updateLoadingText('비디오 시스템 설정 중...');
+                    this.setupVideo();
+                    
+                    this.updateLoadingText('성능 모니터 설정 중...');
+                    this.setupPerformanceMonitoring();
+                    
+                    this.updateLoadingText('UI 이벤트 설정 중...');
+                    this.setupEventListeners();
+                    
+                    this.updateLoadingText('WebXR 세션 시작 중...');
+                    await this.startXRSession();
+                    
+                } catch (error) {
+                    console.error('초기화 실패:', error);
+                    this.showError('WebXR 초기화에 실패했습니다: ' + error.message);
+                }
+            }
+            
+            async checkWebXRSupport() {
+                if (!navigator.xr) {
+                    throw new Error('이 브라우저는 WebXR을 지원하지 않습니다.');
+                }
+                
+                const supported = await navigator.xr.isSessionSupported('immersive-ar');
+                if (!supported) {
+                    throw new Error('이 기기는 WebXR AR을 지원하지 않습니다.');
+                }
+                
+                console.log('✅ WebXR 지원 확인됨');
+            }
+            
+            initThreeJS() {
+                // 씬 생성
+                this.scene = new THREE.Scene();
+                
+                // 카메라 생성
+                this.camera = new THREE.PerspectiveCamera(
+                    70, window.innerWidth / window.innerHeight, 0.01, 20
+                );
+                
+                // 렌더러 생성
+                this.renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance'
+                });
+                
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.xr.enabled = true;
+                
+                // 그림자 활성화
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // 색상 관리
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.2;
+                
+                document.body.appendChild(this.renderer.domElement);
+                
+                // 조명 설정
+                this.setupLighting();
+                
+                // 리티클 생성 (배치 가이드)
+                this.createReticle();
+                
+                console.log('✅ Three.js 초기화 완료');
+            }
+            
+            setupLighting() {
+                // 앰비언트 라이트
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+                this.scene.add(ambientLight);
+                
+                // 디렉셔널 라이트 (태양광 시뮬레이션)
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                directionalLight.position.set(1, 1, 1);
+                directionalLight.castShadow = true;
+                
+                // 그림자 품질 설정
+                directionalLight.shadow.mapSize.width = 2048;
+                directionalLight.shadow.mapSize.height = 2048;
+                directionalLight.shadow.camera.near = 0.1;
+                directionalLight.shadow.camera.far = 20;
+                directionalLight.shadow.camera.left = -10;
+                directionalLight.shadow.camera.right = 10;
+                directionalLight.shadow.camera.top = 10;
+                directionalLight.shadow.camera.bottom = -10;
+                
+                this.scene.add(directionalLight);
+                
+                // 포인트 라이트 (추가 조명)
+                const pointLight = new THREE.PointLight(0xffffff, 0.8, 10);
+                pointLight.position.set(0, 2, 0);
+                pointLight.castShadow = true;
+                this.scene.add(pointLight);
+            }
+            
+            createReticle() {
+                // 배치 가이드 링
+                const geometry = new THREE.RingGeometry(0.15, 0.2, 32);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x00ff88,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                
+                this.reticle = new THREE.Mesh(geometry, material);
+                this.reticle.matrixAutoUpdate = false;
+                this.reticle.visible = false;
+                this.scene.add(this.reticle);
+                
+                // 중앙 도트
+                const dotGeometry = new THREE.CircleGeometry(0.02, 16);
+                const dotMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x00ff88,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+                this.reticle.add(dot);
+            }
+            
+            setupVideo() {
+                // 비디오 엘리먼트 생성
+                this.video = document.createElement('video');
+                this.video.src = 'assets/lee.mp4';
+                this.video.loop = true;
+                this.video.muted = true;
+                this.video.playsInline = true;
+                this.video.crossOrigin = 'anonymous';
+                
+                // 비디오 텍스처 생성
+                this.videoTexture = new THREE.VideoTexture(this.video);
+                this.videoTexture.minFilter = THREE.LinearFilter;
+                this.videoTexture.magFilter = THREE.LinearFilter;
+                this.videoTexture.format = THREE.RGBFormat;
+                
+                console.log('✅ 비디오 시스템 설정 완료');
+            }
+            
+            setupPerformanceMonitoring() {
+                // Stats.js 설정
+                this.stats = new Stats();
+                this.stats.dom.style.position = 'absolute';
+                this.stats.dom.style.top = '10px';
+                this.stats.dom.style.right = '10px';
+                this.stats.dom.style.zIndex = '1001';
+                document.body.appendChild(this.stats.dom);
+                
+                console.log('✅ 성능 모니터링 설정 완료');
+            }
+            
+            setupEventListeners() {
+                // AR UI 버튼들
+                document.getElementById('place-video').addEventListener('click', () => {
+                    this.setPlacementMode('video');
+                });
+                
+                document.getElementById('place-object').addEventListener('click', () => {
+                    this.setPlacementMode('object');
+                });
+                
+                document.getElementById('debug-toggle').addEventListener('click', () => {
+                    this.toggleDebug();
+                });
+                
+                document.getElementById('clear-anchors').addEventListener('click', () => {
+                    this.clearAllAnchors();
+                });
+                
+                document.getElementById('exit-ar').addEventListener('click', () => {
+                    this.exitAR();
+                });
+                
+                document.getElementById('record-btn').addEventListener('click', () => {
+                    this.toggleRecording();
+                });
+                
+                // 터치 이벤트 (배치)
+                this.renderer.domElement.addEventListener('touchstart', (event) => {
+                    if (event.touches.length === 1) {
+                        this.onSingleTouch(event);
+                    }
+                });
+                
+                // 제스처 컨트롤러 초기화
+                this.gestureController = new GestureController(this.renderer.domElement);
+                this.gestureController.on('pinch', (data) => this.onPinchGesture(data));
+                this.gestureController.on('rotate', (data) => this.onRotateGesture(data));
+                
+                console.log('✅ 이벤트 리스너 설정 완료');
+            }
+            
+            async startXRSession() {
+                try {
+                    this.session = await navigator.xr.requestSession('immersive-ar', {
+                        requiredFeatures: ['local'],
+                        optionalFeatures: [
+                            'hit-test',
+                            'plane-detection',
+                            'anchors',
+                            'light-estimation',
+                            'dom-overlay',
+                            'unbounded'
+                        ]
+                    });
+                    
+                    this.session.addEventListener('end', this.onSessionEnd.bind(this));
+                    
+                    await this.renderer.xr.setSession(this.session);
+                    
+                    this.referenceSpace = await this.session.requestReferenceSpace('local');
+                    
+                    // 히트 테스트 소스 요청
+                    this.setupHitTesting();
+                    
+                    // 라이트 추정 설정
+                    this.setupLightEstimation();
+                    
+                    // 렌더 루프 시작
+                    this.renderer.setAnimationLoop(this.render.bind(this));
+                    
+                    this.isSessionActive = true;
+                    
+                    // UI 표시
+                    this.showARUI();
+                    
+                    console.log('✅ WebXR 세션 시작됨');
+                    
+                } catch (error) {
+                    throw new Error('WebXR 세션 시작 실패: ' + error.message);
+                }
+            }
+            
+            async setupHitTesting() {
+                if (this.session.requestHitTestSource) {
+                    try {
+                        const viewerSpace = await this.session.requestReferenceSpace('viewer');
+                        this.hitTestSource = await this.session.requestHitTestSource({
+                            space: viewerSpace
+                        });
+                        this.hitTestSourceRequested = true;
+                        this.updateDebugInfo('hit-test-state', '활성');
+                        console.log('✅ 히트 테스팅 활성화');
+                    } catch (error) {
+                        console.warn('히트 테스팅 설정 실패:', error);
+                        this.updateDebugInfo('hit-test-state', '실패');
+                    }
+                }
+            }
+            
+            async setupLightEstimation() {
+                if (this.session.requestLightProbe) {
+                    try {
+                        this.lightProbe = await this.session.requestLightProbe();
+                        this.updateDebugInfo('light-estimation', '활성');
+                        console.log('✅ 라이트 추정 활성화');
+                    } catch (error) {
+                        console.warn('라이트 추정 설정 실패:', error);
+                        this.updateDebugInfo('light-estimation', '실패');
+                    }
+                }
+            }
+            
+            render(timestamp, frame) {
+                if (!this.isSessionActive || !frame) return;
+                
+                this.stats.begin();
+                
+                // 성능 카운터 업데이트
+                this.frameCount++;
+                if (timestamp - this.lastTime >= 1000) {
+                    this.updateDebugInfo('fps-counter', Math.round(this.frameCount * 1000 / (timestamp - this.lastTime)));
+                    this.frameCount = 0;
+                    this.lastTime = timestamp;
+                    
+                    // 메모리 사용량 업데이트
+                    if (performance.memory) {
+                        const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                        this.updateDebugInfo('memory-usage', memoryMB);
+                    }
+                }
+                
+                // 히트 테스팅
+                if (this.hitTestSource) {
+                    this.performHitTest(frame);
+                }
+                
+                // 라이트 추정 적용
+                if (this.lightProbe) {
+                    this.applyLightEstimation(frame);
+                }
+                
+                // 앵커 업데이트
+                this.updateAnchors(frame);
+                
+                // 트래킹 상태 업데이트
+                this.updateTrackingState(frame);
+                
+                // 렌더링
+                this.renderer.render(this.scene, this.camera);
+                
+                this.stats.end();
+            }
+            
+            performHitTest(frame) {
+                const hitTestResults = frame.getHitTestResults(this.hitTestSource);
+                
+                if (hitTestResults.length > 0) {
+                    const hit = hitTestResults[0];
+                    const pose = hit.getPose(this.referenceSpace);
+                    
+                    if (pose) {
+                        // 리티클 위치 업데이트
+                        this.reticle.visible = true;
+                        this.reticle.matrix.fromArray(pose.transform.matrix);
+                        
+                        // 히트 포인트 UI 업데이트
+                        this.updateHitPointUI(pose);
+                    }
+                } else {
+                    this.reticle.visible = false;
+                    this.hideHitPointUI();
+                }
+            }
+            
+            updateHitPointUI(pose) {
+                const hitIndicator = document.getElementById('hit-indicator');
+                const placementGuide = document.getElementById('placement-guide');
+                
+                // 3D 좌표를 2D 스크린 좌표로 변환
+                const vector = new THREE.Vector3();
+                vector.setFromMatrixPosition(this.reticle.matrix);
+                vector.project(this.camera);
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (vector.y * -0.5 + 0.5) * window.innerHeight;
+                
+                hitIndicator.style.left = x + 'px';
+                hitIndicator.style.top = y + 'px';
+                hitIndicator.classList.remove('hidden');
+                
+                placementGuide.style.left = x + 'px';
+                placementGuide.style.top = y + 'px';
+                placementGuide.classList.add('active');
+            }
+            
+            hideHitPointUI() {
+                document.getElementById('hit-indicator').classList.add('hidden');
+                document.getElementById('placement-guide').classList.remove('active');
+            }
+            
+            applyLightEstimation(frame) {
+                if (this.lightProbe) {
+                    try {
+                        const estimate = frame.getLightEstimate(this.lightProbe);
+                        if (estimate) {
+                            // 환경 조명 업데이트
+                            if (estimate.primaryLightDirection && estimate.primaryLightIntensity) {
+                                const direction = estimate.primaryLightDirection;
+                                const intensity = estimate.primaryLightIntensity;
+                                
+                                // 메인 라이트 업데이트
+                                const mainLight = this.scene.children.find(child => 
+                                    child instanceof THREE.DirectionalLight
+                                );
+                                
+                                if (mainLight) {
+                                    mainLight.position.set(direction.x, direction.y, direction.z);
+                                    mainLight.intensity = intensity.x; // RGB 중 R 값 사용
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('라이트 추정 적용 실패:', error);
+                    }
+                }
+            }
+            
+            updateAnchors(frame) {
+                // 앵커 상태 확인 및 업데이트
+                for (const [id, anchorData] of this.anchors) {
+                    try {
+                        const pose = frame.getPose(anchorData.anchorSpace, this.referenceSpace);
+                        if (pose) {
+                            anchorData.object.matrix.fromArray(pose.transform.matrix);
+                            anchorData.object.visible = true;
+                        } else {
+                            anchorData.object.visible = false;
+                        }
+                    } catch (error) {
+                        console.warn('앵커 업데이트 실패:', error);
+                        anchorData.object.visible = false;
+                    }
+                }
+                
+                this.updateDebugInfo('anchor-state', 
+                    this.anchors.size > 0 ? `${this.anchors.size}개 활성` : '대기 중'
+                );
+            }
+            
+            updateTrackingState(frame) {
+                // XR 포즈 상태 확인
+                const pose = frame.getViewerPose(this.referenceSpace);
+                if (pose) {
+                    this.updateDebugInfo('tracking-state', '정상');
+                } else {
+                    this.updateDebugInfo('tracking-state', '추적 실패');
+                }
+            }
+            
+            onSingleTouch(event) {
+                if (!this.reticle.visible) return;
+                
+                event.preventDefault();
+                
+                if (this.placementMode === 'video') {
+                    this.placeVideo();
+                } else if (this.placementMode === 'object') {
+                    this.placeObject();
+                }
+            }
+            
+            async placeVideo() {
+                if (!this.reticle.visible) return;
+                
+                try {
+                    // 비디오 재생 시작
+                    await this.video.play();
+                    
+                    // 비디오 평면 생성
+                    const geometry = new THREE.PlaneGeometry(1.6, 0.9); // 16:9 비율
+                    const material = new THREE.MeshLambertMaterial({
+                        map: this.videoTexture,
+                        transparent: true
+                    });
+                    
+                    const videoPlane = new THREE.Mesh(geometry, material);
+                    videoPlane.castShadow = true;
+                    videoPlane.receiveShadow = true;
+                    
+                    // 앵커 생성
+                    await this.createAnchor(videoPlane, this.reticle.matrix);
+                    
+                    console.log('비디오 배치 완료');
+                    
+                } catch (error) {
+                    console.error('비디오 배치 실패:', error);
+                }
+            }
+            
+            async placeObject() {
+                if (!this.reticle.visible) return;
+                
+                try {
+                    // 간단한 큐브 생성
+                    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+                    const material = new THREE.MeshPhongMaterial({
+                        color: Math.random() * 0xffffff,
+                        shininess: 100
+                    });
+                    
+                    const cube = new THREE.Mesh(geometry, material);
+                    cube.castShadow = true;
+                    cube.receiveShadow = true;
+                    
+                    // Y축으로 약간 위로 올림
+                    const matrix = this.reticle.matrix.clone();
+                    matrix.setPosition(
+                        matrix.elements[12],
+                        matrix.elements[13] + 0.1,
+                        matrix.elements[14]
+                    );
+                    
+                    // 앵커 생성
+                    await this.createAnchor(cube, matrix);
+                    
+                    console.log('객체 배치 완료');
+                    
+                } catch (error) {
+                    console.error('객체 배치 실패:', error);
+                }
+            }
+            
+            async createAnchor(object, matrix) {
+                try {
+                    // XRAnchor 생성
+                    const pose = new XRRigidTransform();
+                    pose.matrix = matrix;
+                    
+                    const anchor = await this.session.requestFrameOfReference
+                        ? await this.session.createAnchor(pose, this.referenceSpace)
+                        : null;
+                    
+                    if (anchor) {
+                        const anchorSpace = anchor;
+                        const anchorId = 'anchor_' + Date.now();
+                        
+                        // 앵커 데이터 저장
+                        this.anchors.set(anchorId, {
+                            anchor: anchor,
+                            anchorSpace: anchorSpace,
+                            object: object
+                        });
+                        
+                        // 씬에 추가
+                        this.scene.add(object);
+                        object.matrixAutoUpdate = false;
+                        object.matrix.copy(matrix);
+                        
+                        // UI 업데이트
+                        this.updateAnchorCount();
+                        
+                        console.log('앵커 생성 완료:', anchorId);
+                        
+                    } else {
+                        // 앵커 없이 직접 배치
+                        this.scene.add(object);
+                        object.matrixAutoUpdate = false;
+                        object.matrix.copy(matrix);
+                        
+                        const anchorId = 'object_' + Date.now();
+                        this.anchors.set(anchorId, {
+                            anchor: null,
+                            anchorSpace: null,
+                            object: object
+                        });
+                        
+                        this.updateAnchorCount();
+                        console.log('객체 직접 배치 완료:', anchorId);
+                    }
+                    
+                } catch (error) {
+                    console.error('앵커 생성 실패:', error);
+                    // 실패 시 직접 배치
+                    this.scene.add(object);
+                    object.matrixAutoUpdate = false;
+                    object.matrix.copy(matrix);
+                }
+            }
+            
+            setPlacementMode(mode) {
+                this.placementMode = mode;
+                
+                // UI 업데이트
+                document.querySelectorAll('.bottom-panel .control-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                if (mode === 'video') {
+                    document.getElementById('place-video').classList.add('active');
+                } else if (mode === 'object') {
+                    document.getElementById('place-object').classList.add('active');
+                }
+                
+                console.log('배치 모드 변경:', mode);
+            }
+            
+            toggleDebug() {
+                this.debugMode = !this.debugMode;
+                const debugPanel = document.getElementById('debug-panel');
+                
+                if (this.debugMode) {
+                    debugPanel.classList.remove('hidden');
+                    document.getElementById('debug-toggle').classList.add('active');
+                } else {
+                    debugPanel.classList.add('hidden');
+                    document.getElementById('debug-toggle').classList.remove('active');
+                }
+            }
+            
+            clearAllAnchors() {
+                for (const [id, anchorData] of this.anchors) {
+                    // 씬에서 제거
+                    this.scene.remove(anchorData.object);
+                    
+                    // 앵커 삭제
+                    if (anchorData.anchor && anchorData.anchor.delete) {
+                        anchorData.anchor.delete();
+                    }
+                }
+                
+                this.anchors.clear();
+                this.updateAnchorCount();
+                
+                console.log('모든 앵커 제거됨');
+            }
+            
+            toggleRecording() {
+                // 화면 녹화 기능 (간단한 구현)
+                if (!this.isRecording) {
+                    this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+            
+            startRecording() {
+                try {
+                    const canvas = this.renderer.domElement;
+                    const stream = canvas.captureStream(30);
+                    
+                    this.mediaRecorder = new MediaRecorder(stream);
+                    this.recordedChunks = [];
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            this.recordedChunks.push(event.data);
+                        }
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'ar-recording.webm';
+                        a.click();
+                    };
+                    
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    
+                    document.getElementById('record-btn').classList.add('active');
+                    document.getElementById('record-btn').textContent = '⏹️';
+                    
+                    console.log('녹화 시작');
+                    
+                } catch (error) {
+                    console.error('녹화 시작 실패:', error);
+                }
+            }
+            
+            stopRecording() {
+                if (this.mediaRecorder) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    
+                    document.getElementById('record-btn').classList.remove('active');
+                    document.getElementById('record-btn').textContent = '📹';
+                    
+                    console.log('녹화 종료');
+                }
+            }
+            
+            exitAR() {
+                if (this.session) {
+                    this.session.end();
+                }
+            }
+            
+            onSessionEnd() {
+                this.isSessionActive = false;
+                
+                // 리소스 정리
+                this.clearAllAnchors();
+                
+                if (this.hitTestSource) {
+                    this.hitTestSource.cancel();
+                    this.hitTestSource = null;
+                }
+                
+                // UI 숨기기
+                this.hideARUI();
+                
+                // 로딩 오버레이 표시
+                this.showLoadingOverlay();
+                this.updateLoadingText('AR 세션이 종료되었습니다.');
+                
+                console.log('AR 세션 종료됨');
+            }
+            
+            // UI 헬퍼 메서드들
+            updateLoadingText(text) {
+                const loadingText = document.querySelector('.loading-text');
+                if (loadingText) {
+                    loadingText.textContent = text;
+                }
+            }
+            
+            showARUI() {
+                document.getElementById('loading-overlay').classList.add('hidden');
+                document.getElementById('ar-ui').classList.remove('hidden');
+            }
+            
+            hideARUI() {
+                document.getElementById('ar-ui').classList.add('hidden');
+            }
+            
+            showLoadingOverlay() {
+                document.getElementById('loading-overlay').classList.remove('hidden');
+            }
+            
+            updateAnchorCount() {
+                document.getElementById('anchor-count').textContent = this.anchors.size;
+            }
+            
+            updateDebugInfo(elementId, value) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+            
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = `
+                    <h3>오류 발생</h3>
+                    <p>${message}</p>
+                    <button onclick="location.reload()">다시 시도</button>
+                `;
+                document.body.appendChild(errorDiv);
+            }
+            
+            // 제스처 이벤트 핸들러
+            onPinchGesture(data) {
+                // 마지막으로 배치된 객체의 크기 조절
+                if (this.anchors.size > 0) {
+                    const lastAnchor = Array.from(this.anchors.values()).pop();
+                    if (lastAnchor && lastAnchor.object) {
+                        const scale = Math.max(0.1, Math.min(3.0, data.scale));
+                        lastAnchor.object.scale.setScalar(scale);
+                    }
+                }
+            }
+            
+            onRotateGesture(data) {
+                // 마지막으로 배치된 객체 회전
+                if (this.anchors.size > 0) {
+                    const lastAnchor = Array.from(this.anchors.values()).pop();
+                    if (lastAnchor && lastAnchor.object) {
+                        lastAnchor.object.rotation.y += data.rotation;
+                    }
+                }
+            }
+        }
+        
+        // 제스처 컨트롤러 클래스
+        class GestureController {
+            constructor(element) {
+                this.element = element;
+                this.listeners = {};
+                this.touches = [];
+                this.lastDistance = 0;
+                this.lastAngle = 0;
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.element.addEventListener('touchstart', this.onTouchStart.bind(this));
+                this.element.addEventListener('touchmove', this.onTouchMove.bind(this));
+                this.element.addEventListener('touchend', this.onTouchEnd.bind(this));
+            }
+            
+            onTouchStart(event) {
+                this.touches = Array.from(event.touches);
+                
+                if (this.touches.length === 2) {
+                    this.lastDistance = this.getDistance();
+                    this.lastAngle = this.getAngle();
+                }
+            }
+            
+            onTouchMove(event) {
+                event.preventDefault();
+                this.touches = Array.from(event.touches);
+                
+                if (this.touches.length === 2) {
+                    const currentDistance = this.getDistance();
+                    const currentAngle = this.getAngle();
+                    
+                    // 핀치 제스처
+                    if (Math.abs(currentDistance - this.lastDistance) > 5) {
+                        const scale = currentDistance / this.lastDistance;
+                        this.emit('pinch', { scale, distance: currentDistance });
+                        this.lastDistance = currentDistance;
+                    }
+                    
+                    // 회전 제스처
+                    if (Math.abs(currentAngle - this.lastAngle) > 0.1) {
+                        const rotation = currentAngle - this.lastAngle;
+                        this.emit('rotate', { rotation, angle: currentAngle });
+                        this.lastAngle = currentAngle;
+                    }
+                }
+            }
+            
+            onTouchEnd(event) {
+                this.touches = Array.from(event.touches);
+            }
+            
+            getDistance() {
+                if (this.touches.length < 2) return 0;
+                
+                const dx = this.touches[0].clientX - this.touches[1].clientX;
+                const dy = this.touches[0].clientY - this.touches[1].clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            getAngle() {
+                if (this.touches.length < 2) return 0;
+                
+                const dx = this.touches[1].clientX - this.touches[0].clientX;
+                const dy = this.touches[1].clientY - this.touches[0].clientY;
+                return Math.atan2(dy, dx);
+            }
+            
+            on(event, callback) {
+                if (!this.listeners[event]) {
+                    this.listeners[event] = [];
+                }
+                this.listeners[event].push(callback);
+            }
+            
+            emit(event, data) {
+                if (this.listeners[event]) {
+                    this.listeners[event].forEach(callback => callback(data));
+                }
+            }
+        }
+        
+        // 애플리케이션 시작
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 WebXR 월드 트래킹 시스템 시작');
+            new WebXRWorldTracker();
+        });
+        
+    </script>
+</body>
+</html> 
