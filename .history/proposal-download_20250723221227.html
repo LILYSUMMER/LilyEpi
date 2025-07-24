@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사업 제안서 다운로드 | Epispace</title>
+    <meta name="description" content="Epispace 사업 제안서 다운로드를 위한 정보 입력 페이지">
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Noto Sans KR', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#FF6B00',
+                        'secondary': '#00B894',
+                        'dark': '#1a1a1a',
+                        'light': '#fafafa',
+                        'accent': '#6366f1',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8E53 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .form-container {
+            background: linear-gradient(135deg, rgba(255, 107, 0, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%);
+            backdrop-filter: blur(10px);
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.active {
+            display: flex;
+        }
+        
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-gray-100/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="flex items-center">
+                    <span class="text-xl sm:text-2xl font-bold gradient-text">Epispace</span>
+                </a>
+                <a href="index.html" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">
+                    ← 홈으로 돌아가기
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex items-center justify-center min-h-screen py-12 px-4">
+        <div class="max-w-md w-full">
+            <!-- Form Container -->
+            <div class="form-container rounded-3xl shadow-xl p-8 border border-white/20">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">사업 제안서 다운로드</h1>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        Epispace의 상세한 사업 제안서를 받아보시려면<br>
+                        아래 정보를 입력해 주세요.
+                    </p>
+                </div>
+
+                <!-- Form -->
+                <form id="downloadForm" class="space-y-6">
+                    <!-- 이름 -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">이름 *</label>
+                        <input type="text" id="name" name="name" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors duration-300 bg-white/80"
+                               placeholder="홍길동">
+                    </div>
+
+                    <!-- 회사/기관명 -->
+                    <div>
+                        <label for="company" class="block text-sm font-medium text-gray-700 mb-2">회사/기관명 *</label>
+                        <input type="text" id="company" name="company" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors duration-300 bg-white/80"
+                               placeholder="주식회사 ○○○">
+                    </div>
+
+                    <!-- 직책 -->
+                    <div>
+                        <label for="position" class="block text-sm font-medium text-gray-700 mb-2">직책</label>
+                        <input type="text" id="position" name="position"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors duration-300 bg-white/80"
+                               placeholder="팀장, 과장, 대표 등">
+                    </div>
+
+                    <!-- 이메일 -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">이메일 *</label>
+                        <input type="email" id="email" name="email" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors duration-300 bg-white/80"
+                               placeholder="example@company.com">
+                    </div>
+
+                    <!-- 연락처 -->
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">연락처</label>
+                        <input type="tel" id="phone" name="phone"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors duration-300 bg-white/80"
+                               placeholder="010-0000-0000">
+                    </div>
+
+                    <!-- 관심 분야 -->
+                    <div>
+                        <label for="interest" class="block text-sm font-medium text-gray-700 mb-2">관심 분야</label>
+                        <select id="interest" name="interest"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors duration-300 bg-white/80">
+                            <option value="">선택해 주세요</option>
+                            <option value="관광지_운영">관광지 운영</option>
+                            <option value="지자체_협력">지자체 협력</option>
+                            <option value="AR_솔루션">AR 솔루션 도입</option>
+                            <option value="NFC_기술">NFC 기술 활용</option>
+                            <option value="데이터_분석">방문자 데이터 분석</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+
+                    <!-- 개인정보 처리 동의 -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" id="privacy" name="privacy" required
+                                   class="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                            <label for="privacy" class="text-sm text-gray-700 leading-relaxed">
+                                <span class="font-medium">개인정보 수집 및 이용에 동의합니다.</span><br>
+                                <span class="text-xs text-gray-500">
+                                    수집된 정보는 제안서 전달 및 서비스 안내 목적으로만 사용되며, 
+                                    동의 철회 시 즉시 삭제됩니다.
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 제출 버튼 -->
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-primary to-orange-600 text-white py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="submit-text">제안서 다운로드</span>
+                        <div class="loading items-center justify-center">
+                            <div class="spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                            처리 중...
+                        </div>
+                    </button>
+                </form>
+
+                <!-- Footer Info -->
+                <div class="mt-8 pt-6 border-t border-gray-200/50 text-center">
+                    <p class="text-xs text-gray-500">
+                        문의사항이 있으시면 
+                        <a href="mailto:contact@epispace.kr" class="text-primary hover:underline">contact@epispace.kr</a>로 
+                        연락해 주세요.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl transform scale-95 transition-transform duration-300">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">정보 전송 완료!</h3>
+                <p class="text-gray-600 mb-6">잠시 후 제안서 다운로드가 시작됩니다.</p>
+                <button onclick="closeModal()" 
+                        class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 구글 드라이브 제안서 링크
+        const PROPOSAL_DOWNLOAD_URL = 'https://drive.google.com/file/d/1mcovaTRW_W4P7u6S3iOnKjYqjgqBYPL5/view?usp=share_link';
+        
+        // 구글 앱스 스크립트 웹앱 URL (실제 운영시 교체 필요)
+        const GOOGLE_APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+
+        // 폼 제출 처리
+        document.getElementById('downloadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const submitText = submitBtn.querySelector('.submit-text');
+            const loading = submitBtn.querySelector('.loading');
+            
+            // 버튼 상태 변경
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            loading.classList.add('active');
+            
+            // 폼 데이터 수집
+            const formData = new FormData(form);
+            const data = {
+                name: formData.get('name'),
+                company: formData.get('company'),
+                position: formData.get('position') || '',
+                email: formData.get('email'),
+                phone: formData.get('phone') || '',
+                interest: formData.get('interest') || '',
+                timestamp: new Date().toISOString(),
+                source: 'epispace_proposal_download'
+            };
+            
+            try {
+                // 실제 운영시에는 구글 앱스 스크립트나 서버로 데이터 전송
+                // await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //     },
+                //     body: JSON.stringify(data)
+                // });
+                
+                // 임시: 로컬스토리지에 저장 (개발용)
+                const existingData = JSON.parse(localStorage.getItem('epispace_leads') || '[]');
+                existingData.push(data);
+                localStorage.setItem('epispace_leads', JSON.stringify(existingData));
+                
+                // 성공 처리
+                setTimeout(() => {
+                    // 버튼 상태 복원
+                    submitBtn.disabled = false;
+                    submitText.style.display = 'inline';
+                    loading.classList.remove('active');
+                    
+                    // 성공 모달 표시
+                    showSuccessModal();
+                    
+                    // 제안서 다운로드 시작
+                    setTimeout(() => {
+                        window.open(PROPOSAL_DOWNLOAD_URL, '_blank');
+                    }, 1500);
+                    
+                }, 2000); // 2초 로딩 시뮬레이션
+                
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                
+                // 버튼 상태 복원
+                submitBtn.disabled = false;
+                submitText.style.display = 'inline';
+                loading.classList.remove('active');
+                
+                alert('정보 전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
+            }
+        });
+        
+        // 성공 모달 표시
+        function showSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('.bg-white').classList.add('scale-100');
+                modal.querySelector('.bg-white').classList.remove('scale-95');
+            }, 10);
+        }
+        
+        // 모달 닫기
+        function closeModal() {
+            const modal = document.getElementById('successModal');
+            modal.querySelector('.bg-white').classList.add('scale-95');
+            modal.querySelector('.bg-white').classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+        
+        // 전화번호 자동 포맷팅
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length > 3 && value.length <= 7) {
+                value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length > 7) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+            }
+            e.target.value = value;
+        });
+
+        // 페이지 로드 시 애니메이션
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.form-container');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 0.6s ease-out';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DXQEGVBYP8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DXQEGVBYP8');
+        
+        // 페이지 조회 이벤트
+        gtag('event', 'page_view', {
+            page_title: 'Proposal Download Form',
+            page_location: window.location.href
+        });
+    </script>
+</body>
+</html> 
