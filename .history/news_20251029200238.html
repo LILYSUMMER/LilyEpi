@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DXQEGVBYP8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DXQEGVBYP8');
+    </script>
+    
+    <!-- Primary Meta Tags -->
+    <title>소식 | Epispace</title>
+    <meta name="title" content="소식 | Epispace">
+    <meta name="description" content="Epispace의 최신 소식과 업데이트를 확인하세요.">
+    <meta name="keywords" content="Epispace, 에피스페이스, 뉴스, 소식, AR, 제주">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://epispace.kr/news.html">
+    <meta property="og:title" content="소식 | Epispace">
+    <meta property="og:description" content="Epispace의 최신 소식과 업데이트를 확인하세요.">
+    <meta property="og:image" content="https://epispace.kr/assets/og-image.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://epispace.kr/news.html">
+    <meta property="twitter:title" content="소식 | Epispace">
+    <meta property="twitter:description" content="Epispace의 최신 소식과 업데이트를 확인하세요.">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://epispace.kr/news.html">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Noto Sans KR', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#FF6B00',
+                        'secondary': '#00B894',
+                        'dark': '#1a1a1a',
+                        'light': '#fafafa',
+                        'accent': '#6366f1',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 1s ease-out',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .scroll-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8E53 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Slide Panel Styles */
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 600px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+        
+        .slide-panel.active {
+            right: 0;
+        }
+        
+        .slide-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slide-panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @media (max-width: 640px) {
+            .slide-panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 antialiased bg-gray-50">
+    <!-- Navigation -->
+    <nav id="mainNav" class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-xl sm:text-2xl font-bold gradient-text">Epispace</a>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html#features" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">기능</a>
+                    <a href="index.html#how-it-works" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">작동방식</a>
+                    <a href="news.html" class="text-primary transition-colors duration-300 font-medium border-b-2 border-primary pb-1">소식</a>
+                    <a href="index.html#contact" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">문의</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-16 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    <span class="gradient-text">Epispace</span> 소식
+                </h1>
+                <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    최신 업데이트와 소식을 확인하세요
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- News Grid Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Filter Tabs -->
+            <div class="flex flex-wrap gap-3 mb-12 justify-center">
+                <button class="filter-btn active px-6 py-3 rounded-full font-semibold transition-all duration-300 bg-primary text-white" data-category="all">
+                    전체
+                </button>
+                <button class="filter-btn px-6 py-3 rounded-full font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="update">
+                    업데이트
+                </button>
+                <button class="filter-btn px-6 py-3 rounded-full font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="event">
+                    이벤트
+                </button>
+                <button class="filter-btn px-6 py-3 rounded-full font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="partnership">
+                    파트너십
+                </button>
+                <button class="filter-btn px-6 py-3 rounded-full font-semibold transition-all duration-300 bg-gray-100 text-gray-700 hover:bg-gray-200" data-category="press">
+                    보도자료
+                </button>
+            </div>
+
+            <!-- News Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="newsGrid">
+                <!-- News Item 1 -->
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="update" data-news-id="news-1">
+                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">업데이트</span>
+                            <span class="text-gray-500 text-sm">2025.10.28</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                            Web-AR 성능 개선 업데이트
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">
+                            최신 Web-AR 엔진 업데이트를 통해 로딩 속도가 40% 향상되었으며, 더욱 안정적인 트래킹을 제공합니다.
+                        </p>
+                        <button onclick="openNewsDetail('news-1')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                            자세히 보기
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- News Item 2 -->
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="event" data-news-id="news-2">
+                    <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">이벤트</span>
+                            <span class="text-gray-500 text-sm">2025.10.25</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                            제주 AR 체험 이벤트 개최
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">
+                            11월 한 달간 제주 주요 관광지에서 특별 AR 체험 이벤트를 진행합니다. 참여하시는 모든 분들께 특별 리워드를 제공합니다.
+                        </p>
+                        <button onclick="openNewsDetail('news-2')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                            자세히 보기
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- News Item 3 -->
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="partnership" data-news-id="news-3">
+                    <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-medium">파트너십</span>
+                            <span class="text-gray-500 text-sm">2025.10.20</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                            삼월황과 MOU 체결
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">
+                            삼월황과 관광 혁신을 위한 업무협약을 체결하여 지역 관광지에 AR 기술을 도입합니다.
+                        </p>
+                        <button onclick="openNewsDetail('news-3')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                            자세히 보기
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- News Item 4 -->
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="press" data-news-id="news-4">
+                    <div class="h-48 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm font-medium">보도자료</span>
+                            <span class="text-gray-500 text-sm">2025.10.15</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                            '제주 관광의 새로운 패러다임' 주요 언론 보도
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">
+                            Epispace의 혁신적인 Web-AR 기술이 주요 언론에 소개되며 관광 산업의 디지털 전환을 선도하고 있습니다.
+                        </p>
+                        <button onclick="openNewsDetail('news-4')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                            자세히 보기
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- News Item 5 -->
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="update" data-news-id="news-5">
+                    <div class="h-48 bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-sm font-medium">업데이트</span>
+                            <span class="text-gray-500 text-sm">2025.10.10</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                            방문자 데이터 대시보드 고도화
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">
+                            실시간 방문자 분석 기능이 강화되어 더욱 정교한 인사이트를 제공합니다. 새로운 데이터 시각화 기능을 확인해보세요.
+                        </p>
+                        <button onclick="openNewsDetail('news-5')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                            자세히 보기
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+
+                <!-- News Item 6 -->
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="event" data-news-id="news-6">
+                    <div class="h-48 bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center">
+                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-medium">이벤트</span>
+                            <span class="text-gray-500 text-sm">2025.10.05</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                            AR 포토존 인생샷 콘테스트
+                        </h3>
+                        <p class="text-gray-600 mb-4 line-clamp-3">
+                            제주 AR 포토존에서 촬영한 최고의 순간을 공유하고 푸짐한 경품을 받아가세요. SNS 해시태그 참여 이벤트 진행 중!
+                        </p>
+                        <button onclick="openNewsDetail('news-6')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                            자세히 보기
+                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center gap-2 mt-12">
+                <button class="px-4 py-2 rounded-lg bg-primary text-white font-semibold hover:bg-orange-600 transition-colors duration-300">1</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors duration-300">2</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors duration-300">3</button>
+                <button class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors duration-300">다음 →</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide Panel Overlay -->
+    <div class="slide-panel-overlay" id="panelOverlay" onclick="closeNewsDetail()"></div>
+
+    <!-- Slide Panel -->
+    <div class="slide-panel" id="slidePanel">
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center z-10">
+            <h2 class="text-2xl font-bold text-gray-900" id="panelTitle">뉴스 제목</h2>
+            <button onclick="closeNewsDetail()" class="text-gray-500 hover:text-gray-700 transition-colors">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="p-6" id="panelContent">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Newsletter Section -->
+    <section class="py-20 bg-gradient-to-br from-primary to-orange-600">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                최신 소식을 이메일로 받아보세요
+            </h2>
+            <p class="text-xl text-white/90 mb-8">
+                Epispace의 새로운 소식과 업데이트를 가장 먼저 확인하세요
+            </p>
+            <form class="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+                <input 
+                    type="email" 
+                    placeholder="이메일 주소를 입력하세요" 
+                    class="flex-1 px-6 py-4 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-white/50 transition-all duration-300"
+                    required
+                />
+                <button 
+                    type="submit" 
+                    class="px-8 py-4 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors duration-300 shadow-lg hover:shadow-xl"
+                >
+                    구독하기
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-900 text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-12">
+                <div class="md:col-span-2">
+                    <h3 class="text-3xl font-bold gradient-text mb-6">Epispace</h3>
+                    <p class="text-gray-300 mb-8 text-lg leading-relaxed">
+                        제주 관광지를 인터랙티브 AR/NFC로 변환하는<br>
+                        혁신적인 Web-AR 솔루션을 제공합니다.
+                    </p>
+                    <div class="flex space-x-6">
+                        <a href="https://www.instagram.com/epispace.official/" target="_blank" class="text-gray-400 hover:text-primary transition-colors duration-300">
+                            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-xl font-semibold mb-6">Contact</h4>
+                    <div class="space-y-4 text-gray-300">
+                        <p class="text-lg">contact@epispace.kr</p>
+                        <p>제주특별자치도 서귀포시</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-xl font-semibold mb-6">바로가기</h4>
+                    <div class="space-y-4">
+                        <a href="index.html#features" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">About</a>
+                        <a href="https://brunch.co.kr/@sooryeonyoun" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Blog</a>
+                        <a href="mailto:contact@epispace.kr?subject=Epispace 채용 문의" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Careers</a>
+                        <a href="https://www.instagram.com/epispace.official/" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-16 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Epispace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Google Apps Script 웹 앱 URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydy8MPq6GdsxgtMkAZ7JkwGIk5T4U2qCUBgflJi05bTKVHdH0KqwFr9ab2w_KVj34qRQ/exec';
+
+        // 뉴스 상세 데이터
+        const newsData = {
+            'news-1': {
+                title: 'Web-AR 성능 개선 업데이트',
+                category: '업데이트',
+                date: '2025.10.28',
+                image: 'from-blue-400 to-blue-600',
+                content: `
+                    <div class="prose max-w-none">
+                        <p class="text-lg text-gray-600 mb-6">Epispace의 Web-AR 엔진이 대폭 개선되어 더욱 빠르고 안정적인 AR 체험을 제공합니다.</p>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">주요 개선 사항</h3>
+                        <ul class="space-y-3 text-gray-700 mb-8">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span><strong>로딩 속도 40% 향상:</strong> 3D 모델 로딩 시간이 대폭 단축되어 더 빠른 AR 체험이 가능합니다.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span><strong>트래킹 안정성 개선:</strong> 최신 SLAM 알고리즘 적용으로 더욱 안정적인 오브젝트 배치가 가능합니다.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span><strong>배터리 효율 개선:</strong> 최적화된 렌더링으로 배터리 소모가 25% 감소했습니다.</span>
+                            </li>
+                        </ul>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">기술 세부 사항</h3>
+                        <p class="text-gray-700 mb-4">WebXR Device API 최신 버전을 채택하여 다양한 디바이스에서 일관된 성능을 제공합니다. 특히 중급 사양의 스마트폰에서도 부드러운 60fps AR 체험이 가능하도록 최적화했습니다.</p>
+                        
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 my-8">
+                            <p class="text-blue-900 font-semibold">💡 업데이트는 자동으로 적용되며, 별도의 업데이트가 필요하지 않습니다.</p>
+                        </div>
+                        
+                        <p class="text-gray-700">이번 업데이트로 제주 관광지에서 더욱 쾌적한 AR 체험을 즐기실 수 있습니다.</p>
+                    </div>
+                `
+            },
+            'news-2': {
+                title: '제주 AR 체험 이벤트 개최',
+                category: '이벤트',
+                date: '2025.10.25',
+                image: 'from-purple-400 to-purple-600',
+                content: `
+                    <div class="prose max-w-none">
+                        <p class="text-lg text-gray-600 mb-6">11월 한 달간 제주 주요 관광지에서 특별 AR 체험 이벤트를 개최합니다!</p>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">이벤트 개요</h3>
+                        <ul class="space-y-3 text-gray-700 mb-8">
+                            <li><strong>기간:</strong> 2025년 11월 1일 ~ 11월 30일</li>
+                            <li><strong>장소:</strong> 제주 주요 관광지 (성산일출봉, 만장굴, 중문관광단지 등)</li>
+                            <li><strong>참여 방법:</strong> NFC 태그를 통해 AR 체험 후 미션 완료</li>
+                        </ul>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">특별 리워드</h3>
+                        <div class="grid md:grid-cols-2 gap-4 my-6">
+                            <div class="bg-purple-50 p-6 rounded-xl">
+                                <h4 class="font-bold text-purple-900 mb-2">🎁 미션 완료 시</h4>
+                                <p class="text-purple-800">제주 로컬 카페 음료 쿠폰</p>
+                            </div>
+                            <div class="bg-purple-50 p-6 rounded-xl">
+                                <h4 class="font-bold text-purple-900 mb-2">🏆 전체 완료 시</h4>
+                                <p class="text-purple-800">디지털 굿즈 제공</p>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">참여 방법</h3>
+                        <ol class="list-decimal list-inside space-y-3 text-gray-700 mb-8">
+                            <li>제주 관광지에 설치된 NFC 태그 스캔</li>
+                            <li>AR 콘텐츠 체험 및 사진 촬영</li>
+                            <li>미션 완료 후 자동으로 리워드 발급</li>
+                            <li>SNS에 #EpispaceAR 해시태그와 함께 공유 (선택)</li>
+                        </ol>
+                        
+                        <div class="bg-purple-50 border-l-4 border-purple-500 p-6 my-8">
+                            <p class="text-purple-900 font-semibold">🎉 지금 바로 참여하고 특별한 제주 여행을 만들어보세요!</p>
+                        </div>
+                    </div>
+                `
+            },
+            'news-3': {
+                title: '삼월황과 MOU 체결',
+                category: '파트너십',
+                date: '2025.10.20',
+                image: 'from-green-400 to-green-600',
+                content: `
+                    <div class="prose max-w-none">
+                        <p class="text-lg text-gray-600 mb-6">Epispace가 삼월황과 관광 디지털 전환을 위한 업무협약(MOU)을 체결했습니다.</p>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">협약 주요 내용</h3>
+                        <ul class="space-y-3 text-gray-700 mb-8">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>삼월황 주요 관광지 10곳에 Web-AR 기술 도입</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>지역 문화유산 디지털 아카이빙 및 AR 콘텐츠 제작</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>방문자 데이터 분석을 통한 관광 정책 수립 지원</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span>지역 상권과 연계한 리워드 시스템 구축</span>
+                            </li>
+                        </ul>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">기대 효과</h3>
+                        <p class="text-gray-700 mb-4">이번 협약을 통해 삼월황은 관광객들에게 차별화된 디지털 관광 경험을 제공하고, 지역 경제 활성화에도 기여할 것으로 기대됩니다.</p>
+                        
+                        <div class="bg-gray-100 p-6 rounded-xl my-8">
+                            <p class="text-gray-800 italic">"Epispace와의 협력을 통해 삼월황이 스마트 관광 도시로 도약하는 계기가 될 것입니다."</p>
+                            <p class="text-gray-600 mt-2">- 삼월황 관광과 관계자</p>
+                        </div>
+                        
+                        <p class="text-gray-700">향후 성과에 따라 제주시 전역으로 확대 적용될 예정입니다.</p>
+                    </div>
+                `
+            },
+            'news-4': {
+                title: '제주 관광의 새로운 패러다임',
+                category: '보도자료',
+                date: '2025.10.15',
+                image: 'from-orange-400 to-orange-600',
+                content: `
+                    <div class="prose max-w-none">
+                        <p class="text-lg text-gray-600 mb-6">Epispace의 혁신적인 Web-AR 기술이 주요 언론에 소개되며 큰 관심을 받고 있습니다.</p>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">주요 보도 내용</h3>
+                        <div class="space-y-4 mb-8">
+                            <div class="bg-orange-50 p-6 rounded-xl">
+                                <h4 class="font-bold text-orange-900 mb-2">📰 제주일보</h4>
+                                <p class="text-orange-800">"앱 설치 없이 즐기는 AR, 제주 관광의 새로운 표준"</p>
+                            </div>
+                            <div class="bg-orange-50 p-6 rounded-xl">
+                                <h4 class="font-bold text-orange-900 mb-2">📺 KBS 제주</h4>
+                                <p class="text-orange-800">"제주 관광, 디지털 기술로 날개를 달다"</p>
+                            </div>
+                            <div class="bg-orange-50 p-6 rounded-xl">
+                                <h4 class="font-bold text-orange-900 mb-2">💻 테크M</h4>
+                                <p class="text-orange-800">"Web-AR로 혁신하는 스마트 관광, Epispace"</p>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">전문가 평가</h3>
+                        <p class="text-gray-700 mb-4">관광 산업 전문가들은 Epispace의 기술이 포스트 코로나 시대의 새로운 관광 트렌드를 제시하고 있다고 평가했습니다. 특히 앱 설치가 필요 없는 Web-AR 방식이 사용자 접근성을 크게 높였다는 점이 주목받고 있습니다.</p>
+                        
+                        <div class="bg-orange-50 border-l-4 border-orange-500 p-6 my-8">
+                            <p class="text-orange-900"><strong>산업통상자원부</strong> 디지털 혁신 우수 사례로 선정</p>
+                            <p class="text-orange-800 text-sm mt-2">2025년 10월</p>
+                        </div>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">향후 계획</h3>
+                        <p class="text-gray-700">제주를 시작으로 전국 주요 관광지로 서비스를 확대해 나갈 계획입니다. 문화유산, 자연 관광지, 테마파크 등 다양한 분야에서 AR 기술을 활용한 새로운 관광 경험을 제공할 예정입니다.</p>
+                    </div>
+                `
+            },
+            'news-5': {
+                title: '방문자 데이터 대시보드 고도화',
+                category: '업데이트',
+                date: '2025.10.10',
+                image: 'from-indigo-400 to-indigo-600',
+                content: `
+                    <div class="prose max-w-none">
+                        <p class="text-lg text-gray-600 mb-6">관광지 운영자를 위한 방문자 데이터 대시보드가 대폭 개선되었습니다.</p>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">새로운 기능</h3>
+                        <ul class="space-y-4 text-gray-700 mb-8">
+                            <li>
+                                <strong class="text-indigo-600">실시간 히트맵:</strong>
+                                <p class="mt-1">관광지 내 방문자 분포를 실시간으로 시각화하여 혼잡도를 한눈에 파악할 수 있습니다.</p>
+                            </li>
+                            <li>
+                                <strong class="text-indigo-600">체류 시간 분석:</strong>
+                                <p class="mt-1">각 AR 체험 지점별 평균 체류 시간과 인기도를 분석하여 콘텐츠 개선에 활용할 수 있습니다.</p>
+                            </li>
+                            <li>
+                                <strong class="text-indigo-600">미션 완료율 추적:</strong>
+                                <p class="mt-1">방문자들의 미션 완료 패턴을 분석하여 최적의 동선을 제안합니다.</p>
+                            </li>
+                            <li>
+                                <strong class="text-indigo-600">리워드 효과 분석:</strong>
+                                <p class="mt-1">리워드 쿠폰의 사용률과 재방문율을 추적하여 마케팅 전략을 수립할 수 있습니다.</p>
+                            </li>
+                        </ul>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">데이터 시각화</h3>
+                        <p class="text-gray-700 mb-4">새로운 차트 라이브러리를 도입하여 더욱 직관적이고 아름다운 데이터 시각화를 제공합니다. 월간/주간/일간 단위로 데이터를 조회할 수 있으며, CSV 형식으로 다운로드도 가능합니다.</p>
+                        
+                        <div class="grid md:grid-cols-3 gap-4 my-8">
+                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold text-indigo-600">+150%</div>
+                                <div class="text-sm text-indigo-800 mt-2">데이터 조회 속도</div>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold text-indigo-600">12+</div>
+                                <div class="text-sm text-indigo-800 mt-2">새로운 차트 유형</div>
+                            </div>
+                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold text-indigo-600">실시간</div>
+                                <div class="text-sm text-indigo-800 mt-2">데이터 업데이트</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-6 my-8">
+                            <p class="text-indigo-900 font-semibold">💡 대시보드는 관광지 관리자 계정으로 로그인하여 이용하실 수 있습니다.</p>
+                        </div>
+                    </div>
+                `
+            },
+            'news-6': {
+                title: 'AR 포토존 인생샷 콘테스트',
+                category: '이벤트',
+                date: '2025.10.05',
+                image: 'from-pink-400 to-pink-600',
+                content: `
+                    <div class="prose max-w-none">
+                        <p class="text-lg text-gray-600 mb-6">제주 AR 포토존에서 촬영한 최고의 순간을 공유하고 푸짐한 경품을 받아가세요!</p>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">콘테스트 개요</h3>
+                        <ul class="space-y-3 text-gray-700 mb-8">
+                            <li><strong>기간:</strong> 2025년 10월 15일 ~ 11월 15일</li>
+                            <li><strong>참여 대상:</strong> Epispace AR 포토존에서 사진을 촬영한 모든 분</li>
+                            <li><strong>심사 기준:</strong> 창의성, 완성도, SNS 좋아요 수 (각 33.3%)</li>
+                        </ul>
+                        
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">참여 방법</h3>
+                        <ol class="list-decimal list-inside space-y-3 text-gray-700 mb-8">
+                            <li>제주 AR 포토존에서 인생샷 촬영</li>
+                            <li>인스타그램에 <strong class="text-pink-600">#EpispaceAR</strong> <strong class="text-pink-600">#제주AR인생샷</strong> 해시태그와 함께 게시</li>
+                            <li>Epispace 공식 인스타그램 팔로우</li>
+                            <li>자동으로 응모 완료!</li>
+                        </ol>
+                        
+                        <div class="bg-pink-50 border-l-4 border-pink-500 p-6 my-8">
+                            <p class="text-pink-900 font-semibold">📸 지금 바로 참여하고 여러분의 창의적인 AR 인생샷을 공유해보세요!</p>
+                        </div>
+                        
+                        <p class="text-gray-700">여러분의 창의적인 AR 인생샷을 기대합니다! 많은 참여 부탁드립니다. 😊</p>
+                    </div>
+                `
+            }
+        };
+
+        // 슬라이드 패널 열기
+        function openNewsDetail(newsId) {
+            const news = newsData[newsId];
+            if (!news) return;
+            
+            const panel = document.getElementById('slidePanel');
+            const overlay = document.getElementById('panelOverlay');
+            const title = document.getElementById('panelTitle');
+            const content = document.getElementById('panelContent');
+            
+            title.textContent = news.title;
+            content.innerHTML = news.content;
+            
+            panel.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 스크롤 방지
+        }
+
+        // 슬라이드 패널 닫기
+        function closeNewsDetail() {
+            const panel = document.getElementById('slidePanel');
+            const overlay = document.getElementById('panelOverlay');
+            
+            panel.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = ''; // 스크롤 복구
+        }
+
+        // ESC 키로 패널 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeNewsDetail();
+            }
+        });
+
+        // Sticky Nav
+        window.addEventListener('scroll', function() {
+            const nav = document.getElementById('mainNav');
+            if(window.scrollY > 10) {
+                nav.classList.add('bg-white');
+                nav.classList.remove('bg-white/90');
+            } else {
+                nav.classList.remove('bg-white');
+                nav.classList.add('bg-white/90');
+            }
+        });
+
+        // Scroll fade animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-fade').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const newsItems = document.querySelectorAll('.news-item');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active button
+                filterBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-primary', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-700');
+                });
+                btn.classList.add('active', 'bg-primary', 'text-white');
+                btn.classList.remove('bg-gray-100', 'text-gray-700');
+
+                // Filter news items
+                const category = btn.dataset.category;
+                newsItems.forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.style.display = 'block';
+                        setTimeout(() => {
+                            item.classList.add('visible');
+                        }, 10);
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Newsletter form submission - Google Sheets 연동
+        const newsletterForm = document.querySelector('form');
+        const submitButton = newsletterForm.querySelector('button[type="submit"]');
+        const emailInput = newsletterForm.querySelector('input[type="email"]');
+        
+        newsletterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                alert('이메일 주소를 입력해주세요.');
+                return;
+            }
+
+            // URL이 설정되지 않은 경우 안내
+            if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                alert('⚠️ Google Apps Script URL을 설정해주세요!\n\n파일에서 GOOGLE_SCRIPT_URL을 수정하세요.');
+                console.error('Google Apps Script URL이 설정되지 않았습니다.');
+                return;
+            }
+
+            // 버튼 비활성화 및 로딩 표시
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = '처리중...';
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // CORS 문제 해결
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                // no-cors 모드에서는 응답을 읽을 수 없으므로 성공으로 간주
+                alert('✅ 구독해주셔서 감사합니다!\n' + email + '로 최신 소식을 보내드리겠습니다.');
+                newsletterForm.reset();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ 구독 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.');
+            } finally {
+                // 버튼 복구
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+
