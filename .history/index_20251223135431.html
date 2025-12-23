@@ -206,14 +206,32 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <div class="flex items-center">
-                    <span class="text-xl sm:text-2xl font-bold gradient-text">Epispace</span>
+                    <a href="/" class="flex items-center">
+                        <img src="assets/epispace-logo.png" alt="Epispace Logo" class="h-10 sm:h-12 w-auto">
+                    </a>
                 </div>
+                <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-8">
                     <a href="#features" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">기능</a>
                     <a href="#how-it-works" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">작동방식</a>
                     <a href="news.html" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">소식</a>
                     <a href="#contact" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">문의</a>
                 </div>
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-600 hover:text-primary transition-colors duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-100">
+            <div class="px-4 py-4 space-y-3">
+                <a href="#features" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">기능</a>
+                <a href="#how-it-works" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">작동방식</a>
+                <a href="news.html" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">소식</a>
+                <a href="#contact" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">문의</a>
             </div>
         </div>
     </nav>
@@ -542,7 +560,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid md:grid-cols-4 gap-12">
                 <div class="md:col-span-2">
-                    <h3 class="text-3xl font-bold gradient-text mb-6">Epispace</h3>
+                    <img src="assets/epispace-logo.png" alt="Epispace Logo" class="h-12 w-auto mb-6">
                     <p class="text-gray-300 mb-8 text-lg leading-relaxed">
                         제주 관광지를 인터랙티브 AR/NFC로 변환하는<br>
                         혁신적인 Web-AR 솔루션을 제공합니다.
@@ -582,6 +600,24 @@
     </footer>
 
     <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Close mobile menu when clicking a link
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+        });
+
         // Sticky Nav 색상 전환
         window.addEventListener('scroll', function() {
             const nav = document.getElementById('mainNav');
@@ -629,7 +665,7 @@
         // AR 체험 시작
         function startARExperience() {
             // 모든 브라우저에서 SLAM 기반 월드 트래킹으로 이동
-            window.location.href = 'safari-ar-world-tracking.html';
+            window.location.href = 'https://epispacear.web.app/';
         }
         
         // 페이지 로드 완료 후 초기화
