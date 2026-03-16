@@ -764,6 +764,147 @@
             left: -9999px;
         }
         
+        /* ===== 영상 미리보기 모달 (인스타그램 스타일) ===== */
+        #video-preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9500;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeInModal 0.3s ease;
+        }
+        
+        #video-preview-modal.show {
+            display: flex;
+        }
+        
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #video-preview-modal .preview-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(255, 71, 87, 0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        #video-preview-modal .preview-header::before {
+            content: '🎬';
+        }
+        
+        #video-preview-modal .preview-video-container {
+            position: relative;
+            max-width: 90%;
+            max-height: 60vh;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(255, 107, 157, 0.3);
+        }
+        
+        #video-preview-modal video {
+            position: relative !important;
+            width: 100% !important;
+            height: auto !important;
+            max-height: 60vh;
+            object-fit: contain !important;
+            border-radius: 16px;
+            z-index: auto !important;
+        }
+        
+        #video-preview-modal .preview-info {
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        #video-preview-modal .preview-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        #video-preview-modal .preview-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        #video-preview-modal .preview-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        #video-preview-modal .preview-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #video-preview-modal .btn-download {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8a65 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+        }
+        
+        #video-preview-modal .btn-share {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
+        }
+        
+        #video-preview-modal .btn-close {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        #video-preview-modal .btn-close:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        /* 포맷 뱃지 */
+        #video-preview-modal .format-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            backdrop-filter: blur(5px);
+        }
+        
         /* 촬영 모드 힌트 */
         #capture-hint {
             position: fixed;
@@ -841,6 +982,32 @@
     
     <!-- 녹화용 캔버스 -->
     <canvas id="recording-canvas"></canvas>
+    
+    <!-- 영상 미리보기 모달 -->
+    <div id="video-preview-modal">
+        <div class="preview-header">
+            <span id="video-duration-text">녹화 완료</span>
+        </div>
+        <div class="preview-video-container">
+            <video id="preview-video" controls autoplay loop playsinline></video>
+            <span id="format-badge" class="format-badge">MP4</span>
+        </div>
+        <div class="preview-info">
+            <span id="video-size-info">📁 --</span>
+            <span id="video-format-info">🎥 --</span>
+        </div>
+        <div class="preview-actions">
+            <button type="button" class="preview-btn btn-download" id="btn-video-download">
+                💾 저장하기
+            </button>
+            <button type="button" class="preview-btn btn-share" id="btn-video-share">
+                📤 공유하기
+            </button>
+            <button type="button" class="preview-btn btn-close" id="btn-video-close">
+                ✕ 닫기
+            </button>
+        </div>
+    </div>
     
     <!-- 셔터 플래시 -->
     <div id="shutter-flash"></div>
@@ -1114,6 +1281,17 @@
         const recordingCanvas = document.getElementById('recording-canvas');
         const recordingCtx = recordingCanvas.getContext('2d', { alpha: false });
         
+        // 영상 미리보기 모달 요소
+        const videoPreviewModal = document.getElementById('video-preview-modal');
+        const previewVideo = document.getElementById('preview-video');
+        const formatBadge = document.getElementById('format-badge');
+        const videoSizeInfo = document.getElementById('video-size-info');
+        const videoFormatInfo = document.getElementById('video-format-info');
+        const videoDurationText = document.getElementById('video-duration-text');
+        const btnVideoDownload = document.getElementById('btn-video-download');
+        const btnVideoShare = document.getElementById('btn-video-share');
+        const btnVideoClose = document.getElementById('btn-video-close');
+        
         let videoElement = null;
         let isTargetFound = false;
         let isTargetVisible = false;
@@ -1140,6 +1318,12 @@
         let recordStartTime = 0;
         let recordTimerInterval = null;
         let progressCircle = null;
+        
+        // 녹화 결과물 저장 (미리보기/공유용)
+        let lastRecordedBlob = null;
+        let lastRecordedUrl = null;
+        let lastRecordedMimeType = null;
+        let lastRecordedDuration = 0;
         
         // 카메라 전환 관련
         let currentFacingMode = 'environment'; // 'environment' = 후면, 'user' = 전면
@@ -1431,6 +1615,134 @@
             }
         }
         
+        // ===== 스마트 MIME 타입 선택 (MP4 우선) =====
+        function getBestVideoMimeType() {
+            const mimeTypes = [
+                'video/mp4;codecs=avc1',
+                'video/mp4',
+                'video/webm;codecs=h264',
+                'video/webm;codecs=vp9',
+                'video/webm;codecs=vp8',
+                'video/webm'
+            ];
+            
+            for (const mimeType of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    console.log('✅ 선택된 MIME 타입:', mimeType);
+                    return mimeType;
+                }
+            }
+            
+            console.warn('⚠️ 지원되는 MIME 타입 없음, 기본값 사용');
+            return 'video/webm';
+        }
+        
+        // 파일 확장자 결정
+        function getFileExtension(mimeType) {
+            if (mimeType.includes('mp4')) return 'mp4';
+            return 'webm';
+        }
+        
+        // 파일 크기 포맷팅
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // 영상 미리보기 모달 표시
+        function showVideoPreview(blob, mimeType, duration) {
+            // 이전 URL 정리
+            if (lastRecordedUrl) {
+                URL.revokeObjectURL(lastRecordedUrl);
+            }
+            
+            // 새 데이터 저장
+            lastRecordedBlob = blob;
+            lastRecordedMimeType = mimeType;
+            lastRecordedUrl = URL.createObjectURL(blob);
+            lastRecordedDuration = duration;
+            
+            // 비디오 설정
+            previewVideo.src = lastRecordedUrl;
+            previewVideo.load();
+            
+            // 포맷 뱃지 업데이트
+            const ext = getFileExtension(mimeType).toUpperCase();
+            formatBadge.textContent = ext;
+            
+            // 정보 업데이트
+            const durationSec = Math.floor(duration / 1000);
+            const mins = Math.floor(durationSec / 60);
+            const secs = durationSec % 60;
+            videoDurationText.textContent = `${mins}:${String(secs).padStart(2, '0')} 녹화 완료`;
+            videoSizeInfo.textContent = `📁 ${formatFileSize(blob.size)}`;
+            videoFormatInfo.textContent = `🎥 ${ext} (${mimeType.split(';')[0]})`;
+            
+            // 공유 버튼 활성화/비활성화
+            if (navigator.canShare && navigator.canShare({ files: [new File([blob], 'video.' + getFileExtension(mimeType), { type: mimeType })] })) {
+                btnVideoShare.style.display = 'flex';
+            } else {
+                btnVideoShare.style.display = 'none';
+            }
+            
+            // 모달 표시
+            videoPreviewModal.classList.add('show');
+        }
+        
+        // 영상 다운로드
+        function downloadVideo() {
+            if (!lastRecordedBlob || !lastRecordedUrl) return;
+            
+            const ext = getFileExtension(lastRecordedMimeType);
+            const filename = `cherry-blossom-${Date.now()}.${ext}`;
+            
+            const a = document.createElement('a');
+            a.href = lastRecordedUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast(`💾 ${filename} 저장 완료!`, '✨');
+        }
+        
+        // 영상 공유 (Web Share API)
+        async function shareVideo() {
+            if (!lastRecordedBlob) return;
+            
+            try {
+                const ext = getFileExtension(lastRecordedMimeType);
+                const filename = `cherry-blossom-${Date.now()}.${ext}`;
+                const file = new File([lastRecordedBlob], filename, { type: lastRecordedMimeType });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: '🌸 벚꽃 AR 영상',
+                        text: '벚꽃 터널 AR 포토존에서 촬영한 영상입니다!'
+                    });
+                    showToast('📤 공유 완료!', '✨');
+                } else {
+                    showToast('이 브라우저에서는 공유가 지원되지 않습니다', '❌');
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('공유 실패:', err);
+                    showToast('공유 중 오류가 발생했습니다', '❌');
+                }
+            }
+        }
+        
+        // 미리보기 모달 닫기
+        function closeVideoPreview() {
+            videoPreviewModal.classList.remove('show');
+            previewVideo.pause();
+            previewVideo.src = '';
+            
+            // URL은 유지 (다시 다운로드/공유 가능하도록)
+        }
+        
         // 녹화 시작
         function startRecording() {
             if (isRecording || isCapturing) return;
@@ -1456,12 +1768,8 @@
                     canvasStream.addTrack(audioTrack);
                 }
                 
-                // MediaRecorder 설정
-                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
-                    ? 'video/webm;codecs=vp9' 
-                    : MediaRecorder.isTypeSupported('video/webm') 
-                        ? 'video/webm' 
-                        : 'video/mp4';
+                // ===== 스마트 MIME 타입 선택 (MP4 우선) =====
+                const mimeType = getBestVideoMimeType();
                 
                 mediaRecorder = new MediaRecorder(canvasStream, {
                     mimeType: mimeType,
@@ -1477,21 +1785,11 @@
                 };
                 
                 mediaRecorder.onstop = () => {
+                    const duration = Date.now() - recordStartTime;
                     const blob = new Blob(recordedChunks, { type: mimeType });
-                    const url = URL.createObjectURL(blob);
                     
-                    // 다운로드
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `cherry-blossom-${Date.now()}.${mimeType.includes('webm') ? 'webm' : 'mp4'}`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    
-                    // 메모리 정리
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    
-                    showToast('🎬 동영상이 저장되었습니다!', '✨');
+                    // 미리보기 모달 표시 (자동 다운로드 대신)
+                    showVideoPreview(blob, mimeType, duration);
                 };
                 
                 mediaRecorder.onerror = (e) => {
@@ -1834,6 +2132,25 @@
             e.preventDefault();
             e.stopPropagation();
             switchCamera();
+        });
+        
+        // 영상 미리보기 모달 버튼 이벤트
+        btnVideoDownload.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            downloadVideo();
+        });
+        
+        btnVideoShare.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            shareVideo();
+        });
+        
+        btnVideoClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeVideoPreview();
         });
         
         // 인스타그램 스타일 캡처 버튼 설정
