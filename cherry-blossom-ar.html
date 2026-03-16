@@ -591,7 +591,7 @@
         }
         
         /* 캔버스 숨김 */
-        #paint-canvas, #hires-canvas { display: none; }
+        #paint-canvas { display: none; }
     </style>
 </head>
 <body>
@@ -667,7 +667,6 @@
     </div>
     
     <canvas id="paint-canvas" width="1024" height="1024"></canvas>
-    <canvas id="hires-canvas"></canvas>
     
     <!-- A-Frame AR 씬 -->
     <a-scene
@@ -760,11 +759,8 @@
     
     <script>
         // 설정
-        const CAPTURE_SCALE_MULTIPLIER = 2;
-        const MIN_CAPTURE_WIDTH = 2048;
-        const JPEG_QUALITY = 0.95;
         const TRACKING_PERSISTENCE_MS = 10000;
-        const COUNTDOWN_SECONDS = 5;
+        const COUNTDOWN_SECONDS = 3;
         const FG_PETAL_INTERVAL = 300;
         
         // 현재 모드
@@ -784,8 +780,6 @@
         const cameraPetals = document.getElementById('camera-petals');
         const paintCanvas = document.getElementById('paint-canvas');
         const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
-        const hiresCanvas = document.getElementById('hires-canvas');
-        const hiresCtx = hiresCanvas.getContext('2d');
         const statusBar = document.getElementById('status-bar');
         const screenPetals = document.getElementById('screen-petals');
         const foregroundPetals = document.getElementById('foreground-petals');
@@ -988,135 +982,143 @@
             }
         }
         
-        // 고화질 캡처
-        async function captureHighResolution() {
-            if (!videoElement || !sceneEl) return null;
+        // ===== 가벼운 스냅샷 캡처 (Native Canvas API) =====
+        function takeSnapshot(e) {
+            // 폼 제출/기본 동작 방지
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
             try {
-                const renderer = sceneEl.renderer;
-                const dpr = window.devicePixelRatio || 1;
-                const scale = Math.max(CAPTURE_SCALE_MULTIPLIER * dpr, MIN_CAPTURE_WIDTH / window.innerWidth);
-                const cw = Math.floor(window.innerWidth * scale);
-                const ch = Math.floor(window.innerHeight * scale);
-                hiresCanvas.width = cw;
-                hiresCanvas.height = ch;
-                hiresCtx.imageSmoothingEnabled = true;
-                hiresCtx.imageSmoothingQuality = 'high';
-                
-                const vw = videoElement.videoWidth, vh = videoElement.videoHeight;
-                if (vw > 0 && vh > 0) {
-                    const va = vw / vh, ca = cw / ch;
-                    let sx, sy, sw, sh;
-                    if (va > ca) { sh = vh; sw = vh * ca; sx = (vw - sw) / 2; sy = 0; }
-                    else { sw = vw; sh = vw / ca; sx = 0; sy = (vh - sh) / 2; }
-                    hiresCtx.drawImage(videoElement, sx, sy, sw, sh, 0, 0, cw, ch);
+                // 비디오 요소 확인
+                const video = videoElement || document.querySelector('video');
+                if (!video) {
+                    alert('[에러] 카메라 비디오를 찾을 수 없습니다.');
+                    return false;
                 }
                 
-                const origSize = renderer.getSize(new THREE.Vector2());
-                const origPR = renderer.getPixelRatio();
-                renderer.setPixelRatio(1);
-                renderer.setSize(cw, ch, false);
-                sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
-                hiresCtx.drawImage(renderer.domElement, 0, 0, cw, ch);
-                renderer.setPixelRatio(origPR);
-                renderer.setSize(origSize.x, origSize.y, false);
-                
-                const grad = hiresCtx.createLinearGradient(0, 0, 0, ch);
-                grad.addColorStop(0, 'rgba(255, 200, 180, 0.08)');
-                grad.addColorStop(0.5, 'rgba(255, 180, 200, 0.05)');
-                grad.addColorStop(1, 'rgba(255, 200, 180, 0.08)');
-                hiresCtx.globalCompositeOperation = 'soft-light';
-                hiresCtx.fillStyle = grad;
-                hiresCtx.fillRect(0, 0, cw, ch);
-                hiresCtx.globalCompositeOperation = 'source-over';
-                
-                return { dataUrl: hiresCanvas.toDataURL('image/jpeg', JPEG_QUALITY), width: cw, height: ch };
-            } catch (e) { console.error(e); return null; }
-        }
-        
-        // 다운로드 함수 (페이지 리셋 방지)
-        function downloadImage(dataUrl, filename) {
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = filename;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            // 즉시 제거하지 않고 약간의 딜레이 후 제거
-            setTimeout(() => {
-                document.body.removeChild(link);
-            }, 100);
-        }
-        
-        async function shareImage(dataUrl) {
-            try {
-                const res = await fetch(dataUrl);
-                const blob = await res.blob();
-                const file = new File([blob], 'cherry-blossom-AR.jpg', { type: 'image/jpeg' });
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ title: '나만의 벚꽃 터널 AR', text: '내가 직접 색칠한 벚꽃길에서 찍은 사진이야! 🌸', files: [file] });
-                    return true;
+                // A-Frame 캔버스 확인
+                const arCanvas = document.querySelector('.a-canvas');
+                if (!arCanvas) {
+                    alert('[에러] AR 캔버스를 찾을 수 없습니다.');
+                    return false;
                 }
+                
+                // 화면 크기로 제한 (메모리 절약)
+                const cw = window.innerWidth;
+                const ch = window.innerHeight;
+                
+                // 임시 캔버스 생성 (메모리 상에만 존재)
+                let tempCanvas = document.createElement('canvas');
+                tempCanvas.width = cw;
+                tempCanvas.height = ch;
+                let ctx = tempCanvas.getContext('2d');
+                
+                // 1. 비디오(카메라) 그리기
+                const vw = video.videoWidth || cw;
+                const vh = video.videoHeight || ch;
+                const videoAspect = vw / vh;
+                const canvasAspect = cw / ch;
+                
+                let sx = 0, sy = 0, sw = vw, sh = vh;
+                if (videoAspect > canvasAspect) {
+                    sw = vh * canvasAspect;
+                    sx = (vw - sw) / 2;
+                } else {
+                    sh = vw / canvasAspect;
+                    sy = (vh - sh) / 2;
+                }
+                
+                ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+                
+                // 2. AR 캔버스 겹쳐 그리기
+                ctx.drawImage(arCanvas, 0, 0, cw, ch);
+                
+                // 3. 이미지 데이터 생성 (JPEG 0.8 화질)
+                let dataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
+                
+                // 4. 다운로드 처리
+                let link = document.createElement('a');
+                link.download = 'cherry-blossom.jpg';
+                link.href = dataUrl;
+                link.style.display = 'none';
+                link.click();
+                
+                // 5. 메모리 정리
+                ctx = null;
+                tempCanvas = null;
+                dataUrl = null;
+                link = null;
+                
+                // 성공 토스트
+                showToast('📸 사진이 저장되었어요!', '🌸');
+                
                 return false;
-            } catch (e) { return false; }
+                
+            } catch (err) {
+                // 에러 시 alert로 디버깅 정보 표시 (새로고침 방지)
+                alert('[캡처 에러]\n' + (err.message || err.toString()));
+                return false;
+            }
         }
         
-        function showCapturePreview(dataUrl, w, h) {
-            capturePreviewImage.src = dataUrl;
-            capturePreviewInfo.textContent = `고화질 ${w} x ${h} px`;
-            capturePreviewModal.classList.add('show');
+        // 카운트다운 후 스냅샷
+        async function startPhotoCapture(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            if (isCapturing) return false;
+            isCapturing = true;
+            
+            try {
+                // 카운트다운
+                for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
+                    photoCountdown.textContent = i;
+                    photoCountdown.classList.remove('show');
+                    void photoCountdown.offsetWidth;
+                    photoCountdown.classList.add('show');
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+                
+                // UI 숨기기
+                hideAllUI();
+                photoCountdown.classList.remove('show');
+                
+                // 잠시 대기 후 플래시 & 촬영
+                await new Promise(r => setTimeout(r, 100));
+                shutterFlash.classList.add('flash');
+                createShutterSound();
+                
+                // 스냅샷 촬영
+                takeSnapshot(null);
+                
+                // 플래시 제거 & UI 복원
+                setTimeout(() => {
+                    shutterFlash.classList.remove('flash');
+                }, 300);
+                
+                setTimeout(() => {
+                    showAllUI();
+                    isCapturing = false;
+                }, 400);
+                
+            } catch (err) {
+                alert('[촬영 에러]\n' + (err.message || err.toString()));
+                isCapturing = false;
+            }
+            
+            return false;
         }
         
+        // 프리뷰 모달 닫기
         capturePreviewClose.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             capturePreviewModal.classList.remove('show');
         });
-        
-        async function startPhotoCapture(event) {
-            // 페이지 리셋 방지
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
-            if (isCapturing) return;
-            isCapturing = true;
-            
-            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            
-            for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
-                photoCountdown.textContent = i;
-                photoCountdown.classList.remove('show');
-                void photoCountdown.offsetWidth;
-                photoCountdown.classList.add('show');
-                await new Promise(r => setTimeout(r, 1000));
-            }
-            
-            hideAllUI();
-            photoCountdown.classList.remove('show');
-            await new Promise(r => setTimeout(r, 150));
-            shutterFlash.classList.add('flash');
-            createShutterSound();
-            
-            const result = await captureHighResolution();
-            
-            setTimeout(() => shutterFlash.classList.remove('flash'), 400);
-            setTimeout(() => { 
-                showAllUI(); 
-                isCapturing = false; 
-            }, 500);
-            
-            if (result) {
-                downloadImage(result.dataUrl, 'cherry-blossom-AR.jpg');
-                showCapturePreview(result.dataUrl, result.width, result.height);
-                await shareImage(result.dataUrl);
-                showToast('📸 고화질 사진이 저장되었어요!', '🌸');
-            } else { 
-                showToast('사진 저장에 실패했어요', '😢'); 
-            }
-            
-            return false;
-        }
         
         // 꽃잎 폭발
         function createPetalBurst() {
