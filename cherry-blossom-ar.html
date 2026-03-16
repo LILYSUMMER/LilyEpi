@@ -27,7 +27,6 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     
     <style>
-        /* 독립적인 스타일 - 기존 사이트와 충돌 방지 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         html, body {
@@ -40,7 +39,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 검은 화면 방지를 위한 비디오 스타일 강제 적용 */
         video {
             position: fixed !important;
             top: 0 !important;
@@ -66,13 +64,97 @@
             background: transparent !important;
         }
         
-        /* A-Frame 캔버스 투명하게 */
         .a-canvas {
             background: transparent !important;
             background-color: transparent !important;
         }
         
-        /* 에러 메시지 UI */
+        /* 시작 메뉴 */
+        #start-menu {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2d1f3d 0%, #1a1a2e 50%, #2d1f3d 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 30px;
+        }
+        
+        #start-menu.hidden {
+            display: none;
+        }
+        
+        .start-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffb6c1;
+            text-shadow: 0 0 30px rgba(255, 182, 193, 0.5);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .start-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .mode-btn {
+            width: 280px;
+            padding: 22px 30px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .mode-btn:active {
+            transform: scale(0.97);
+        }
+        
+        #btn-mode-blossom {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8a65 100%);
+            color: white;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.4);
+        }
+        
+        #btn-mode-blossom .mode-desc {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        #btn-mode-kit {
+            background: linear-gradient(135deg, #9c27b0 0%, #e91e63 100%);
+            color: white;
+            box-shadow: 0 8px 30px rgba(156, 39, 176, 0.4);
+        }
+        
+        #btn-mode-kit .mode-desc {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        .start-footer {
+            position: absolute;
+            bottom: 40px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+        }
+        
+        /* 에러 오버레이 */
         #error-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -82,7 +164,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10000;
+            z-index: 10001;
             color: white;
             text-align: center;
             padding: 30px;
@@ -119,12 +201,13 @@
             font-size: 20px;
             cursor: pointer;
             z-index: 1000;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(10px);
         }
         
+        #back-button.show { display: flex; }
         #back-button:active { transform: scale(0.95); }
         
         /* 따뜻한 톤 오버레이 */
@@ -141,7 +224,10 @@
             pointer-events: none;
             z-index: 2;
             mix-blend-mode: soft-light;
+            display: none;
         }
+        
+        #warm-overlay.show { display: block; }
         
         /* 셔터 플래시 */
         #shutter-flash {
@@ -168,7 +254,7 @@
             width: 100%; height: 100%;
             z-index: 100;
             pointer-events: none;
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -176,6 +262,7 @@
             transition: opacity 0.8s ease-out;
         }
         
+        #guide-ui.show { display: flex; }
         #guide-ui.hidden { opacity: 0; pointer-events: none; }
         
         #guide-image {
@@ -208,7 +295,7 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: linear-gradient(135deg, #2d1f3d 0%, #1a1a2e 50%, #2d1f3d 100%);
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -216,6 +303,7 @@
             transition: opacity 0.6s ease-out;
         }
         
+        #loading-screen.show { display: flex; }
         #loading-screen.hidden { opacity: 0; pointer-events: none; }
         
         .loading-spinner {
@@ -247,12 +335,13 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
+            display: none;
             gap: 12px;
             z-index: 300;
             transition: opacity 0.3s ease;
         }
         
+        #button-container.show { display: flex; }
         #button-container.hidden { opacity: 0; pointer-events: none; }
         
         /* 공통 버튼 스타일 */
@@ -378,7 +467,10 @@
             z-index: 400;
             pointer-events: none;
             overflow: hidden;
+            display: none;
         }
+        
+        #foreground-petals.show { display: block; }
         
         .fg-petal {
             position: absolute;
@@ -503,16 +595,34 @@
     </style>
 </head>
 <body>
+    <!-- 시작 메뉴 -->
+    <div id="start-menu">
+        <h1 class="start-title">🌸 벚꽃 터널 AR</h1>
+        <p class="start-subtitle">체험 모드를 선택해주세요</p>
+        
+        <button type="button" id="btn-mode-blossom" class="mode-btn">
+            🌸 벚꽃이랑 촬영하기
+            <span class="mode-desc">바로 카메라와 벚꽃잎으로 사진 촬영</span>
+        </button>
+        
+        <button type="button" id="btn-mode-kit" class="mode-btn">
+            🎨 색칠 키트 체험하기
+            <span class="mode-desc">색칠한 도안을 스캔해서 AR로 보기</span>
+        </button>
+        
+        <p class="start-footer">Epispace AR Experience</p>
+    </div>
+    
     <!-- 에러 오버레이 -->
     <div id="error-overlay">
         <span class="error-icon">⚠️</span>
         <p class="error-title">리소스 로드 실패</p>
         <p class="error-message" id="error-message">필요한 파일을 불러오지 못했습니다.</p>
-        <button class="retry-btn" onclick="location.reload()">다시 시도</button>
+        <button type="button" class="retry-btn" onclick="location.reload()">다시 시도</button>
     </div>
     
     <!-- 뒤로가기 버튼 -->
-    <button id="back-button" onclick="history.back()">←</button>
+    <button type="button" id="back-button">←</button>
     
     <!-- 셔터 플래시 -->
     <div id="shutter-flash"></div>
@@ -537,8 +647,8 @@
     <div id="screen-petals"></div>
     
     <div id="button-container">
-        <button id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
-        <button id="photo-capture-button" class="ar-btn">📸 사진 찍기</button>
+        <button type="button" id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
+        <button type="button" id="photo-capture-button" class="ar-btn">📸 사진 찍기</button>
     </div>
     
     <div id="photo-countdown"></div>
@@ -553,7 +663,7 @@
     <div id="capture-preview-modal">
         <img id="capture-preview-image" alt="촬영된 사진">
         <p id="capture-preview-info">고화질 (0 x 0)</p>
-        <button id="capture-preview-close">확인</button>
+        <button type="button" id="capture-preview-close">확인</button>
     </div>
     
     <canvas id="paint-canvas" width="1024" height="1024"></canvas>
@@ -562,12 +672,13 @@
     <!-- A-Frame AR 씬 -->
     <a-scene
         id="ar-scene"
-        mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
+        mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
         renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; preserveDrawingBuffer: true;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
+        style="display: none;"
     >
         <a-assets timeout="10000">
             <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
@@ -579,7 +690,31 @@
         <a-entity light="type: directional; color: #ffe4e1; intensity: 0.6;" position="-2 2 -1"></a-entity>
         <a-entity light="type: directional; color: #ffeef0; intensity: 0.4;" position="2 1 1"></a-entity>
         
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <a-camera position="0 0 0" look-controls="enabled: false">
+            <!-- 카메라 앞 벚꽃 파티클 (Free Mode용) -->
+            <a-entity id="camera-petals" visible="false">
+                <a-image src="#petal-img" position="-0.3 0.2 -1" scale="0.08 0.08 0.08" opacity="0.8"
+                    animation__fall="property: position; from: -0.3 0.5 -1; to: 0.3 -0.5 -1.2; dur: 4000; easing: easeInOutSine; loop: true;"
+                    animation__rotate="property: rotation; from: 0 0 0; to: 45 180 360; dur: 4500; easing: linear; loop: true;">
+                </a-image>
+                <a-image src="#petal-img" position="0.25 0.15 -0.8" scale="0.06 0.06 0.06" opacity="0.7"
+                    animation__fall="property: position; from: 0.4 0.4 -0.8; to: -0.4 -0.4 -1; dur: 5000; easing: easeInOutSine; loop: true; delay: 500;"
+                    animation__rotate="property: rotation; from: 30 0 45; to: -30 360 405; dur: 5500; easing: linear; loop: true;">
+                </a-image>
+                <a-image src="#petal-img" position="0.1 -0.1 -1.2" scale="0.1 0.1 0.1" opacity="0.85"
+                    animation__fall="property: position; from: -0.2 0.6 -1.2; to: 0.2 -0.6 -1.4; dur: 4500; easing: easeInOutSine; loop: true; delay: 1000;"
+                    animation__rotate="property: rotation; from: -20 0 -30; to: 20 -360 330; dur: 5000; easing: linear; loop: true;">
+                </a-image>
+                <a-image src="#petal-img" position="-0.15 0.3 -0.9" scale="0.07 0.07 0.07" opacity="0.75"
+                    animation__fall="property: position; from: 0.3 0.5 -0.9; to: -0.3 -0.5 -1.1; dur: 3800; easing: easeInOutSine; loop: true; delay: 300;"
+                    animation__rotate="property: rotation; from: 10 20 0; to: -10 380 360; dur: 4200; easing: linear; loop: true;">
+                </a-image>
+                <a-image src="#petal-img" position="0.35 0.05 -1.1" scale="0.055 0.055 0.055" opacity="0.65"
+                    animation__fall="property: position; from: 0.35 0.45 -1.1; to: -0.35 -0.45 -1.3; dur: 5500; easing: easeInOutSine; loop: true; delay: 700;"
+                    animation__rotate="property: rotation; from: -15 30 20; to: 15 390 380; dur: 6000; easing: linear; loop: true;">
+                </a-image>
+            </a-entity>
+        </a-camera>
         
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
             <!-- 2D 이미지 기반 평면 (부조 도안) -->
@@ -632,7 +767,13 @@
         const COUNTDOWN_SECONDS = 5;
         const FG_PETAL_INTERVAL = 300;
         
+        // 현재 모드
+        let currentMode = null; // 'blossom' or 'kit'
+        
         // DOM 요소
+        const startMenu = document.getElementById('start-menu');
+        const btnModeBlossom = document.getElementById('btn-mode-blossom');
+        const btnModeKit = document.getElementById('btn-mode-kit');
         const loadingScreen = document.getElementById('loading-screen');
         const guideUI = document.getElementById('guide-ui');
         const arTarget = document.getElementById('ar-target');
@@ -640,6 +781,7 @@
         const reliefPlane = document.getElementById('relief-plane');
         const colorOverlayPlane = document.getElementById('color-overlay-plane');
         const petalsContainer = document.getElementById('petals-container');
+        const cameraPetals = document.getElementById('camera-petals');
         const paintCanvas = document.getElementById('paint-canvas');
         const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
         const hiresCanvas = document.getElementById('hires-canvas');
@@ -661,6 +803,7 @@
         const capturePreviewClose = document.getElementById('capture-preview-close');
         const errorOverlay = document.getElementById('error-overlay');
         const errorMessage = document.getElementById('error-message');
+        const backButton = document.getElementById('back-button');
         
         let videoElement = null;
         let isTargetFound = false;
@@ -673,6 +816,7 @@
         let isCapturing = false;
         let audioContext = null;
         let resourcesLoaded = false;
+        let arStarted = false;
         let petalImage = new Image();
         petalImage.crossOrigin = 'anonymous';
         petalImage.src = './assets/cherry-blossom-ar/petal.png';
@@ -687,7 +831,6 @@
         
         // 검은 화면 수정 함수
         function fixBlackScreen() {
-            // 모든 비디오 요소 강제 스타일링
             const videos = document.querySelectorAll('video');
             videos.forEach(video => {
                 video.style.cssText = `
@@ -712,24 +855,20 @@
                 videoElement = video;
             });
             
-            // 모든 캔버스 배경 투명하게
             const canvases = document.querySelectorAll('canvas.a-canvas, .a-canvas');
             canvases.forEach(canvas => {
                 canvas.style.background = 'transparent';
                 canvas.style.backgroundColor = 'transparent';
             });
             
-            // A-Frame 씬 배경 투명
             if (sceneEl) {
                 sceneEl.style.background = 'transparent';
                 sceneEl.style.backgroundColor = 'transparent';
             }
             
-            // body 배경 투명
             document.body.style.background = 'transparent';
             document.body.style.backgroundColor = 'transparent';
             
-            // 렌더러 투명 설정
             if (sceneEl && sceneEl.renderer) {
                 sceneEl.renderer.setClearColor(0x000000, 0);
             }
@@ -791,17 +930,33 @@
         
         function startForegroundPetals() {
             if (fgPetalInterval) return;
+            foregroundPetals.classList.add('show');
             for (let i = 0; i < 8; i++) setTimeout(() => createForegroundPetal(), i * 200);
             fgPetalInterval = setInterval(createForegroundPetal, FG_PETAL_INTERVAL);
+        }
+        
+        function stopForegroundPetals() {
+            if (fgPetalInterval) {
+                clearInterval(fgPetalInterval);
+                fgPetalInterval = null;
+            }
+            foregroundPetals.classList.remove('show');
         }
         
         // UI
         function hideLoadingScreen() {
             loadingScreen.classList.add('hidden');
-            setTimeout(() => loadingScreen.style.display = 'none', 600);
+            setTimeout(() => loadingScreen.classList.remove('show'), 600);
+        }
+        function showLoadingScreen() {
+            loadingScreen.classList.add('show');
+            loadingScreen.classList.remove('hidden');
         }
         function hideGuide() { guideUI.classList.add('hidden'); }
-        function showGuide() { guideUI.classList.remove('hidden'); }
+        function showGuide() { 
+            guideUI.classList.add('show');
+            guideUI.classList.remove('hidden'); 
+        }
         function showStatus(msg) {
             if (isCapturing) return;
             statusBar.textContent = msg;
@@ -820,15 +975,17 @@
             texturePreview.classList.add('hidden');
             statusBar.classList.add('hidden');
             guideUI.classList.add('hidden');
-            warmOverlay.style.display = 'none';
-            foregroundPetals.style.display = 'none';
+            warmOverlay.classList.remove('show');
+            foregroundPetals.classList.remove('show');
         }
         function showAllUI() {
             buttonContainer.classList.remove('hidden');
             texturePreview.classList.remove('hidden');
             statusBar.classList.remove('hidden');
-            warmOverlay.style.display = '';
-            foregroundPetals.style.display = '';
+            warmOverlay.classList.add('show');
+            if (currentMode === 'blossom') {
+                foregroundPetals.classList.add('show');
+            }
         }
         
         // 고화질 캡처
@@ -876,13 +1033,18 @@
             } catch (e) { console.error(e); return null; }
         }
         
+        // 다운로드 함수 (페이지 리셋 방지)
         function downloadImage(dataUrl, filename) {
             const link = document.createElement('a');
             link.href = dataUrl;
             link.download = filename;
+            link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
+            // 즉시 제거하지 않고 약간의 딜레이 후 제거
+            setTimeout(() => {
+                document.body.removeChild(link);
+            }, 100);
         }
         
         async function shareImage(dataUrl) {
@@ -903,12 +1065,25 @@
             capturePreviewInfo.textContent = `고화질 ${w} x ${h} px`;
             capturePreviewModal.classList.add('show');
         }
-        capturePreviewClose.addEventListener('click', () => capturePreviewModal.classList.remove('show'));
         
-        async function startPhotoCapture() {
+        capturePreviewClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            capturePreviewModal.classList.remove('show');
+        });
+        
+        async function startPhotoCapture(event) {
+            // 페이지 리셋 방지
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             if (isCapturing) return;
             isCapturing = true;
+            
             if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
             for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
                 photoCountdown.textContent = i;
                 photoCountdown.classList.remove('show');
@@ -916,20 +1091,31 @@
                 photoCountdown.classList.add('show');
                 await new Promise(r => setTimeout(r, 1000));
             }
+            
             hideAllUI();
             photoCountdown.classList.remove('show');
             await new Promise(r => setTimeout(r, 150));
             shutterFlash.classList.add('flash');
             createShutterSound();
+            
             const result = await captureHighResolution();
+            
             setTimeout(() => shutterFlash.classList.remove('flash'), 400);
-            setTimeout(() => { showAllUI(); isCapturing = false; }, 500);
+            setTimeout(() => { 
+                showAllUI(); 
+                isCapturing = false; 
+            }, 500);
+            
             if (result) {
                 downloadImage(result.dataUrl, 'cherry-blossom-AR.jpg');
                 showCapturePreview(result.dataUrl, result.width, result.height);
                 await shareImage(result.dataUrl);
                 showToast('📸 고화질 사진이 저장되었어요!', '🌸');
-            } else { showToast('사진 저장에 실패했어요', '😢'); }
+            } else { 
+                showToast('사진 저장에 실패했어요', '😢'); 
+            }
+            
+            return false;
         }
         
         // 꽃잎 폭발
@@ -961,7 +1147,12 @@
         }
         
         // 텍스처 스캔 및 색상 오버레이 적용
-        function scanTexture() {
+        function scanTexture(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             if (!videoElement || !isTargetFound) { showToast('도안을 카메라에 비춰주세요', '📷'); return false; }
             try {
                 const region = extractMarkerRegion();
@@ -972,7 +1163,6 @@
                 paintCtx.imageSmoothingQuality = 'high';
                 paintCtx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
                 
-                // THREE.js 텍스처 생성
                 staticTexture = new THREE.CanvasTexture(paintCanvas);
                 staticTexture.flipY = false;
                 staticTexture.wrapS = THREE.ClampToEdgeWrapping;
@@ -982,7 +1172,6 @@
                 staticTexture.generateMipmaps = false;
                 staticTexture.needsUpdate = true;
                 
-                // 색상 오버레이 평면에 텍스처 적용
                 if (colorOverlayPlane) {
                     const mesh = colorOverlayPlane.getObject3D('mesh');
                     if (mesh && mesh.material) {
@@ -994,7 +1183,6 @@
                     colorOverlayPlane.setAttribute('visible', 'true');
                 }
                 
-                // 프리뷰 업데이트
                 texturePreview.src = paintCanvas.toDataURL('image/jpeg', 0.9);
                 texturePreview.classList.add('show');
                 isTextureScanned = true;
@@ -1007,43 +1195,132 @@
             } catch (e) { console.error(e); showToast('스캔 중 오류가 발생했습니다', '❌'); return false; }
         }
         
-        // 버튼 이벤트
-        scanButton.addEventListener('click', () => { if (isTextureScanned) { showToast('이미 스캔이 완료되었습니다', '✅'); return; } scanTexture(); });
-        photoCaptureButton.addEventListener('click', () => startPhotoCapture());
+        // 버튼 이벤트 (페이지 리셋 방지)
+        scanButton.addEventListener('click', (e) => { 
+            e.preventDefault();
+            e.stopPropagation();
+            if (isTextureScanned) { 
+                showToast('이미 스캔이 완료되었습니다', '✅'); 
+                return false; 
+            } 
+            scanTexture(e);
+            return false;
+        });
         
-        // 리소스 로드 확인
-        function checkTargetMindFile() {
-            const img = new Image();
-            img.onload = function() {
-                resourcesLoaded = true;
-            };
-            img.onerror = function() {
-                showError('타겟 파일 로드 실패', 'target.mind 파일을 불러올 수 없습니다.\n경로: ./assets/cherry-blossom-ar/target.mind');
-            };
+        photoCaptureButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startPhotoCapture(e);
+            return false;
+        });
+        
+        // 뒤로가기 버튼
+        backButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             
-            // target.mind는 이미지가 아니므로 fetch로 확인
-            fetch('./assets/cherry-blossom-ar/target.mind')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('target.mind 로드 실패');
-                    }
-                    resourcesLoaded = true;
-                })
-                .catch(err => {
-                    console.error(err);
-                    showError('타겟 파일 로드 실패', 'target.mind 파일을 불러올 수 없습니다.\n경로를 확인해주세요: ./assets/cherry-blossom-ar/target.mind');
-                });
+            // AR 정지
+            if (sceneEl && sceneEl.systems && sceneEl.systems['mindar-image-system']) {
+                try {
+                    sceneEl.systems['mindar-image-system'].stop();
+                } catch (err) {}
+            }
+            
+            // UI 초기화
+            sceneEl.style.display = 'none';
+            buttonContainer.classList.remove('show');
+            guideUI.classList.remove('show');
+            warmOverlay.classList.remove('show');
+            backButton.classList.remove('show');
+            stopForegroundPetals();
+            
+            // 카메라 꽃잎 숨기기
+            if (cameraPetals) cameraPetals.setAttribute('visible', 'false');
+            
+            // 시작 메뉴 다시 표시
+            startMenu.classList.remove('hidden');
+            currentMode = null;
+            arStarted = false;
+        });
+        
+        // 모드 시작 함수
+        async function startMode(mode) {
+            currentMode = mode;
+            startMenu.classList.add('hidden');
+            showLoadingScreen();
+            
+            // 씬 표시
+            sceneEl.style.display = 'block';
+            
+            // AR 시작
+            if (!arStarted) {
+                sceneEl.systems['mindar-image-system'].start();
+                arStarted = true;
+            }
+            
+            // 공통 UI 표시
+            backButton.classList.add('show');
+            warmOverlay.classList.add('show');
+            
+            if (mode === 'blossom') {
+                // 벚꽃 모드: 바로 카메라 + 꽃잎 + 촬영 버튼
+                setTimeout(() => {
+                    hideLoadingScreen();
+                    forceVideoExpose();
+                    fixBlackScreen();
+                    
+                    // 카메라 앞 꽃잎 표시
+                    if (cameraPetals) cameraPetals.setAttribute('visible', 'true');
+                    
+                    // 화면 전체 꽃잎 시작
+                    startForegroundPetals();
+                    
+                    // 촬영 버튼만 표시
+                    buttonContainer.classList.add('show');
+                    photoCaptureButton.classList.add('show');
+                    scanButton.classList.remove('show');
+                    
+                    showToast('🌸 벚꽃과 함께 사진을 찍어보세요!', '📸');
+                }, 1000);
+                
+            } else if (mode === 'kit') {
+                // 키트 모드: 가이드 표시 후 마커 인식 대기
+                setTimeout(() => {
+                    hideLoadingScreen();
+                    forceVideoExpose();
+                    fixBlackScreen();
+                    
+                    // 가이드 표시
+                    showGuide();
+                    
+                    // 버튼 컨테이너 표시 (스캔 버튼은 마커 인식 후)
+                    buttonContainer.classList.add('show');
+                    scanButton.classList.remove('show');
+                    photoCaptureButton.classList.remove('show');
+                    
+                    showToast('📷 색칠한 도안을 카메라에 비춰주세요', '🎨');
+                }, 1000);
+            }
         }
+        
+        // 시작 메뉴 버튼 이벤트
+        btnModeBlossom.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startMode('blossom');
+        });
+        
+        btnModeKit.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startMode('kit');
+        });
         
         // A-Frame 이벤트
         sceneEl.addEventListener('loaded', () => {
             if (sceneEl.renderer) {
                 sceneEl.renderer.setClearColor(0x000000, 0);
             }
-            // 검은 화면 수정 지연 실행
-            setTimeout(fixBlackScreen, 500);
-            setTimeout(fixBlackScreen, 1000);
-            setTimeout(fixBlackScreen, 2000);
         });
         
         sceneEl.addEventListener('arReady', () => {
@@ -1052,7 +1329,6 @@
             fixBlackScreen();
             setTimeout(fixBlackScreen, 500);
             setTimeout(fixBlackScreen, 1000);
-            startForegroundPetals();
         });
         
         sceneEl.addEventListener('arError', (e) => {
@@ -1060,53 +1336,49 @@
             showError('AR 초기화 실패', '카메라 접근 권한을 확인해주세요.\n또는 HTTPS 환경에서 실행해주세요.');
         });
         
-        // 에셋 로드 에러 처리
-        const assets = document.querySelector('a-assets');
-        if (assets) {
-            assets.addEventListener('timeout', () => {
-                console.warn('Assets loading timeout');
-            });
-        }
-        
-        // 마커 인식
+        // 마커 인식 (키트 모드에서만 사용)
         arTarget.addEventListener('targetFound', () => {
-            isTargetFound = true; isTargetVisible = true;
-            if (lostTimeout) { clearTimeout(lostTimeout); lostTimeout = null; }
-            hideGuide(); showStatus('🌸 도안 인식 완료!');
-            if (!isTextureScanned) scanButton.classList.add('show');
-            if (petalsContainer) petalsContainer.setAttribute('visible', 'true');
-            if (reliefPlane) reliefPlane.setAttribute('visible', 'true');
-            if (!hasExploded && isTextureScanned) { createPetalBurst(); hasExploded = true; }
+            isTargetFound = true; 
+            isTargetVisible = true;
+            
+            if (lostTimeout) { 
+                clearTimeout(lostTimeout); 
+                lostTimeout = null; 
+            }
+            
+            if (currentMode === 'kit') {
+                hideGuide(); 
+                showStatus('🌸 도안 인식 완료!');
+                if (!isTextureScanned) scanButton.classList.add('show');
+                if (petalsContainer) petalsContainer.setAttribute('visible', 'true');
+                if (reliefPlane) reliefPlane.setAttribute('visible', 'true');
+                if (!hasExploded && isTextureScanned) { 
+                    createPetalBurst(); 
+                    hasExploded = true; 
+                }
+            }
         });
         
         arTarget.addEventListener('targetLost', () => {
             isTargetFound = false;
             if (lostTimeout) clearTimeout(lostTimeout);
             lostTimeout = setTimeout(() => {
-                if (!isTargetFound) { isTargetVisible = false; showGuide(); showStatus('📷 도안을 다시 비춰주세요');
-                    if (petalsContainer) petalsContainer.setAttribute('visible', 'false'); }
+                if (!isTargetFound && currentMode === 'kit') { 
+                    isTargetVisible = false; 
+                    showGuide(); 
+                    showStatus('📷 도안을 다시 비춰주세요');
+                    if (petalsContainer) petalsContainer.setAttribute('visible', 'false'); 
+                }
             }, TRACKING_PERSISTENCE_MS);
         });
         
         // 초기화
         window.onload = function() {
-            checkTargetMindFile();
-            forceVideoExpose();
-            fixBlackScreen();
-            setTimeout(forceVideoExpose, 500);
-            setTimeout(fixBlackScreen, 500);
-            setTimeout(forceVideoExpose, 1000);
-            setTimeout(fixBlackScreen, 1000);
-            setTimeout(forceVideoExpose, 2000);
-            setTimeout(fixBlackScreen, 2000);
+            // 씬 숨김 상태 유지 (시작 메뉴 먼저)
+            sceneEl.style.display = 'none';
         };
         
-        // DOMContentLoaded에서도 검은 화면 수정
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(fixBlackScreen, 100);
-        });
-        
-        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (2D 이미지 기반)');
+        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (2D 이미지 기반, 듀얼 모드)');
     </script>
 </body>
 </html>
