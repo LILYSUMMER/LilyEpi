@@ -473,60 +473,7 @@
         #status-bar.hidden { opacity: 0 !important; }
         
         /* 전경 꽃잎 */
-        #foreground-petals {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 400;
-            pointer-events: none;
-            overflow: hidden;
-            display: none;
-        }
-        
-        #foreground-petals.show { display: block; }
-        
-        .fg-petal {
-            position: absolute;
-            background-image: url('./assets/cherry-blossom-ar/petal.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            opacity: 0;
-            will-change: transform, opacity;
-        }
-        
-        @keyframes petalFloat {
-            0% { opacity: 0; transform: translate(0, -50px) rotate(0deg) scale(var(--scale)); }
-            8% { opacity: var(--opacity); }
-            25% { transform: translate(var(--drift1), 25vh) rotate(90deg) scale(var(--scale)); }
-            50% { transform: translate(var(--drift2), 50vh) rotate(180deg) scale(var(--scale)); }
-            75% { transform: translate(var(--drift3), 75vh) rotate(270deg) scale(var(--scale)); }
-            92% { opacity: var(--opacity); }
-            100% { opacity: 0; transform: translate(var(--drift4), 110vh) rotate(360deg) scale(var(--scale)); }
-        }
-        
-        /* 버스트 꽃잎 */
-        #screen-petals {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 50;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        
-        .burst-petal {
-            position: absolute;
-            background-image: url('./assets/cherry-blossom-ar/petal.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            opacity: 0;
-        }
-        
-        @keyframes petalBurst {
-            0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(0.2); }
-            30% { opacity: 1; transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5)) rotate(calc(var(--rot) * 0.3)) scale(1.3); }
-            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.8); }
-        }
+        /* petal-canvas: Canvas 2D 파티클 시스템 (캡처/녹화에 포함됨) */
         
         /* 텍스처 프리뷰 */
         #texture-preview {
@@ -1034,8 +981,7 @@
         <p id="guide-text">도안을 프레임에 맞춰주세요 🌸</p>
     </div>
     
-    <div id="foreground-petals"></div>
-    <div id="screen-petals"></div>
+    <canvas id="petal-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:400; pointer-events:none; display:none;"></canvas>
     
     <div id="button-container">
         <button type="button" id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
@@ -1286,7 +1232,7 @@
                     this.ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
                 }
                 
-                // 2. AR 캔버스 덧그리기 (벚꽃 파티클 포함 - tock 타이밍이라 완벽히 포함됨)
+                // 2. AR 캔버스 덧그리기 (tock 타이밍이라 WebGL 파티클 완벽 포함)
                 if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
                     if (this.isSelfieMode) {
                         this.ctx.save();
@@ -1297,7 +1243,13 @@
                         this.ctx.drawImage(arCanvas, 0, 0, w, h);
                     }
                 }
-                
+
+                // 3. Canvas 2D 꽃잎 파티클 덧그리기 (캡처/녹화 모두 포함)
+                const petalCv = document.getElementById('petal-canvas');
+                if (petalCv && petalCv.style.display !== 'none' && petalCv.width > 0) {
+                    this.ctx.drawImage(petalCv, 0, 0, w, h);
+                }
+
                 return true;
             },
             
@@ -1614,8 +1566,7 @@
         const paintCanvas = document.getElementById('paint-canvas');
         const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
         const statusBar = document.getElementById('status-bar');
-        const screenPetals = document.getElementById('screen-petals');
-        const foregroundPetals = document.getElementById('foreground-petals');
+        const petalCanvas = document.getElementById('petal-canvas');
         const scanButton = document.getElementById('scan-button');
         const captureBtn = document.getElementById('capture-btn');
         const buttonContainer = document.getElementById('button-container');
@@ -1652,6 +1603,8 @@
         let staticTexture = null;
         let isTextureScanned = false;
         let fgPetalInterval = null;
+        let petalParticles = [];
+        let petalAnimId = null;
         let hasExploded = false;
         let lostTimeout = null;
         let isCapturing = false;
@@ -1768,32 +1721,79 @@
         }
         
         // 전경 꽃잎
-        function createForegroundPetal() {
-            const petal = document.createElement('div');
-            petal.className = 'fg-petal';
-            const sv = Math.random();
-            let size, opacity, duration;
-            if (sv < 0.3) { size = 12 + Math.random() * 8; opacity = 0.3 + Math.random() * 0.2; duration = 8 + Math.random() * 4; }
-            else if (sv < 0.7) { size = 20 + Math.random() * 15; opacity = 0.5 + Math.random() * 0.25; duration = 6 + Math.random() * 3; }
-            else { size = 35 + Math.random() * 20; opacity = 0.7 + Math.random() * 0.25; duration = 4 + Math.random() * 2; }
-            petal.style.cssText = `left:${Math.random()*100}vw;top:-60px;width:${size}px;height:${size}px;--scale:${0.8+Math.random()*0.4};--opacity:${opacity};--drift1:${(Math.random()-0.5)*100}px;--drift2:${(Math.random()-0.5)*150}px;--drift3:${(Math.random()-0.5)*100}px;--drift4:${(Math.random()-0.5)*80}px;animation:petalFloat ${duration}s ease-in-out forwards;`;
-            foregroundPetals.appendChild(petal);
-            setTimeout(() => petal.remove(), (duration + 1) * 1000);
+        // ===== Canvas 2D 꽃잎 파티클 시스템 =====
+        function resizePetalCanvas() {
+            petalCanvas.width = window.innerWidth;
+            petalCanvas.height = window.innerHeight;
         }
-        
+        window.addEventListener('resize', resizePetalCanvas);
+
+        function spawnFloatPetal() {
+            const sv = Math.random();
+            let size, maxOpacity, lifeDecay;
+            if (sv < 0.3) { size = 12 + Math.random() * 8; maxOpacity = 0.3 + Math.random() * 0.2; lifeDecay = 0.0015; }
+            else if (sv < 0.7) { size = 20 + Math.random() * 15; maxOpacity = 0.5 + Math.random() * 0.25; lifeDecay = 0.002; }
+            else { size = 35 + Math.random() * 20; maxOpacity = 0.7 + Math.random() * 0.25; lifeDecay = 0.003; }
+            petalParticles.push({
+                x: Math.random() * petalCanvas.width,
+                y: -60,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: 1.5 + Math.random() * 2,
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 4,
+                size, opacity: 0, maxOpacity, fadeIn: 0, life: 1, lifeDecay
+            });
+        }
+
+        function animatePetals() {
+            petalAnimId = requestAnimationFrame(animatePetals);
+            const pctx = petalCanvas.getContext('2d');
+            pctx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+
+            petalParticles = petalParticles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rotation += p.rotSpeed;
+                p.life -= p.lifeDecay;
+
+                if (p.fadeIn < 1) {
+                    p.fadeIn = Math.min(1, p.fadeIn + 0.04);
+                    p.opacity = p.fadeIn * p.maxOpacity;
+                } else if (p.life < 0.15) {
+                    p.opacity = (p.life / 0.15) * p.maxOpacity;
+                } else {
+                    p.opacity = p.maxOpacity;
+                }
+
+                if (p.y > petalCanvas.height + 80 || p.life <= 0) return false;
+
+                if (petalImage.complete && petalImage.naturalWidth > 0) {
+                    pctx.save();
+                    pctx.globalAlpha = Math.max(0, p.opacity);
+                    pctx.translate(p.x, p.y);
+                    pctx.rotate(p.rotation * Math.PI / 180);
+                    pctx.drawImage(petalImage, -p.size / 2, -p.size / 2, p.size, p.size);
+                    pctx.restore();
+                }
+                return true;
+            });
+        }
+
         function startForegroundPetals() {
             if (fgPetalInterval) return;
-            foregroundPetals.classList.add('show');
-            for (let i = 0; i < 8; i++) setTimeout(() => createForegroundPetal(), i * 200);
-            fgPetalInterval = setInterval(createForegroundPetal, FG_PETAL_INTERVAL);
+            resizePetalCanvas();
+            petalCanvas.style.display = 'block';
+            for (let i = 0; i < 8; i++) setTimeout(() => spawnFloatPetal(), i * 200);
+            fgPetalInterval = setInterval(spawnFloatPetal, FG_PETAL_INTERVAL);
+            if (!petalAnimId) animatePetals();
         }
-        
+
         function stopForegroundPetals() {
-            if (fgPetalInterval) {
-                clearInterval(fgPetalInterval);
-                fgPetalInterval = null;
-            }
-            foregroundPetals.classList.remove('show');
+            if (fgPetalInterval) { clearInterval(fgPetalInterval); fgPetalInterval = null; }
+            petalParticles = [];
+            if (petalAnimId) { cancelAnimationFrame(petalAnimId); petalAnimId = null; }
+            petalCanvas.style.display = 'none';
+            petalCanvas.getContext('2d').clearRect(0, 0, petalCanvas.width, petalCanvas.height);
         }
         
         // UI
@@ -2157,22 +2157,33 @@
             capturePreviewModal.classList.remove('show');
         });
         
-        // 꽃잎 폭발
+        // 꽃잎 폭발 (Canvas 2D)
         function createPetalBurst() {
-            const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+            if (petalCanvas.style.display === 'none') {
+                resizePetalCanvas();
+                petalCanvas.style.display = 'block';
+            }
+            const cx = petalCanvas.width / 2, cy = petalCanvas.height / 2;
             for (let i = 0; i < 20; i++) {
-                const petal = document.createElement('div');
-                petal.className = 'burst-petal';
                 const angle = (i / 20) * 360 + (Math.random() - 0.5) * 40;
                 const dist = 100 + Math.random() * 200;
-                const tx = Math.cos(angle * Math.PI / 180) * dist;
-                const ty = Math.sin(angle * Math.PI / 180) * dist;
-                const rot = (Math.random() - 0.5) * 720;
+                const speed = 4 + Math.random() * 5;
                 const size = 25 + Math.random() * 20;
-                petal.style.cssText = `left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;--tx:${tx}px;--ty:${ty}px;--rot:${rot}deg;animation:petalBurst 2s cubic-bezier(0.25,0.46,0.45,0.94) forwards;animation-delay:${i*0.03}s;`;
-                screenPetals.appendChild(petal);
-                setTimeout(() => petal.remove(), 2500);
+                petalParticles.push({
+                    x: cx, y: cy,
+                    vx: Math.cos(angle * Math.PI / 180) * speed,
+                    vy: Math.sin(angle * Math.PI / 180) * speed,
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 15,
+                    size, opacity: 1, maxOpacity: 1,
+                    fadeIn: 1, life: 1, lifeDecay: 0.018
+                });
             }
+            if (!petalAnimId) animatePetals();
+            // 전경 꽃잎이 없으면 버스트 끝난 뒤 캔버스 숨김
+            setTimeout(() => {
+                if (!fgPetalInterval) stopForegroundPetals();
+            }, 2600);
         }
         
         // 마커 영역 추출
