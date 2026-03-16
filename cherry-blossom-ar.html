@@ -1021,11 +1021,7 @@
     >
         <a-assets timeout="10000">
             <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
-            <!-- 2.5D 팝업 디오라마 레이어 이미지 -->
-            <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png">
-            <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png">
-            <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png">
-            <!-- paint-canvas를 A-Frame 에셋으로 등록 → src: #paint-canvas 참조 가능 -->
+            <!-- paint-canvas: color-overlay-plane용 (a-assets 안에서 참조) -->
             <canvas id="paint-canvas" width="1024" height="1024"></canvas>
         </a-assets>
         
@@ -1063,8 +1059,7 @@
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
             <!-- 2.5D 팝업 디오라마: 레이어 1 (배경) -->
             <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="0.667"
-                src="#layer1"
-                material="shader: flat; transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
+                material="shader: flat; src: url(./assets/cherry-blossom-ar/layer1_bg.png); transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
             </a-plane>
 
             <!-- 사용자 색칠 오버레이: 레이어 1과 2 사이 -->
@@ -1075,14 +1070,12 @@
 
             <!-- 2.5D 팝업 디오라마: 레이어 2 (중경) -->
             <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="0.667"
-                src="#layer2"
-                material="shader: flat; transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
+                material="shader: flat; src: url(./assets/cherry-blossom-ar/layer2_mid.png); transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
             </a-plane>
 
             <!-- 2.5D 팝업 디오라마: 레이어 3 (전경) — 빨간 틴트로 렌더링 확인 -->
             <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="0.667"
-                src="#layer3" color="#ff0000"
-                material="shader: flat; transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
+                material="shader: flat; src: url(./assets/cherry-blossom-ar/layer3_fg.png); color: #ff0000; transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
             </a-plane>
             
             <a-entity light="type: point; color: #ffb6c1; intensity: 0.8; distance: 2; decay: 1.5;" position="0.3 0.2 0.3"></a-entity>
@@ -1125,18 +1118,22 @@
             _dbgEl.textContent = _dbgLines.join('\n');
         }
 
-        // 이미지 로드 상태 감시
-        ['layer1','layer2','layer3','petal-img'].forEach(id => {
-            const img = document.getElementById(id);
-            if (!img) { dbg(`❌ #${id} 태그 없음`); return; }
-            if (img.complete && img.naturalWidth > 0) {
-                dbg(`✅ #${id} 이미 로드됨 (${img.naturalWidth}×${img.naturalHeight})`);
+        // petal-img 로드 감시 (layer1~3은 이제 직접 URL 사용)
+        const _petalImg = document.getElementById('petal-img');
+        if (_petalImg) {
+            if (_petalImg.complete && _petalImg.naturalWidth > 0) {
+                dbg('✅ #petal-img 이미 로드됨');
             } else {
-                img.addEventListener('load', () =>
-                    dbg(`✅ #${id} 로드 성공 (${img.naturalWidth}×${img.naturalHeight})`));
-                img.addEventListener('error', () =>
-                    dbg(`❌ #${id} 로드 실패 — src: ${img.src}`));
+                _petalImg.addEventListener('load',  () => dbg('✅ #petal-img 로드 성공'));
+                _petalImg.addEventListener('error', () => dbg('❌ #petal-img 로드 실패'));
             }
+        }
+        // 레이어 URL 직접 접근 확인
+        ['layer1_bg.png', 'layer2_mid.png', 'layer3_fg.png'].forEach(fn => {
+            const tImg = new Image();
+            tImg.onload  = () => dbg('✅ URL 로드 성공: ' + fn + ' (' + tImg.naturalWidth + 'x' + tImg.naturalHeight + ')');
+            tImg.onerror = () => dbg('❌ URL 로드 실패: ' + fn);
+            tImg.src = './assets/cherry-blossom-ar/' + fn;
         });
 
         // A-Frame 씬 이벤트 감시
