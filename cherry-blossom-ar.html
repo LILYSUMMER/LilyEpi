@@ -1783,6 +1783,13 @@
             if (fgPetalInterval) return;
             resizePetalCanvas();
             petalCanvas.style.display = 'block';
+
+            // 2D 평면 부유 애니메이션 활성화
+            if (reliefPlane) reliefPlane.setAttribute('animation__float',
+                'property: position; from: 0 -0.05 0.01; to: 0 0.05 0.01; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
+            if (colorOverlayPlane) colorOverlayPlane.setAttribute('animation__float',
+                'property: position; from: 0 -0.05 0.02; to: 0 0.05 0.02; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
+
             for (let i = 0; i < 8; i++) setTimeout(() => spawnFloatPetal(), i * 200);
             fgPetalInterval = setInterval(spawnFloatPetal, FG_PETAL_INTERVAL);
             if (!petalAnimId) animatePetals();
@@ -1794,6 +1801,10 @@
             if (petalAnimId) { cancelAnimationFrame(petalAnimId); petalAnimId = null; }
             petalCanvas.style.display = 'none';
             petalCanvas.getContext('2d').clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+
+            // 2D 평면 부유 애니메이션 비활성화
+            if (reliefPlane) reliefPlane.removeAttribute('animation__float');
+            if (colorOverlayPlane) colorOverlayPlane.removeAttribute('animation__float');
         }
         
         // UI
@@ -2086,65 +2097,79 @@
         // ===== 🔄 카메라 전환 (전면/후면) - MindAR 시스템 제어 =====
         function toggleCamera() {
             if (!arStarted) return;
-            
+
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (!arSystem) {
                 showToast('AR 시스템이 준비되지 않았습니다', '⚠️');
                 return;
             }
-            
+
             cameraSwitchBtn.classList.add('switching');
             showToast('카메라 전환 중...', '🔄');
-            
-            // 1. 현재 돌고 있는 카메라 시스템 중지
+
+            // 1. AR 시스템 중지 + 기존 비디오 트랙 완전 해제
             arSystem.stop();
-            
+            const existingVideo = document.querySelector('video:not(#preview-video)');
+            if (existingVideo && existingVideo.srcObject) {
+                existingVideo.srcObject.getTracks().forEach(track => track.stop());
+                existingVideo.srcObject = null;
+            }
+
             // 2. 전면/후면 모드 토글
             isSelfieMode = !isSelfieMode;
             currentFacingMode = isSelfieMode ? 'user' : 'environment';
-            
-            // 3. mindar-image 속성 업데이트 (문자열 파싱 방식)
+
+            // 3. mindar-image facingMode 속성 업데이트
             let mindarAttr = sceneEl.getAttribute('mindar-image');
-            
             if (typeof mindarAttr === 'string') {
-                if (mindarAttr.includes('facingMode')) {
-                    mindarAttr = mindarAttr.replace(/facingMode:\s*(user|environment)/, `facingMode: ${currentFacingMode}`);
-                } else {
-                    mindarAttr += `; facingMode: ${currentFacingMode}`;
-                }
+                mindarAttr = mindarAttr.includes('facingMode')
+                    ? mindarAttr.replace(/facingMode:\s*(user|environment)/, `facingMode: ${currentFacingMode}`)
+                    : mindarAttr + `; facingMode: ${currentFacingMode}`;
                 sceneEl.setAttribute('mindar-image', mindarAttr);
-            } else if (typeof mindarAttr === 'object') {
+            } else if (typeof mindarAttr === 'object' && mindarAttr !== null) {
                 mindarAttr.facingMode = currentFacingMode;
                 sceneEl.setAttribute('mindar-image', mindarAttr);
             }
-            
-            // 4. 셀카 모드 CSS (video + AR 캔버스 모두 반전)
-            if (isSelfieMode) {
-                document.body.classList.add('selfie-mode');
-            } else {
-                document.body.classList.remove('selfie-mode');
-            }
-            
-            // 5. 시스템 재시작 (새로운 카메라로 로드됨)
+
+            // 4. 셀카 모드 CSS 적용
+            document.body.classList.toggle('selfie-mode', isSelfieMode);
+
+            // 5. getUserMedia로 새 카메라 스트림을 직접 요청한 뒤 AR 재시작
             setTimeout(() => {
-                arSystem.start();
-                
-                // 비디오 스타일 재적용
-                setTimeout(() => {
-                    forceVideoExpose();
-                    fixBlackScreen();
-                    
-                    // 셀카 모드에서 비디오 미러링
-                    const video = document.querySelector('video:not(#preview-video)');
-                    if (video) {
-                        video.style.transform = isSelfieMode ? 'scaleX(-1)' : 'scaleX(1)';
+                const constraints = {
+                    video: {
+                        facingMode: { ideal: currentFacingMode },
+                        width:  { ideal: 1280 },
+                        height: { ideal: 720 }
                     }
-                    
-                    cameraSwitchBtn.classList.remove('switching');
-                    showToast(isSelfieMode ? '📱 전면 카메라' : '📷 후면 카메라', '✅');
-                    console.log(`카메라 전환 완료: ${currentFacingMode}`);
-                }, 100);
-            }, 500); // 시스템이 완전히 멈출 시간
+                };
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(stream => {
+                        // 스트림을 즉시 해제 — MindAR이 arSystem.start()에서 facingMode를 보고 자체 요청함
+                        stream.getTracks().forEach(track => track.stop());
+                        arSystem.start();
+
+                        setTimeout(() => {
+                            forceVideoExpose();
+                            fixBlackScreen();
+                            const video = document.querySelector('video:not(#preview-video)');
+                            if (video) video.style.transform = isSelfieMode ? 'scaleX(-1)' : 'scaleX(1)';
+                            cameraSwitchBtn.classList.remove('switching');
+                            showToast(isSelfieMode ? '📱 전면 카메라' : '📷 후면 카메라', '✅');
+                            console.log(`카메라 전환 완료: ${currentFacingMode}`);
+                        }, 500);
+                    })
+                    .catch(err => {
+                        console.error('카메라 전환 실패:', err);
+                        // 실패 시 원래 상태로 복구
+                        isSelfieMode = !isSelfieMode;
+                        currentFacingMode = isSelfieMode ? 'user' : 'environment';
+                        document.body.classList.toggle('selfie-mode', isSelfieMode);
+                        arSystem.start();
+                        cameraSwitchBtn.classList.remove('switching');
+                        showToast('카메라 전환에 실패했습니다.', '❌');
+                    });
+            }, 500);
         }
         
         // 기존 switchCamera 함수를 toggleCamera로 대체
@@ -2437,6 +2462,9 @@
                     
                     // 가이드 표시
                     showGuide();
+
+                    // 전경 꽃잎 애니메이션 시작
+                    startForegroundPetals();
                     
                     // 버튼 컨테이너 표시 (스캔 버튼은 마커 인식 후)
                     buttonContainer.classList.add('show');
