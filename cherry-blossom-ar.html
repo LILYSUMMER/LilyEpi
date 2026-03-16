@@ -998,7 +998,6 @@
             }
             
             // 1. 비디오 상태 완벽 검사
-            // readyState: 0=HAVE_NOTHING, 1=HAVE_METADATA, 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA
             if (video.readyState < 4) {
                 alert('카메라가 아직 준비 중입니다. 잠시 후 다시 시도해주세요.\n\n[디버그] readyState: ' + video.readyState + ' (4 필요)');
                 return false;
@@ -1010,30 +1009,35 @@
                 return false;
             }
             
-            // 2. A-Frame 캔버스 상태 검사
-            const arCanvas = document.querySelector('.a-canvas');
-            if (!arCanvas) {
-                alert('[에러] AR 캔버스를 찾을 수 없습니다.');
+            // 2. A-Frame 씬과 렌더러에서 실제 캔버스 가져오기
+            const sceneElement = document.querySelector('a-scene');
+            if (!sceneElement || !sceneElement.renderer) {
+                alert('[에러] A-Frame 씬 또는 렌더러를 찾을 수 없습니다.');
                 return false;
             }
             
-            // 캔버스 크기 검사
-            if (!arCanvas.width || arCanvas.width <= 0 || !arCanvas.height || arCanvas.height <= 0) {
-                alert('[에러] AR 캔버스가 아직 준비되지 않았습니다.\n\n[디버그] canvasWidth: ' + arCanvas.width + ', canvasHeight: ' + arCanvas.height);
+            // 렌더러의 실제 domElement 사용 (WebGL 캔버스)
+            const arCanvas = sceneElement.renderer.domElement;
+            if (!arCanvas) {
+                alert('[에러] AR 렌더러 캔버스를 찾을 수 없습니다.');
                 return false;
             }
             
             // 3. requestAnimationFrame으로 렌더링 동기화 후 캡처
             requestAnimationFrame(() => {
                 try {
-                    // 화면 크기로 제한 (메모리 절약)
-                    const cw = window.innerWidth;
-                    const ch = window.innerHeight;
+                    // 화면 크기 (출력 캔버스 크기)
+                    const outputWidth = window.innerWidth;
+                    const outputHeight = window.innerHeight;
+                    
+                    // AR 캔버스 크기 - 폴백(Fallback) 적용
+                    const arWidth = arCanvas.width || arCanvas.clientWidth || outputWidth;
+                    const arHeight = arCanvas.height || arCanvas.clientHeight || outputHeight;
                     
                     // 임시 캔버스 생성 (메모리 상에만 존재)
                     let tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = cw;
-                    tempCanvas.height = ch;
+                    tempCanvas.width = outputWidth;
+                    tempCanvas.height = outputHeight;
                     let ctx = tempCanvas.getContext('2d');
                     
                     if (!ctx) {
@@ -1041,30 +1045,32 @@
                         return;
                     }
                     
-                    // 비디오(카메라) 그리기
+                    // === 1단계: 비디오(카메라) 그리기 ===
                     const vw = video.videoWidth;
                     const vh = video.videoHeight;
                     const videoAspect = vw / vh;
-                    const canvasAspect = cw / ch;
+                    const outputAspect = outputWidth / outputHeight;
                     
                     let sx = 0, sy = 0, sw = vw, sh = vh;
-                    if (videoAspect > canvasAspect) {
-                        sw = vh * canvasAspect;
+                    if (videoAspect > outputAspect) {
+                        // 비디오가 더 넓음 - 좌우 잘라내기
+                        sw = vh * outputAspect;
                         sx = (vw - sw) / 2;
                     } else {
-                        sh = vw / canvasAspect;
+                        // 비디오가 더 높음 - 상하 잘라내기
+                        sh = vw / outputAspect;
                         sy = (vh - sh) / 2;
                     }
                     
-                    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+                    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
                     
-                    // AR 캔버스 겹쳐 그리기
-                    ctx.drawImage(arCanvas, 0, 0, cw, ch);
+                    // === 2단계: AR 캔버스 겹쳐 그리기 ===
+                    // WebGL 캔버스는 drawImage로 직접 그릴 수 있음 (preserveDrawingBuffer: true 필요)
+                    ctx.drawImage(arCanvas, 0, 0, arWidth, arHeight, 0, 0, outputWidth, outputHeight);
                     
-                    // 이미지 데이터 생성 (JPEG 0.8 화질)
-                    let dataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
+                    // === 3단계: 이미지 데이터 생성 및 다운로드 ===
+                    let dataUrl = tempCanvas.toDataURL('image/jpeg', 0.85);
                     
-                    // 다운로드 처리
                     let link = document.createElement('a');
                     link.download = 'cherry-blossom.jpg';
                     link.href = dataUrl;
@@ -1081,13 +1087,14 @@
                     showToast('📸 사진이 저장되었어요!', '🌸');
                     
                 } catch (err) {
-                    // 4. 상세한 에러 정보 표시
+                    // 상세한 에러 정보 표시
                     let debugInfo = '\n\n[디버그 정보]';
                     debugInfo += '\n- video.readyState: ' + (video ? video.readyState : 'N/A');
                     debugInfo += '\n- video.videoWidth: ' + (video ? video.videoWidth : 'N/A');
                     debugInfo += '\n- video.videoHeight: ' + (video ? video.videoHeight : 'N/A');
                     debugInfo += '\n- arCanvas.width: ' + (arCanvas ? arCanvas.width : 'N/A');
-                    debugInfo += '\n- arCanvas.height: ' + (arCanvas ? arCanvas.height : 'N/A');
+                    debugInfo += '\n- arCanvas.clientWidth: ' + (arCanvas ? arCanvas.clientWidth : 'N/A');
+                    debugInfo += '\n- renderer exists: ' + (sceneElement.renderer ? 'yes' : 'no');
                     
                     alert('[캡처 에러]\n' + (err.message || err.toString()) + debugInfo);
                 }
