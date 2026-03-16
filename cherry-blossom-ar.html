@@ -1117,8 +1117,73 @@
             </a-entity>
         </a-entity>
     </a-scene>
+
+    <!-- ===== 🔍 디버그 오버레이 (문제 해결 후 제거) ===== -->
+    <div id="debug-overlay" style="
+        position: fixed; top: 10px; left: 10px; z-index: 99999;
+        background: rgba(0,0,0,0.75); color: #0f0; font-family: monospace;
+        font-size: 11px; padding: 8px 10px; border-radius: 6px;
+        max-width: 92vw; max-height: 60vh; overflow-y: auto;
+        pointer-events: none; white-space: pre-wrap; line-height: 1.5;">
+[디버그 초기화 중...]</div>
     
     <script>
+        // ===== 🔍 디버그 유틸리티 =====
+        const _dbgEl = document.getElementById('debug-overlay');
+        const _dbgLines = [];
+        function dbg(msg) {
+            const ts = new Date().toISOString().substr(11, 8);
+            _dbgLines.push(`[${ts}] ${msg}`);
+            if (_dbgLines.length > 60) _dbgLines.shift();
+            _dbgEl.textContent = _dbgLines.join('\n');
+        }
+
+        // 이미지 로드 상태 감시
+        ['layer1','layer2','layer3','petal-img'].forEach(id => {
+            const img = document.getElementById(id);
+            if (!img) { dbg(`❌ #${id} 태그 없음`); return; }
+            if (img.complete && img.naturalWidth > 0) {
+                dbg(`✅ #${id} 이미 로드됨 (${img.naturalWidth}×${img.naturalHeight})`);
+            } else {
+                img.addEventListener('load', () =>
+                    dbg(`✅ #${id} 로드 성공 (${img.naturalWidth}×${img.naturalHeight})`));
+                img.addEventListener('error', () =>
+                    dbg(`❌ #${id} 로드 실패 — src: ${img.src}`));
+            }
+        });
+
+        // A-Frame 씬 이벤트 감시
+        document.addEventListener('DOMContentLoaded', () => {
+            const scene = document.getElementById('ar-scene');
+            if (scene) {
+                scene.addEventListener('loaded',    () => dbg('🎬 a-scene loaded'));
+                scene.addEventListener('renderstart', () => dbg('🖥️ renderstart'));
+            }
+            // AR 타겟 발견/소실
+            const target = document.getElementById('ar-target');
+            if (target) {
+                target.addEventListener('targetFound', () => {
+                    dbg('🎯 targetFound — 레이어 가시성 확인:');
+                    ['diorama-layer1','diorama-layer2','diorama-layer3'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            const mat = el.getAttribute('material');
+                            dbg(`  #${id} visible=${el.getAttribute('visible')} mat=${JSON.stringify(mat)}`);
+                        } else {
+                            dbg(`  ❌ #${id} 요소 없음`);
+                        }
+                    });
+                });
+                target.addEventListener('targetLost', () => dbg('👻 targetLost'));
+            }
+        });
+
+        // 전역 에러 캐치
+        window.addEventListener('error', e =>
+            dbg(`🔥 JS ERROR: ${e.message} (${e.filename}:${e.lineno})`));
+
+        dbg('🚀 디버그 시작 — 이미지 감시 중...');
+
         // ===== WebGL 컨텍스트 설정을 위한 씬 초기화 전 처리 =====
         // preserveDrawingBuffer는 A-Frame 씬 생성 전에 설정해야 함
         AFRAME.registerComponent('webgl-settings', {
