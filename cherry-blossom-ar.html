@@ -1064,7 +1064,7 @@
         photo-capture
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
-        renderer="preserveDrawingBuffer: true; antialias: true; alpha: true; logarithmicDepthBuffer: true;"
+        renderer="preserveDrawingBuffer: true; alpha: true; premultipliedAlpha: false; antialias: true; logarithmicDepthBuffer: true;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
@@ -1153,15 +1153,16 @@
         AFRAME.registerComponent('photo-capture', {
             init: function() {
                 this.isCapturing = false;
-                this.showToast = null; // 외부에서 주입
+                this.showToast = null;
+                this.isSelfieMode = false;
             },
             
-            takePhoto: function() {
+            takePhoto: function(selfieMode = false) {
                 this.isCapturing = true;
+                this.isSelfieMode = selfieMode;
             },
             
             tock: function() {
-                // 캡처 플래그가 true일 때만 실행 (렌더링 완료 후 호출됨)
                 if (!this.isCapturing) return;
                 this.isCapturing = false;
                 
@@ -1175,15 +1176,19 @@
                         return;
                     }
                     
-                    // 2. 고화질 캔버스 생성 (화면 크기 × 2배)
-                    const scale = 2;
+                    // 2. 고화질 캔버스 생성 (devicePixelRatio × 2배)
+                    const dpr = window.devicePixelRatio || 1;
+                    const scale = Math.min(dpr * 2, 4); // 최대 4배
                     const w = Math.floor(window.innerWidth * scale);
                     const h = Math.floor(window.innerHeight * scale);
                     
                     let tempCanvas = document.createElement('canvas');
                     tempCanvas.width = w;
                     tempCanvas.height = h;
-                    let ctx = tempCanvas.getContext('2d', { alpha: false });
+                    let ctx = tempCanvas.getContext('2d', { 
+                        alpha: false,
+                        willReadFrequently: true 
+                    });
                     
                     // 3. 비디오 그리기 (object-fit: cover 방식)
                     const vw = video.videoWidth;
@@ -1200,12 +1205,27 @@
                         sy = (vh - sh) / 2;
                     }
                     
-                    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+                    // 셀카 모드일 때 좌우 반전
+                    if (this.isSelfieMode) {
+                        ctx.save();
+                        ctx.scale(-1, 1);
+                        ctx.drawImage(video, sx, sy, sw, sh, -w, 0, w, h);
+                        ctx.restore();
+                    } else {
+                        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+                    }
                     
-                    // 4. AR 캔버스 덧그리기 (벚꽃잎 포함 - 이미 렌더링 완료 상태)
-                    // 강제 렌더링 호출 없음! tock은 렌더링 완료 후 호출됨
+                    // 4. [핵심] AR 캔버스 덧그리기 (벚꽃잎 포함)
+                    // premultipliedAlpha: false 설정으로 투명도가 올바르게 처리됨
                     if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
-                        ctx.drawImage(arCanvas, 0, 0, w, h);
+                        if (this.isSelfieMode) {
+                            ctx.save();
+                            ctx.scale(-1, 1);
+                            ctx.drawImage(arCanvas, -w, 0, w, h);
+                            ctx.restore();
+                        } else {
+                            ctx.drawImage(arCanvas, 0, 0, w, h);
+                        }
                     }
                     
                     // 5. JPEG 변환 및 다운로드
@@ -1213,7 +1233,7 @@
                     
                     const link = document.createElement('a');
                     link.href = dataUrl;
-                    link.download = 'cherry-blossom.jpg';
+                    link.download = `cherry-blossom-${Date.now()}.jpg`;
                     link.click();
                     
                     // 6. 메모리 해제
@@ -1222,7 +1242,6 @@
                     tempCanvas = null;
                     ctx = null;
                     
-                    // 토스트 메시지 (외부 함수 호출)
                     if (typeof showToast === 'function') {
                         showToast('📸 고화질 사진 저장 완료!', '🌸');
                     }
@@ -1279,7 +1298,10 @@
         const recordTimeDisplay = document.getElementById('record-time');
         const captureHint = document.getElementById('capture-hint');
         const recordingCanvas = document.getElementById('recording-canvas');
-        const recordingCtx = recordingCanvas.getContext('2d', { alpha: false });
+        const recordingCtx = recordingCanvas.getContext('2d', { 
+            alpha: false,
+            willReadFrequently: true 
+        });
         
         // 영상 미리보기 모달 요소
         const videoPreviewModal = document.getElementById('video-preview-modal');
@@ -1504,7 +1526,7 @@
         function triggerPhotoCapture() {
             const sceneEl = document.querySelector('a-scene');
             if (sceneEl && sceneEl.components && sceneEl.components['photo-capture']) {
-                sceneEl.components['photo-capture'].takePhoto();
+                sceneEl.components['photo-capture'].takePhoto(isSelfieMode);
             } else {
                 showToast('캡처 준비 중...', '⏳');
             }
@@ -1554,6 +1576,12 @@
             const w = recordingCanvas.width;
             const h = recordingCanvas.height;
             
+            // [핵심] WebGL 버퍼가 클리어되기 전에 현재 프레임 렌더링 강제
+            // preserveDrawingBuffer: true 설정과 함께 사용
+            if (sceneEl.renderer) {
+                sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
+            }
+            
             // 1. 비디오 그리기 (object-fit: cover 방식)
             const vw = video.videoWidth;
             const vh = video.videoHeight;
@@ -1579,7 +1607,8 @@
                 recordingCtx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
             }
             
-            // 2. AR 캔버스 덧그리기
+            // 2. [핵심] AR 캔버스 덧그리기 (벚꽃 파티클 포함)
+            // premultipliedAlpha: false 설정으로 반투명 파티클이 올바르게 렌더링됨
             if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
                 if (isSelfieMode) {
                     recordingCtx.save();
@@ -2285,7 +2314,23 @@
         // A-Frame 이벤트
         sceneEl.addEventListener('loaded', () => {
             if (sceneEl.renderer) {
+                // 투명 배경 설정
                 sceneEl.renderer.setClearColor(0x000000, 0);
+                
+                // [핵심] WebGL 캡처를 위한 설정 확인
+                const gl = sceneEl.renderer.getContext();
+                const attrs = gl.getContextAttributes();
+                console.log('🎨 WebGL Context 설정:', {
+                    preserveDrawingBuffer: attrs.preserveDrawingBuffer,
+                    alpha: attrs.alpha,
+                    premultipliedAlpha: attrs.premultipliedAlpha,
+                    antialias: attrs.antialias
+                });
+                
+                // premultipliedAlpha 확인 (false여야 파티클이 제대로 캡처됨)
+                if (attrs.premultipliedAlpha !== false) {
+                    console.warn('⚠️ premultipliedAlpha가 false가 아닙니다. 파티클 캡처에 문제가 있을 수 있습니다.');
+                }
             }
         });
         
