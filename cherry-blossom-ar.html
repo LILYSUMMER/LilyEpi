@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- HTTPS 카메라 권한을 위한 메타 태그 -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffb6c1">
+    
+    <!-- SEO Meta Tags -->
+    <title>🌸 벚꽃 터널 AR 포토존 | Epispace</title>
+    <meta name="description" content="직접 색칠한 도안이 3D AR로 살아나는 벚꽃 터널 포토존을 체험하세요. 앱 설치 없이 브라우저에서 바로!">
+    <meta name="keywords" content="벚꽃AR, 포토존, AR체험, 에피스페이스, Epispace, 증강현실">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="🌸 벚꽃 터널 AR 포토존 | Epispace">
+    <meta property="og:description" content="직접 색칠한 도안이 3D AR로 살아나는 특별한 체험!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://epispace.kr/cherry-blossom-ar.html">
+    
+    <!-- A-Frame & MindAR (독립적으로 로드) -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+        /* 독립적인 스타일 - 기존 사이트와 충돌 방지 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: #000 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        video {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            object-fit: cover !important;
+            z-index: -2 !important;
+        }
+        
+        a-scene {
+            position: absolute !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1 !important;
+        }
+        
+        .a-canvas { background: transparent !important; }
+        
+        /* 뒤로가기 버튼 */
+        #back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        #back-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* 따뜻한 톤 오버레이 */
+        #warm-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(
+                180deg,
+                rgba(255, 200, 180, 0.08) 0%,
+                rgba(255, 180, 200, 0.05) 50%,
+                rgba(255, 200, 180, 0.08) 100%
+            );
+            pointer-events: none;
+            z-index: 2;
+            mix-blend-mode: soft-light;
+        }
+        
+        /* 셔터 플래시 */
+        #shutter-flash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: white;
+            z-index: 9000;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #shutter-flash.flash {
+            animation: shutterFlash 0.4s ease-out;
+        }
+        
+        @keyframes shutterFlash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* 가이드 UI */
+        #guide-ui {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.8s ease-out;
+        }
+        
+        #guide-ui.hidden { opacity: 0; pointer-events: none; }
+        
+        #guide-image {
+            width: 55vmin;
+            max-width: 260px;
+            object-fit: contain;
+            opacity: 0.55;
+            filter: drop-shadow(0 0 20px rgba(255, 182, 193, 0.6));
+            animation: guidePulse 2.5s ease-in-out infinite;
+        }
+        
+        @keyframes guidePulse {
+            0%, 100% { transform: scale(1); opacity: 0.55; }
+            50% { transform: scale(1.02); opacity: 0.65; }
+        }
+        
+        #guide-text {
+            margin-top: 24px;
+            color: #fff;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 12px 24px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* 로딩 화면 */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2d1f3d 0%, #1a1a2e 50%, #2d1f3d 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease-out;
+        }
+        
+        #loading-screen.hidden { opacity: 0; pointer-events: none; }
+        
+        .loading-spinner {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(255, 182, 193, 0.3);
+            border-top-color: #ffb6c1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-text {
+            margin-top: 20px;
+            color: #ffb6c1;
+            font-size: 15px;
+            text-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+        }
+        
+        .loading-subtitle {
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+        }
+        
+        /* 버튼 컨테이너 */
+        #button-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 300;
+            transition: opacity 0.3s ease;
+        }
+        
+        #button-container.hidden { opacity: 0; pointer-events: none; }
+        
+        /* 공통 버튼 스타일 */
+        .ar-btn {
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .ar-btn:active { transform: scale(0.95); }
+        .ar-btn.show { display: block; animation: buttonPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        #scan-button {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8a65 100%);
+            box-shadow: 0 6px 25px rgba(255, 107, 157, 0.5);
+        }
+        
+        #scan-button.scanned {
+            background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+            box-shadow: 0 6px 25px rgba(76, 175, 80, 0.5);
+        }
+        
+        #photo-capture-button {
+            background: linear-gradient(135deg, #9c27b0 0%, #e91e63 100%);
+            box-shadow: 0 6px 25px rgba(156, 39, 176, 0.5);
+        }
+        
+        @keyframes buttonPop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* 카운트다운 */
+        #photo-countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 
+                0 0 60px rgba(255, 182, 193, 0.9),
+                0 0 100px rgba(255, 107, 157, 0.6),
+                0 6px 30px rgba(0,0,0,0.4);
+            z-index: 600;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #photo-countdown.show {
+            animation: countdownPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes countdownPop {
+            0% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+            40% { opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        /* 토스트 */
+        #toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+            z-index: 500;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        #toast .icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        /* 상태바 */
+        #status-bar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-30px);
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8a65 100%);
+            color: white;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 200;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.5);
+        }
+        
+        #status-bar.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        #status-bar.hidden { opacity: 0 !important; }
+        
+        /* 전경 꽃잎 */
+        #foreground-petals {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 400;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .fg-petal {
+            position: absolute;
+            background-image: url('./assets/cherry-blossom-ar/petal.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0;
+            will-change: transform, opacity;
+        }
+        
+        @keyframes petalFloat {
+            0% { opacity: 0; transform: translate(0, -50px) rotate(0deg) scale(var(--scale)); }
+            8% { opacity: var(--opacity); }
+            25% { transform: translate(var(--drift1), 25vh) rotate(90deg) scale(var(--scale)); }
+            50% { transform: translate(var(--drift2), 50vh) rotate(180deg) scale(var(--scale)); }
+            75% { transform: translate(var(--drift3), 75vh) rotate(270deg) scale(var(--scale)); }
+            92% { opacity: var(--opacity); }
+            100% { opacity: 0; transform: translate(var(--drift4), 110vh) rotate(360deg) scale(var(--scale)); }
+        }
+        
+        /* 버스트 꽃잎 */
+        #screen-petals {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 50;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .burst-petal {
+            position: absolute;
+            background-image: url('./assets/cherry-blossom-ar/petal.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0;
+        }
+        
+        @keyframes petalBurst {
+            0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(0.2); }
+            30% { opacity: 1; transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5)) rotate(calc(var(--rot) * 0.3)) scale(1.3); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.8); }
+        }
+        
+        /* 텍스처 프리뷰 */
+        #texture-preview {
+            position: fixed;
+            bottom: 100px;
+            right: 15px;
+            width: 70px;
+            height: 70px;
+            border: 3px solid rgba(255, 182, 193, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+            z-index: 250;
+            display: none;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+            image-rendering: -webkit-optimize-contrast;
+        }
+        
+        #texture-preview.show { display: block; animation: previewPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #texture-preview.hidden { opacity: 0; pointer-events: none; }
+        
+        @keyframes previewPop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* 미리보기 모달 */
+        #capture-preview-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 8000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        #capture-preview-modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #capture-preview-image {
+            max-width: 90%;
+            max-height: 70vh;
+            border-radius: 16px;
+            box-shadow: 0 10px 50px rgba(255, 182, 193, 0.3);
+            image-rendering: -webkit-optimize-contrast;
+        }
+        
+        #capture-preview-info {
+            margin-top: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+        }
+        
+        #capture-preview-close {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8a65 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* 캔버스 숨김 */
+        #paint-canvas, #hires-canvas { display: none; }
+    </style>
+</head>
+<body>
+    <!-- 뒤로가기 버튼 -->
+    <button id="back-button" onclick="history.back()">←</button>
+    
+    <!-- 셔터 플래시 -->
+    <div id="shutter-flash"></div>
+    
+    <!-- 따뜻한 톤 오버레이 -->
+    <div id="warm-overlay"></div>
+    
+    <div id="status-bar">🌸 도안 인식 완료!</div>
+    
+    <div id="loading-screen">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">🌸 벚꽃 터널 포토존</p>
+        <p class="loading-subtitle">카메라를 준비하고 있어요...</p>
+    </div>
+    
+    <div id="guide-ui">
+        <img id="guide-image" src="./assets/cherry-blossom-ar/guide.png" alt="가이드">
+        <p id="guide-text">도안을 프레임에 맞춰주세요 🌸</p>
+    </div>
+    
+    <div id="foreground-petals"></div>
+    <div id="screen-petals"></div>
+    
+    <div id="button-container">
+        <button id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
+        <button id="photo-capture-button" class="ar-btn">📸 사진 찍기</button>
+    </div>
+    
+    <div id="photo-countdown"></div>
+    
+    <div id="toast">
+        <span class="icon">✨</span>
+        <span class="message">도안이 성공적으로 스캔되었습니다!</span>
+    </div>
+    
+    <img id="texture-preview" alt="캡처된 텍스처">
+    
+    <div id="capture-preview-modal">
+        <img id="capture-preview-image" alt="촬영된 사진">
+        <p id="capture-preview-info">고화질 (0 x 0)</p>
+        <button id="capture-preview-close">확인</button>
+    </div>
+    
+    <canvas id="paint-canvas" width="1024" height="1024"></canvas>
+    <canvas id="hires-canvas"></canvas>
+    
+    <!-- A-Frame AR 씬 -->
+    <a-scene
+        mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
+        color-space="sRGB"
+        renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; preserveDrawingBuffer: true;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
+    >
+        <a-assets>
+            <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
+            <a-asset-item id="relief-model" src="./assets/cherry-blossom-ar/relief.glb"></a-asset-item>
+        </a-assets>
+        
+        <a-entity light="type: ambient; color: #fff5f0; intensity: 1.3;"></a-entity>
+        <a-entity light="type: directional; color: #fff8f5; intensity: 0.9;" position="0 3 2"></a-entity>
+        <a-entity light="type: directional; color: #ffe4e1; intensity: 0.6;" position="-2 2 -1"></a-entity>
+        <a-entity light="type: directional; color: #ffeef0; intensity: 0.4;" position="2 1 1"></a-entity>
+        
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        
+        <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
+            <a-gltf-model
+                id="relief-model-entity"
+                src="#relief-model"
+                position="0 0 0"
+                rotation="0 0 0"
+                scale="0.5 0.5 0.5"
+                visible="true"
+            ></a-gltf-model>
+            
+            <a-entity light="type: point; color: #ffb6c1; intensity: 0.8; distance: 2; decay: 1.5;" position="0.3 0.2 0.3"></a-entity>
+            <a-entity light="type: point; color: #ffc0cb; intensity: 0.6; distance: 1.5; decay: 1.5;" position="-0.3 0.1 0.2"></a-entity>
+            
+            <a-plane
+                id="paint-surface-fallback"
+                position="0 0 0.001"
+                width="1"
+                height="0.667"
+                material="shader: flat; color: #ffffff; side: double;"
+                visible="false"
+            ></a-plane>
+            
+            <a-entity id="petals-container" visible="false">
+                <a-image src="#petal-img" position="0 0.6 0.02" scale="0.18 0.18 0.18" opacity="0.9"
+                    animation__fall="property: position; from: 0.4 1.5 0.02; to: -0.4 -1.5 0.02; dur: 5500; easing: easeInOutSine; loop: true;"
+                    animation__rotate="property: rotation; from: 0 0 0; to: 45 180 720; dur: 6000; easing: linear; loop: true;">
+                </a-image>
+                <a-image src="#petal-img" position="-0.5 0.4 0.02" scale="0.14 0.14 0.14" opacity="0.85"
+                    animation__fall="property: position; from: -0.6 1.3 0.02; to: 0.6 -1.3 0.02; dur: 6000; easing: easeInOutSine; loop: true; delay: 400;"
+                    animation__rotate="property: rotation; from: 30 0 45; to: -30 360 765; dur: 7000; easing: linear; loop: true;">
+                </a-image>
+                <a-image src="#petal-img" position="0.5 0.3 0.02" scale="0.12 0.12 0.12" opacity="0.8"
+                    animation__fall="property: position; from: 0.7 1.2 0.02; to: -0.7 -1.2 0.02; dur: 5000; easing: easeInOutSine; loop: true; delay: 800;"
+                    animation__rotate="property: rotation; from: -20 0 -30; to: 20 -360 -750; dur: 5500; easing: linear; loop: true;">
+                </a-image>
+            </a-entity>
+        </a-entity>
+    </a-scene>
+    
+    <script>
+        // 설정
+        const CAPTURE_SCALE_MULTIPLIER = 2;
+        const MIN_CAPTURE_WIDTH = 2048;
+        const JPEG_QUALITY = 0.95;
+        const TRACKING_PERSISTENCE_MS = 10000;
+        const COUNTDOWN_SECONDS = 5;
+        const FG_PETAL_INTERVAL = 300;
+        
+        // DOM 요소
+        const loadingScreen = document.getElementById('loading-screen');
+        const guideUI = document.getElementById('guide-ui');
+        const arTarget = document.getElementById('ar-target');
+        const sceneEl = document.querySelector('a-scene');
+        const reliefModelEntity = document.getElementById('relief-model-entity');
+        const fallbackSurface = document.getElementById('paint-surface-fallback');
+        const petalsContainer = document.getElementById('petals-container');
+        const paintCanvas = document.getElementById('paint-canvas');
+        const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
+        const hiresCanvas = document.getElementById('hires-canvas');
+        const hiresCtx = hiresCanvas.getContext('2d');
+        const statusBar = document.getElementById('status-bar');
+        const screenPetals = document.getElementById('screen-petals');
+        const foregroundPetals = document.getElementById('foreground-petals');
+        const scanButton = document.getElementById('scan-button');
+        const photoCaptureButton = document.getElementById('photo-capture-button');
+        const buttonContainer = document.getElementById('button-container');
+        const photoCountdown = document.getElementById('photo-countdown');
+        const toast = document.getElementById('toast');
+        const texturePreview = document.getElementById('texture-preview');
+        const shutterFlash = document.getElementById('shutter-flash');
+        const warmOverlay = document.getElementById('warm-overlay');
+        const capturePreviewModal = document.getElementById('capture-preview-modal');
+        const capturePreviewImage = document.getElementById('capture-preview-image');
+        const capturePreviewInfo = document.getElementById('capture-preview-info');
+        const capturePreviewClose = document.getElementById('capture-preview-close');
+        
+        let videoElement = null;
+        let isTargetFound = false;
+        let isTargetVisible = false;
+        let staticTexture = null;
+        let isTextureScanned = false;
+        let fgPetalInterval = null;
+        let hasExploded = false;
+        let modelLoaded = false;
+        let targetMeshes = [];
+        let lostTimeout = null;
+        let isCapturing = false;
+        let audioContext = null;
+        let petalImage = new Image();
+        petalImage.crossOrigin = 'anonymous';
+        petalImage.src = './assets/cherry-blossom-ar/petal.png';
+        
+        // 찰칵 소리
+        function createShutterSound() {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.setValueAtTime(800, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.15);
+        }
+        
+        // 전경 꽃잎
+        function createForegroundPetal() {
+            const petal = document.createElement('div');
+            petal.className = 'fg-petal';
+            const sv = Math.random();
+            let size, opacity, duration;
+            if (sv < 0.3) { size = 12 + Math.random() * 8; opacity = 0.3 + Math.random() * 0.2; duration = 8 + Math.random() * 4; }
+            else if (sv < 0.7) { size = 20 + Math.random() * 15; opacity = 0.5 + Math.random() * 0.25; duration = 6 + Math.random() * 3; }
+            else { size = 35 + Math.random() * 20; opacity = 0.7 + Math.random() * 0.25; duration = 4 + Math.random() * 2; }
+            petal.style.cssText = `left:${Math.random()*100}vw;top:-60px;width:${size}px;height:${size}px;--scale:${0.8+Math.random()*0.4};--opacity:${opacity};--drift1:${(Math.random()-0.5)*100}px;--drift2:${(Math.random()-0.5)*150}px;--drift3:${(Math.random()-0.5)*100}px;--drift4:${(Math.random()-0.5)*80}px;animation:petalFloat ${duration}s ease-in-out forwards;`;
+            foregroundPetals.appendChild(petal);
+            setTimeout(() => petal.remove(), (duration + 1) * 1000);
+        }
+        
+        function startForegroundPetals() {
+            if (fgPetalInterval) return;
+            for (let i = 0; i < 8; i++) setTimeout(() => createForegroundPetal(), i * 200);
+            fgPetalInterval = setInterval(createForegroundPetal, FG_PETAL_INTERVAL);
+        }
+        
+        // 비디오 노출
+        function forceVideoExpose() {
+            const video = document.querySelector('video');
+            if (video) {
+                video.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-2;';
+                video.setAttribute('playsinline', '');
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                videoElement = video;
+                return true;
+            }
+            return false;
+        }
+        
+        // UI
+        function hideLoadingScreen() {
+            loadingScreen.classList.add('hidden');
+            setTimeout(() => loadingScreen.style.display = 'none', 600);
+        }
+        function hideGuide() { guideUI.classList.add('hidden'); }
+        function showGuide() { guideUI.classList.remove('hidden'); }
+        function showStatus(msg) {
+            if (isCapturing) return;
+            statusBar.textContent = msg;
+            statusBar.classList.add('show');
+            setTimeout(() => statusBar.classList.remove('show'), 2500);
+        }
+        function showToast(message, icon = '✨') {
+            if (isCapturing) return;
+            toast.querySelector('.icon').textContent = icon;
+            toast.querySelector('.message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+        function hideAllUI() {
+            buttonContainer.classList.add('hidden');
+            texturePreview.classList.add('hidden');
+            statusBar.classList.add('hidden');
+            guideUI.classList.add('hidden');
+            warmOverlay.style.display = 'none';
+            foregroundPetals.style.display = 'none';
+        }
+        function showAllUI() {
+            buttonContainer.classList.remove('hidden');
+            texturePreview.classList.remove('hidden');
+            statusBar.classList.remove('hidden');
+            warmOverlay.style.display = '';
+            foregroundPetals.style.display = '';
+        }
+        
+        // 고화질 캡처
+        async function captureHighResolution() {
+            if (!videoElement || !sceneEl) return null;
+            try {
+                const renderer = sceneEl.renderer;
+                const dpr = window.devicePixelRatio || 1;
+                const scale = Math.max(CAPTURE_SCALE_MULTIPLIER * dpr, MIN_CAPTURE_WIDTH / window.innerWidth);
+                const cw = Math.floor(window.innerWidth * scale);
+                const ch = Math.floor(window.innerHeight * scale);
+                hiresCanvas.width = cw;
+                hiresCanvas.height = ch;
+                hiresCtx.imageSmoothingEnabled = true;
+                hiresCtx.imageSmoothingQuality = 'high';
+                
+                const vw = videoElement.videoWidth, vh = videoElement.videoHeight;
+                if (vw > 0 && vh > 0) {
+                    const va = vw / vh, ca = cw / ch;
+                    let sx, sy, sw, sh;
+                    if (va > ca) { sh = vh; sw = vh * ca; sx = (vw - sw) / 2; sy = 0; }
+                    else { sw = vw; sh = vw / ca; sx = 0; sy = (vh - sh) / 2; }
+                    hiresCtx.drawImage(videoElement, sx, sy, sw, sh, 0, 0, cw, ch);
+                }
+                
+                const origSize = renderer.getSize(new THREE.Vector2());
+                const origPR = renderer.getPixelRatio();
+                renderer.setPixelRatio(1);
+                renderer.setSize(cw, ch, false);
+                sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
+                hiresCtx.drawImage(renderer.domElement, 0, 0, cw, ch);
+                renderer.setPixelRatio(origPR);
+                renderer.setSize(origSize.x, origSize.y, false);
+                
+                const grad = hiresCtx.createLinearGradient(0, 0, 0, ch);
+                grad.addColorStop(0, 'rgba(255, 200, 180, 0.08)');
+                grad.addColorStop(0.5, 'rgba(255, 180, 200, 0.05)');
+                grad.addColorStop(1, 'rgba(255, 200, 180, 0.08)');
+                hiresCtx.globalCompositeOperation = 'soft-light';
+                hiresCtx.fillStyle = grad;
+                hiresCtx.fillRect(0, 0, cw, ch);
+                hiresCtx.globalCompositeOperation = 'source-over';
+                
+                return { dataUrl: hiresCanvas.toDataURL('image/jpeg', JPEG_QUALITY), width: cw, height: ch };
+            } catch (e) { console.error(e); return null; }
+        }
+        
+        function downloadImage(dataUrl, filename) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        async function shareImage(dataUrl) {
+            try {
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                const file = new File([blob], 'cherry-blossom-AR.jpg', { type: 'image/jpeg' });
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ title: '나만의 벚꽃 터널 AR', text: '내가 직접 색칠한 벚꽃길에서 찍은 사진이야! 🌸', files: [file] });
+                    return true;
+                }
+                return false;
+            } catch (e) { return false; }
+        }
+        
+        function showCapturePreview(dataUrl, w, h) {
+            capturePreviewImage.src = dataUrl;
+            capturePreviewInfo.textContent = `고화질 ${w} x ${h} px`;
+            capturePreviewModal.classList.add('show');
+        }
+        capturePreviewClose.addEventListener('click', () => capturePreviewModal.classList.remove('show'));
+        
+        async function startPhotoCapture() {
+            if (isCapturing) return;
+            isCapturing = true;
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
+                photoCountdown.textContent = i;
+                photoCountdown.classList.remove('show');
+                void photoCountdown.offsetWidth;
+                photoCountdown.classList.add('show');
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            hideAllUI();
+            photoCountdown.classList.remove('show');
+            await new Promise(r => setTimeout(r, 150));
+            shutterFlash.classList.add('flash');
+            createShutterSound();
+            const result = await captureHighResolution();
+            setTimeout(() => shutterFlash.classList.remove('flash'), 400);
+            setTimeout(() => { showAllUI(); isCapturing = false; }, 500);
+            if (result) {
+                downloadImage(result.dataUrl, 'cherry-blossom-AR.jpg');
+                showCapturePreview(result.dataUrl, result.width, result.height);
+                await shareImage(result.dataUrl);
+                showToast('📸 고화질 사진이 저장되었어요!', '🌸');
+            } else { showToast('사진 저장에 실패했어요', '😢'); }
+        }
+        
+        // 꽃잎 폭발
+        function createPetalBurst() {
+            const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+            for (let i = 0; i < 20; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'burst-petal';
+                const angle = (i / 20) * 360 + (Math.random() - 0.5) * 40;
+                const dist = 100 + Math.random() * 200;
+                const tx = Math.cos(angle * Math.PI / 180) * dist;
+                const ty = Math.sin(angle * Math.PI / 180) * dist;
+                const rot = (Math.random() - 0.5) * 720;
+                const size = 25 + Math.random() * 20;
+                petal.style.cssText = `left:${cx}px;top:${cy}px;width:${size}px;height:${size}px;--tx:${tx}px;--ty:${ty}px;--rot:${rot}deg;animation:petalBurst 2s cubic-bezier(0.25,0.46,0.45,0.94) forwards;animation-delay:${i*0.03}s;`;
+                screenPetals.appendChild(petal);
+                setTimeout(() => petal.remove(), 2500);
+            }
+        }
+        
+        // GLTF 설정
+        function setupGLTFModel() {
+            if (!reliefModelEntity) return false;
+            const model = reliefModelEntity.getObject3D('mesh');
+            if (!model) return false;
+            targetMeshes = [];
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    targetMeshes.push(child);
+                    if (child.material) { child.material = child.material.clone(); child.material.needsUpdate = true; }
+                }
+            });
+            if (targetMeshes.length > 0) { modelLoaded = true; return true; }
+            return false;
+        }
+        
+        // 마커 영역 추출
+        function extractMarkerRegion() {
+            if (!videoElement) return null;
+            const vw = videoElement.videoWidth, vh = videoElement.videoHeight;
+            if (vw === 0 || vh === 0) return null;
+            const size = Math.min(vw, vh) * 0.55;
+            let cw = size * 0.9, ch = (size / 1.5) * 0.9;
+            return { x: Math.max(0, (vw - cw) / 2), y: Math.max(0, (vh - ch) / 2), width: cw, height: ch };
+        }
+        
+        // 텍스처 스캔
+        function scanTexture() {
+            if (!videoElement || !isTargetFound) { showToast('도안을 카메라에 비춰주세요', '📷'); return false; }
+            try {
+                const region = extractMarkerRegion();
+                if (!region) { showToast('도안 영역을 찾을 수 없습니다', '❌'); return false; }
+                const cw = paintCanvas.width, ch = paintCanvas.height;
+                paintCtx.clearRect(0, 0, cw, ch);
+                paintCtx.imageSmoothingEnabled = true;
+                paintCtx.imageSmoothingQuality = 'high';
+                paintCtx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
+                staticTexture = new THREE.CanvasTexture(paintCanvas);
+                staticTexture.flipY = false;
+                staticTexture.wrapS = THREE.ClampToEdgeWrapping;
+                staticTexture.wrapT = THREE.ClampToEdgeWrapping;
+                staticTexture.minFilter = THREE.LinearFilter;
+                staticTexture.magFilter = THREE.LinearFilter;
+                staticTexture.generateMipmaps = false;
+                staticTexture.needsUpdate = true;
+                targetMeshes.forEach(mesh => { if (mesh.material) { mesh.material.map = staticTexture; mesh.material.needsUpdate = true; } });
+                if (!modelLoaded && fallbackSurface) {
+                    const mesh = fallbackSurface.getObject3D('mesh');
+                    if (mesh && mesh.material) { mesh.material.map = staticTexture; mesh.material.needsUpdate = true; }
+                }
+                texturePreview.src = paintCanvas.toDataURL('image/jpeg', 0.9);
+                texturePreview.classList.add('show');
+                isTextureScanned = true;
+                scanButton.textContent = '✅ 스캔 완료!';
+                scanButton.classList.add('scanned');
+                photoCaptureButton.classList.add('show');
+                showToast('🌸 도안이 성공적으로 스캔되었습니다!', '✨');
+                createPetalBurst();
+                return true;
+            } catch (e) { console.error(e); showToast('스캔 중 오류가 발생했습니다', '❌'); return false; }
+        }
+        
+        // 버튼 이벤트
+        scanButton.addEventListener('click', () => { if (isTextureScanned) { showToast('이미 스캔이 완료되었습니다', '✅'); return; } scanTexture(); });
+        photoCaptureButton.addEventListener('click', () => startPhotoCapture());
+        
+        // A-Frame 이벤트
+        sceneEl.addEventListener('loaded', () => sceneEl.renderer?.setClearColor(0x000000, 0));
+        sceneEl.addEventListener('arReady', () => { hideLoadingScreen(); forceVideoExpose(); setTimeout(forceVideoExpose, 500); startForegroundPetals(); });
+        reliefModelEntity.addEventListener('model-loaded', () => setTimeout(() => { if (setupGLTFModel()) fallbackSurface.setAttribute('visible', 'false'); else fallbackSurface.setAttribute('visible', 'true'); }, 100));
+        reliefModelEntity.addEventListener('model-error', () => fallbackSurface.setAttribute('visible', 'true'));
+        
+        // 마커 인식
+        arTarget.addEventListener('targetFound', () => {
+            isTargetFound = true; isTargetVisible = true;
+            if (lostTimeout) { clearTimeout(lostTimeout); lostTimeout = null; }
+            hideGuide(); showStatus('🌸 도안 인식 완료!');
+            if (!isTextureScanned) scanButton.classList.add('show');
+            if (petalsContainer) petalsContainer.setAttribute('visible', 'true');
+            if (modelLoaded) reliefModelEntity.setAttribute('visible', 'true');
+            else fallbackSurface.setAttribute('visible', 'true');
+            if (!hasExploded && isTextureScanned) { createPetalBurst(); hasExploded = true; }
+        });
+        
+        arTarget.addEventListener('targetLost', () => {
+            isTargetFound = false;
+            if (lostTimeout) clearTimeout(lostTimeout);
+            lostTimeout = setTimeout(() => {
+                if (!isTargetFound) { isTargetVisible = false; showGuide(); showStatus('📷 도안을 다시 비춰주세요');
+                    if (petalsContainer) petalsContainer.setAttribute('visible', 'false'); }
+            }, TRACKING_PERSISTENCE_MS);
+        });
+        
+        // 초기화
+        window.onload = function() { forceVideoExpose(); setTimeout(forceVideoExpose, 1000); setTimeout(forceVideoExpose, 2000); setTimeout(() => { if (!modelLoaded) setupGLTFModel(); }, 3000); };
+        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료');
+    </script>
+</body>
+</html>
