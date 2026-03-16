@@ -550,8 +550,7 @@
             cursor: pointer;
         }
         
-        /* 캔버스 숨김 */
-        #paint-canvas { display: none; }
+        /* paint-canvas는 a-assets 내부에 있어 A-Frame이 직접 관리 — 별도 CSS 숨김 불필요 */
         
         /* ===== 인스타그램 스토리 스타일 촬영 버튼 ===== */
         #capture-btn {
@@ -1008,8 +1007,6 @@
         <button type="button" id="capture-preview-close">확인</button>
     </div>
     
-    <canvas id="paint-canvas" width="1024" height="1024"></canvas>
-    
     <!-- A-Frame AR 씬 -->
     <a-scene
         id="ar-scene"
@@ -1025,6 +1022,8 @@
         <a-assets timeout="10000">
             <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
             <img id="relief-flat-img" src="./assets/cherry-blossom-ar/relief_flat.png" crossorigin="anonymous">
+            <!-- paint-canvas를 A-Frame 에셋으로 등록 → src: #paint-canvas 참조 가능 -->
+            <canvas id="paint-canvas" width="1024" height="1024"></canvas>
         </a-assets>
         
         <a-entity light="type: ambient; color: #fff5f0; intensity: 1.3;"></a-entity>
@@ -1600,8 +1599,8 @@
         let videoElement = null;
         let isTargetFound = false;
         let isTargetVisible = false;
-        let staticTexture = null;
         let isTextureScanned = false;
+        let selfieStream = null;       // 전면 카메라 전용 순수 스트림
         let fgPetalInterval = null;
         let petalParticles = [];
         let petalAnimId = null;
@@ -2107,69 +2106,70 @@
             cameraSwitchBtn.classList.add('switching');
             showToast('카메라 전환 중...', '🔄');
 
-            // 1. AR 시스템 중지 + 기존 비디오 트랙 완전 해제
-            arSystem.stop();
-            const existingVideo = document.querySelector('video:not(#preview-video)');
-            if (existingVideo && existingVideo.srcObject) {
-                existingVideo.srcObject.getTracks().forEach(track => track.stop());
-                existingVideo.srcObject = null;
-            }
-
-            // 2. 전면/후면 모드 토글
             isSelfieMode = !isSelfieMode;
             currentFacingMode = isSelfieMode ? 'user' : 'environment';
-
-            // 3. mindar-image facingMode 속성 업데이트
-            let mindarAttr = sceneEl.getAttribute('mindar-image');
-            if (typeof mindarAttr === 'string') {
-                mindarAttr = mindarAttr.includes('facingMode')
-                    ? mindarAttr.replace(/facingMode:\s*(user|environment)/, `facingMode: ${currentFacingMode}`)
-                    : mindarAttr + `; facingMode: ${currentFacingMode}`;
-                sceneEl.setAttribute('mindar-image', mindarAttr);
-            } else if (typeof mindarAttr === 'object' && mindarAttr !== null) {
-                mindarAttr.facingMode = currentFacingMode;
-                sceneEl.setAttribute('mindar-image', mindarAttr);
-            }
-
-            // 4. 셀카 모드 CSS 적용
             document.body.classList.toggle('selfie-mode', isSelfieMode);
 
-            // 5. getUserMedia로 새 카메라 스트림을 직접 요청한 뒤 AR 재시작
-            setTimeout(() => {
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: currentFacingMode },
-                        width:  { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                };
-                navigator.mediaDevices.getUserMedia(constraints)
-                    .then(stream => {
-                        // 스트림을 즉시 해제 — MindAR이 arSystem.start()에서 facingMode를 보고 자체 요청함
-                        stream.getTracks().forEach(track => track.stop());
-                        arSystem.start();
+            if (isSelfieMode) {
+                // ── 후면 → 전면: MindAR 완전 종료 후 순수 비디오 스트림으로 전면 표시 ──
+                arSystem.stop();
 
-                        setTimeout(() => {
-                            forceVideoExpose();
-                            fixBlackScreen();
-                            const video = document.querySelector('video:not(#preview-video)');
-                            if (video) video.style.transform = isSelfieMode ? 'scaleX(-1)' : 'scaleX(1)';
-                            cameraSwitchBtn.classList.remove('switching');
-                            showToast(isSelfieMode ? '📱 전면 카메라' : '📷 후면 카메라', '✅');
-                            console.log(`카메라 전환 완료: ${currentFacingMode}`);
-                        }, 500);
-                    })
-                    .catch(err => {
-                        console.error('카메라 전환 실패:', err);
-                        // 실패 시 원래 상태로 복구
-                        isSelfieMode = !isSelfieMode;
-                        currentFacingMode = isSelfieMode ? 'user' : 'environment';
-                        document.body.classList.toggle('selfie-mode', isSelfieMode);
-                        arSystem.start();
+                navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+                })
+                .then(stream => {
+                    selfieStream = stream;
+
+                    // MindAR이 만든 비디오 요소에 직접 스트림을 주입
+                    const arVideo = document.querySelector('video:not(#preview-video)');
+                    if (arVideo) {
+                        arVideo.srcObject = stream;
+                        arVideo.style.transform = 'scaleX(-1)';   // 거울 반전
+                        arVideo.play().catch(() => {});
+                    }
+
+                    setTimeout(() => {
+                        forceVideoExpose();
+                        fixBlackScreen();
                         cameraSwitchBtn.classList.remove('switching');
-                        showToast('카메라 전환에 실패했습니다.', '❌');
-                    });
-            }, 500);
+                        showToast('📱 전면 카메라', '✅');
+                        console.log('카메라 전환 완료: user (selfie)');
+                    }, 300);
+                })
+                .catch(err => {
+                    console.error('전면 카메라 요청 실패:', err);
+                    // 롤백
+                    isSelfieMode = false;
+                    currentFacingMode = 'environment';
+                    document.body.classList.remove('selfie-mode');
+                    arSystem.start();
+                    cameraSwitchBtn.classList.remove('switching');
+                    showToast('카메라 전환에 실패했습니다.', '❌');
+                });
+
+            } else {
+                // ── 전면 → 후면: 셀피 스트림 해제 후 MindAR 재기동 ──
+                if (selfieStream) {
+                    selfieStream.getTracks().forEach(track => track.stop());
+                    selfieStream = null;
+                }
+
+                const arVideo = document.querySelector('video:not(#preview-video)');
+                if (arVideo) {
+                    arVideo.srcObject = null;
+                    arVideo.style.transform = 'scaleX(1)';
+                }
+
+                arSystem.start();
+
+                setTimeout(() => {
+                    forceVideoExpose();
+                    fixBlackScreen();
+                    cameraSwitchBtn.classList.remove('switching');
+                    showToast('📷 후면 카메라', '✅');
+                    console.log('카메라 전환 완료: environment');
+                }, 500);
+            }
         }
         
         // 기존 switchCamera 함수를 toggleCamera로 대체
@@ -2238,24 +2238,14 @@
                 paintCtx.imageSmoothingQuality = 'high';
                 paintCtx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
                 
-                staticTexture = new THREE.CanvasTexture(paintCanvas);
-                staticTexture.flipY = false;
-                staticTexture.wrapS = THREE.ClampToEdgeWrapping;
-                staticTexture.wrapT = THREE.ClampToEdgeWrapping;
-                staticTexture.minFilter = THREE.LinearFilter;
-                staticTexture.magFilter = THREE.LinearFilter;
-                staticTexture.generateMipmaps = false;
-                staticTexture.needsUpdate = true;
-                
-                if (colorOverlayPlane) {
-                    const mesh = colorOverlayPlane.getObject3D('mesh');
-                    if (mesh && mesh.material) {
-                        mesh.material.map = staticTexture;
-                        mesh.material.opacity = 0.85;
-                        mesh.material.transparent = true;
-                        mesh.material.needsUpdate = true;
+                // A-Frame 네이티브 방식으로 캔버스 텍스처 맵핑
+                const colorPlane = document.getElementById('color-overlay-plane');
+                if (colorPlane) {
+                    colorPlane.setAttribute('material', 'src: #paint-canvas; transparent: true; opacity: 0.85; shader: flat; side: double;');
+                    if (colorPlane.components.material && colorPlane.components.material.material) {
+                        colorPlane.components.material.material.needsUpdate = true;
                     }
-                    colorOverlayPlane.setAttribute('visible', 'true');
+                    colorPlane.setAttribute('visible', 'true');
                 }
                 
                 texturePreview.src = paintCanvas.toDataURL('image/jpeg', 0.9);
