@@ -671,6 +671,7 @@
     <!-- A-Frame AR 씬 -->
     <a-scene
         id="ar-scene"
+        photo-capture
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
         renderer="preserveDrawingBuffer: true; antialias: true; alpha: true; logarithmicDepthBuffer: true;"
@@ -758,6 +759,91 @@
     </a-scene>
     
     <script>
+        // ===== A-Frame 캡처 컴포넌트 (렌더링 파이프라인에 안전하게 개입) =====
+        AFRAME.registerComponent('photo-capture', {
+            init: function() {
+                this.isCapturing = false;
+                this.showToast = null; // 외부에서 주입
+            },
+            
+            takePhoto: function() {
+                this.isCapturing = true;
+            },
+            
+            tock: function() {
+                // 캡처 플래그가 true일 때만 실행 (렌더링 완료 후 호출됨)
+                if (!this.isCapturing) return;
+                this.isCapturing = false;
+                
+                try {
+                    // 1. 소스 요소 확보 (렌더링 완료 상태)
+                    const arCanvas = this.el.sceneEl.canvas;
+                    const video = document.querySelector('video');
+                    
+                    if (!video || video.readyState < 2) {
+                        console.warn('비디오 준비 안됨');
+                        return;
+                    }
+                    
+                    // 2. 고화질 캔버스 생성 (화면 크기 × 2배)
+                    const scale = 2;
+                    const w = Math.floor(window.innerWidth * scale);
+                    const h = Math.floor(window.innerHeight * scale);
+                    
+                    let tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = w;
+                    tempCanvas.height = h;
+                    let ctx = tempCanvas.getContext('2d', { alpha: false });
+                    
+                    // 3. 비디오 그리기 (object-fit: cover 방식)
+                    const vw = video.videoWidth;
+                    const vh = video.videoHeight;
+                    const videoRatio = vw / vh;
+                    const canvasRatio = w / h;
+                    
+                    let sx = 0, sy = 0, sw = vw, sh = vh;
+                    if (videoRatio > canvasRatio) {
+                        sw = vh * canvasRatio;
+                        sx = (vw - sw) / 2;
+                    } else {
+                        sh = vw / canvasRatio;
+                        sy = (vh - sh) / 2;
+                    }
+                    
+                    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+                    
+                    // 4. AR 캔버스 덧그리기 (벚꽃잎 포함 - 이미 렌더링 완료 상태)
+                    // 강제 렌더링 호출 없음! tock은 렌더링 완료 후 호출됨
+                    if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
+                        ctx.drawImage(arCanvas, 0, 0, w, h);
+                    }
+                    
+                    // 5. JPEG 변환 및 다운로드
+                    const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
+                    
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = 'cherry-blossom.jpg';
+                    link.click();
+                    
+                    // 6. 메모리 해제
+                    tempCanvas.width = 0;
+                    tempCanvas.height = 0;
+                    tempCanvas = null;
+                    ctx = null;
+                    
+                    // 토스트 메시지 (외부 함수 호출)
+                    if (typeof showToast === 'function') {
+                        showToast('📸 고화질 사진 저장 완료!', '🌸');
+                    }
+                    
+                } catch (err) {
+                    console.error('캡처 에러:', err);
+                    alert('[캡처 에러] ' + err.message);
+                }
+            }
+        });
+        
         // 설정
         const TRACKING_PERSISTENCE_MS = 10000;
         const COUNTDOWN_SECONDS = 3;
@@ -982,90 +1068,14 @@
             }
         }
         
-        // ===== 초경량 Native API 캡처 (메모리 최적화) =====
-        function takeSnapshot(e) {
-            // a) 기본 동작 방지
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            // b) 소스 요소 확보
+        // ===== 사진 촬영 트리거 (A-Frame 컴포넌트 호출) =====
+        function triggerPhotoCapture() {
             const sceneEl = document.querySelector('a-scene');
-            const arCanvas = sceneEl ? sceneEl.canvas : null;
-            const video = document.querySelector('video');
-            
-            if (!video || video.readyState < 2) {
-                showToast('카메라 준비 중...', '⏳');
-                return false;
-            }
-            
-            if (!sceneEl || !arCanvas) {
-                showToast('AR 씬 로드 중...', '⏳');
-                return false;
-            }
-            
-            // c) 고화질 업스케일링: 화면 크기 × 2배
-            const dpr = window.devicePixelRatio || 1;
-            const scale = Math.min(2, dpr * 1.5); // 메모리 절약을 위해 상한 설정
-            const w = Math.floor(window.innerWidth * scale);
-            const h = Math.floor(window.innerHeight * scale);
-            
-            // 임시 캔버스 생성 (최소화된 메모리 할당)
-            let tempCanvas = document.createElement('canvas');
-            tempCanvas.width = w;
-            tempCanvas.height = h;
-            let ctx = tempCanvas.getContext('2d', { alpha: false }); // 알파 채널 비활성화로 메모리 절약
-            
-            // d) 비디오 그리기 (object-fit: cover 방식)
-            const vw = video.videoWidth;
-            const vh = video.videoHeight;
-            const videoRatio = vw / vh;
-            const canvasRatio = w / h;
-            
-            let sx = 0, sy = 0, sw = vw, sh = vh;
-            if (videoRatio > canvasRatio) {
-                // 비디오가 더 넓음 → 좌우 크롭
-                sw = vh * canvasRatio;
-                sx = (vw - sw) / 2;
+            if (sceneEl && sceneEl.components && sceneEl.components['photo-capture']) {
+                sceneEl.components['photo-capture'].takePhoto();
             } else {
-                // 비디오가 더 좁음 → 상하 크롭
-                sh = vw / canvasRatio;
-                sy = (vh - sh) / 2;
+                showToast('캡처 준비 중...', '⏳');
             }
-            
-            ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
-            
-            // e) WebGL 버퍼 동기화 및 벚꽃잎 합성 (핵심)
-            // renderer.render()로 버퍼 최신화 → 바로 drawImage
-            if (sceneEl.renderer && sceneEl.object3D && sceneEl.camera) {
-                sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
-            }
-            
-            // AR 캔버스 겹쳐 그리기
-            if (arCanvas.width > 0 && arCanvas.height > 0) {
-                ctx.drawImage(arCanvas, 0, 0, w, h);
-            }
-            
-            // f) 메모리 효율적 저장 (JPEG 0.95)
-            let dataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
-            
-            // 가상 <a> 태그로 다운로드
-            let link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = 'cherry-blossom.jpg';
-            link.click();
-            
-            // 메모리 즉시 해제
-            tempCanvas.width = 0;
-            tempCanvas.height = 0;
-            tempCanvas = null;
-            ctx = null;
-            dataUrl = null;
-            link = null;
-            
-            showToast('📸 고화질 사진 저장 완료!', '🌸');
-            return false;
         }
         
         // 카운트다운 후 스냅샷
@@ -1097,8 +1107,8 @@
                 shutterFlash.classList.add('flash');
                 createShutterSound();
                 
-                // 스냅샷 촬영
-                takeSnapshot(null);
+                // 스냅샷 촬영 (A-Frame 컴포넌트 방식)
+                triggerPhotoCapture();
                 
                 // 플래시 제거 & UI 복원
                 setTimeout(() => {
