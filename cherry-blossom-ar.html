@@ -1149,6 +1149,7 @@
                 this.chunks = [];
                 this.recorder = null;
                 this.recordStartTime = 0;
+                this.isReady = false;
                 
                 // 합성용 캔버스 (willReadFrequently로 모바일 병목 해결)
                 this.compositeCanvas = document.createElement('canvas');
@@ -1165,6 +1166,17 @@
                 this.lastBlobUrl = null;
                 this.lastMimeType = null;
                 this.lastDuration = 0;
+                
+                // 씬이 로드되면 준비 완료 표시
+                const self = this;
+                if (this.el.hasLoaded) {
+                    this.isReady = true;
+                } else {
+                    this.el.addEventListener('loaded', function() {
+                        self.isReady = true;
+                        console.log('🎬 ar-recorder: 씬 로드 완료');
+                    });
+                }
                 
                 console.log('🎬 ar-recorder 컴포넌트 초기화 완료');
             },
@@ -1198,9 +1210,11 @@
             // 캔버스에 비디오 + AR 합성 (셀카 mirror 포함)
             compositeFrame: function() {
                 const video = this.getVideo();
-                const arCanvas = this.el.canvas;
+                // A-Frame 씬의 캔버스 가져오기 (안전한 접근)
+                const arCanvas = this.el.canvas || (this.el.sceneEl && this.el.sceneEl.canvas);
                 
                 if (!video || video.readyState < 2) return false;
+                if (!arCanvas) return false;
                 
                 const w = this.compositeCanvas.width;
                 const h = this.compositeCanvas.height;
@@ -2211,17 +2225,64 @@
         
         // 모드 시작 함수
         async function startMode(mode) {
+            console.log('🚀 startMode 호출:', mode);
             currentMode = mode;
             startMenu.classList.add('hidden');
             showLoadingScreen();
             
-            // 씬 표시
+            // 씬 표시 (먼저 표시해야 시스템이 초기화됨)
             sceneEl.style.display = 'block';
             
-            // AR 시작
+            // AR 시작 (시스템 로드 대기)
             if (!arStarted) {
-                sceneEl.systems['mindar-image-system'].start();
-                arStarted = true;
+                try {
+                    console.log('⏳ 씬 로드 대기 중...');
+                    
+                    // 씬이 로드될 때까지 대기
+                    if (!sceneEl.hasLoaded) {
+                        await new Promise((resolve) => {
+                            sceneEl.addEventListener('loaded', resolve, { once: true });
+                        });
+                        console.log('✅ 씬 로드 완료');
+                    }
+                    
+                    console.log('⏳ MindAR 시스템 대기 중...');
+                    
+                    // MindAR 시스템이 준비될 때까지 대기
+                    const waitForSystem = () => {
+                        return new Promise((resolve, reject) => {
+                            let attempts = 0;
+                            const maxAttempts = 100; // 10초 (100ms × 100)
+                            
+                            const checkSystem = () => {
+                                attempts++;
+                                if (attempts % 10 === 0) {
+                                    console.log(`🔍 시스템 체크 ${attempts}/${maxAttempts}`);
+                                }
+                                
+                                if (sceneEl.systems && sceneEl.systems['mindar-image-system']) {
+                                    resolve();
+                                } else if (attempts >= maxAttempts) {
+                                    reject(new Error('MindAR 시스템 로드 타임아웃'));
+                                } else {
+                                    setTimeout(checkSystem, 100);
+                                }
+                            };
+                            checkSystem();
+                        });
+                    };
+                    
+                    await waitForSystem();
+                    console.log('✅ MindAR 시스템 발견, 시작 중...');
+                    sceneEl.systems['mindar-image-system'].start();
+                    arStarted = true;
+                    console.log('✅ MindAR 시스템 시작 완료');
+                } catch (err) {
+                    console.error('❌ MindAR 시작 실패:', err);
+                    hideLoadingScreen();
+                    showError('AR 초기화 실패', '카메라 권한을 확인하고 다시 시도해주세요.');
+                    return;
+                }
             }
             
             // 공통 UI 표시
