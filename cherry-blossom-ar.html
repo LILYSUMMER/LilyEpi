@@ -1021,7 +1021,10 @@
     >
         <a-assets timeout="10000">
             <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
-            <img id="relief-flat-img" src="./assets/cherry-blossom-ar/relief_flat.png" crossorigin="anonymous">
+            <!-- 2.5D 팝업 디오라마 레이어 이미지 -->
+            <img id="layer1" src="./assets/cherry-blossom-ar/layer1.png" crossorigin="anonymous">
+            <img id="layer2" src="./assets/cherry-blossom-ar/layer2.png" crossorigin="anonymous">
+            <img id="layer3" src="./assets/cherry-blossom-ar/layer3.png" crossorigin="anonymous">
             <!-- paint-canvas를 A-Frame 에셋으로 등록 → src: #paint-canvas 참조 가능 -->
             <canvas id="paint-canvas" width="1024" height="1024"></canvas>
         </a-assets>
@@ -1058,25 +1061,41 @@
         </a-camera>
         
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
-            <!-- 2D 이미지 기반 평면 (부조 도안) -->
+            <!-- 2.5D 팝업 디오라마: 레이어 1 (배경 · 가장 느리게) -->
             <a-plane
-                id="relief-plane"
+                id="diorama-layer1"
                 position="0 0 0.01"
                 width="1"
                 height="0.667"
-                material="shader: flat; src: #relief-flat-img; transparent: true; opacity: 1; side: double;"
-                animation="property: position; from: 0 -0.05 0.01; to: 0 0.05 0.01; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true;"
+                material="shader: flat; src: #layer1; transparent: true; opacity: 1; side: double;"
             ></a-plane>
-            
-            <!-- 색상 오버레이 평면 (스캔한 색상을 합성) -->
+
+            <!-- 사용자 색칠 오버레이: 레이어 1과 2 사이 -->
             <a-plane
                 id="color-overlay-plane"
-                position="0 0 0.02"
+                position="0 0 0.04"
                 width="1"
                 height="0.667"
                 material="shader: flat; color: #ffffff; transparent: true; opacity: 0; side: double; blending: normal;"
-                animation="property: position; from: 0 -0.05 0.02; to: 0 0.05 0.02; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true;"
                 visible="false"
+            ></a-plane>
+
+            <!-- 2.5D 팝업 디오라마: 레이어 2 (중경 · 중간 속도) -->
+            <a-plane
+                id="diorama-layer2"
+                position="0 0 0.08"
+                width="1"
+                height="0.667"
+                material="shader: flat; src: #layer2; transparent: true; opacity: 1; side: double;"
+            ></a-plane>
+
+            <!-- 2.5D 팝업 디오라마: 레이어 3 (전경 · 가장 빠르고 크게) -->
+            <a-plane
+                id="diorama-layer3"
+                position="0 0 0.15"
+                width="1"
+                height="0.667"
+                material="shader: flat; src: #layer3; transparent: true; opacity: 1; side: double;"
             ></a-plane>
             
             <a-entity light="type: point; color: #ffb6c1; intensity: 0.8; distance: 2; decay: 1.5;" position="0.3 0.2 0.3"></a-entity>
@@ -1558,7 +1577,10 @@
         const guideUI = document.getElementById('guide-ui');
         const arTarget = document.getElementById('ar-target');
         const sceneEl = document.getElementById('ar-scene');
-        const reliefPlane = document.getElementById('relief-plane');
+        // 2.5D 팝업 디오라마 레이어
+        const dioramaLayer1 = document.getElementById('diorama-layer1');
+        const dioramaLayer2 = document.getElementById('diorama-layer2');
+        const dioramaLayer3 = document.getElementById('diorama-layer3');
         const colorOverlayPlane = document.getElementById('color-overlay-plane');
         const petalsContainer = document.getElementById('petals-container');
         const cameraPetals = document.getElementById('camera-petals');
@@ -1783,11 +1805,15 @@
             resizePetalCanvas();
             petalCanvas.style.display = 'block';
 
-            // 2D 평면 부유 애니메이션 활성화
-            if (reliefPlane) reliefPlane.setAttribute('animation__float',
-                'property: position; from: 0 -0.05 0.01; to: 0 0.05 0.01; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
+            // 2.5D 디오라마 엇박자 부유 애니메이션 활성화 (레이어별 다른 타이밍)
+            if (dioramaLayer1) dioramaLayer1.setAttribute('animation__float',
+                'property: position; from: 0 -0.02 0.01; to: 0 0.02 0.01; dir: alternate; dur: 3000; easing: easeInOutSine; loop: true');
             if (colorOverlayPlane) colorOverlayPlane.setAttribute('animation__float',
-                'property: position; from: 0 -0.05 0.02; to: 0 0.05 0.02; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
+                'property: position; from: 0 -0.03 0.04; to: 0 0.03 0.04; dir: alternate; dur: 2750; easing: easeInOutSine; loop: true');
+            if (dioramaLayer2) dioramaLayer2.setAttribute('animation__float',
+                'property: position; from: 0 -0.04 0.08; to: 0 0.04 0.08; dir: alternate; dur: 2500; easing: easeInOutSine; loop: true');
+            if (dioramaLayer3) dioramaLayer3.setAttribute('animation__float',
+                'property: position; from: 0 -0.06 0.15; to: 0 0.06 0.15; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
 
             for (let i = 0; i < 8; i++) setTimeout(() => spawnFloatPetal(), i * 200);
             fgPetalInterval = setInterval(spawnFloatPetal, FG_PETAL_INTERVAL);
@@ -1801,8 +1827,10 @@
             petalCanvas.style.display = 'none';
             petalCanvas.getContext('2d').clearRect(0, 0, petalCanvas.width, petalCanvas.height);
 
-            // 2D 평면 부유 애니메이션 비활성화
-            if (reliefPlane) reliefPlane.removeAttribute('animation__float');
+            // 2.5D 디오라마 부유 애니메이션 비활성화
+            if (dioramaLayer1) dioramaLayer1.removeAttribute('animation__float');
+            if (dioramaLayer2) dioramaLayer2.removeAttribute('animation__float');
+            if (dioramaLayer3) dioramaLayer3.removeAttribute('animation__float');
             if (colorOverlayPlane) colorOverlayPlane.removeAttribute('animation__float');
         }
         
@@ -2533,7 +2561,9 @@
                 showStatus('🌸 도안 인식 완료!');
                 if (!isTextureScanned) scanButton.classList.add('show');
                 if (petalsContainer) petalsContainer.setAttribute('visible', 'true');
-                if (reliefPlane) reliefPlane.setAttribute('visible', 'true');
+                if (dioramaLayer1) dioramaLayer1.setAttribute('visible', 'true');
+                if (dioramaLayer2) dioramaLayer2.setAttribute('visible', 'true');
+                if (dioramaLayer3) dioramaLayer3.setAttribute('visible', 'true');
                 if (!hasExploded && isTextureScanned) { 
                     createPetalBurst(); 
                     hasExploded = true; 
