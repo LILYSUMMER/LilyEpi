@@ -1216,9 +1216,8 @@
             
             // ✅ 비디오 요소를 실시간으로 가져오기 (캐싱하지 않음!)
             getVideo: function() {
-                // 매번 새로 찾아서 최신 상태 확인
-                const videoEl = document.querySelector('video');
-                return videoEl;
+                // preview-video를 제외하고 AR 카메라 비디오만 정확히 타겟팅
+                return document.querySelector('video:not(#preview-video)');
             },
             
             // ✅ 비디오가 준비되었는지 확인
@@ -1685,7 +1684,7 @@
         
         // 검은 화면 수정 함수
         function fixBlackScreen() {
-            const videos = document.querySelectorAll('video');
+            const videos = document.querySelectorAll('video:not(#preview-video)');
             videos.forEach(video => {
                 video.style.cssText = `
                     position: fixed !important;
@@ -1730,7 +1729,7 @@
         
         // 비디오 노출 강제
         function forceVideoExpose() {
-            const video = document.querySelector('video');
+            const video = document.querySelector('video:not(#preview-video)');
             if (video) {
                 video.style.cssText = `
                     position: fixed !important;
@@ -2136,7 +2135,7 @@
                     fixBlackScreen();
                     
                     // 셀카 모드에서 비디오 미러링
-                    const video = document.querySelector('video');
+                    const video = document.querySelector('video:not(#preview-video)');
                     if (video) {
                         video.style.transform = isSelfieMode ? 'scaleX(-1)' : 'scaleX(1)';
                     }
