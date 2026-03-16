@@ -23,6 +23,23 @@
     <meta property="og:url" content="https://epispace.kr/cherry-blossom-ar.html">
     
     <!-- A-Frame & MindAR (독립적으로 로드) -->
+    <!-- WebGL 컨텍스트 생성 시 preserveDrawingBuffer/premultipliedAlpha 강제 설정 -->
+    <!-- A-Frame 1.4.2는 renderer 스키마에서 이 플래그를 지원하지 않으므로 로드 전 패치 필요 -->
+    <script>
+        (function() {
+            var _origGetContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, options) {
+                if (type === 'webgl' || type === 'webgl2') {
+                    options = Object.assign({}, options, {
+                        preserveDrawingBuffer: true,
+                        alpha: true,
+                        premultipliedAlpha: false
+                    });
+                }
+                return _origGetContext.call(this, type, options);
+            };
+        })();
+    </script>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     
@@ -1051,7 +1068,7 @@
     <a-scene
         id="ar-scene"
         ar-recorder
-        renderer="colorManagement: true; preserveDrawingBuffer: true; alpha: true; premultipliedAlpha: false; antialias: true;"
+        renderer="colorManagement: true; antialias: true;"
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
         vr-mode-ui="enabled: false"
@@ -1211,7 +1228,7 @@
                     console.log('⏳ 비디오 요소 없음');
                     return false;
                 }
-                if (videoEl.readyState < 3) {
+                if (videoEl.readyState < 2) {
                     console.log('⏳ 비디오 readyState:', videoEl.readyState);
                     return false;
                 }
@@ -1297,21 +1314,17 @@
                 // ✅ 비디오 준비 상태 확인 (실시간)
                 if (!this.isVideoReady()) {
                     this.photoRetryCount++;
-                    console.log(`⏳ 사진 캡처 대기 중... (${this.photoRetryCount}/6)`);
-                    
-                    if (this.photoRetryCount < 6) {
-                        // 0.5초 후 재시도
+                    console.log(`⏳ 사진 캡처 대기 중... (${this.photoRetryCount}/30)`);
+
+                    if (this.photoRetryCount < 30) {
                         setTimeout(function() {
-                            self.isCapturingPhoto = true; // 다시 플래그 설정
-                        }, 500);
+                            self.isCapturingPhoto = true;
+                        }, 200);
                         return;
                     } else {
-                        // 최대 재시도 초과
                         this.photoRetryCount = 0;
-                        console.warn('❌ 사진 캡처 실패: 비디오가 준비되지 않았습니다');
-                        if (typeof showToast === 'function') {
-                            showToast('카메라가 준비되지 않았습니다. 잠시 후 다시 시도해주세요.', '⚠️');
-                        }
+                        console.error('❌ 사진 캡처 실패: 30회 시도 후에도 비디오가 준비되지 않았습니다');
+                        alert('카메라 준비에 실패했습니다. 새로고침 해주세요.');
                         return;
                     }
                 }
@@ -1359,24 +1372,20 @@
                         this.recordRetryCount = 0;
                     }
                     this.recordRetryCount++;
-                    console.log(`⏳ 녹화 대기 중... (${this.recordRetryCount}/6)`);
-                    
-                    if (this.recordRetryCount < 6) {
+                    console.log(`⏳ 녹화 대기 중... (${this.recordRetryCount}/30)`);
+
+                    if (this.recordRetryCount < 30) {
                         if (typeof showToast === 'function' && this.recordRetryCount === 1) {
                             showToast('카메라 준비 중...', '⏳');
                         }
-                        // 0.5초 후 재시도
                         setTimeout(function() {
                             self.startRecording(selfieMode, true);
-                        }, 500);
+                        }, 200);
                         return;
                     } else {
-                        // 최대 재시도 초과
                         this.recordRetryCount = 0;
-                        console.warn('❌ 녹화 실패: 비디오가 준비되지 않았습니다');
-                        if (typeof showToast === 'function') {
-                            showToast('카메라가 준비되지 않았습니다', '⚠️');
-                        }
+                        console.error('❌ 녹화 실패: 30회 시도 후에도 비디오가 준비되지 않았습니다');
+                        alert('카메라 준비에 실패했습니다. 새로고침 해주세요.');
                         return;
                     }
                 }
