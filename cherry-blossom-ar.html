@@ -1053,7 +1053,8 @@
         ar-recorder
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
-        renderer="preserveDrawingBuffer: true; alpha: true; premultipliedAlpha: false; antialias: true; logarithmicDepthBuffer: true;"
+        renderer="antialias: true; alpha: true; colorManagement: true; sortObjects: true"
+        screenshot="width: 1920; height: 1080"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
@@ -1138,6 +1139,20 @@
     </a-scene>
     
     <script>
+        // ===== WebGL 컨텍스트 설정을 위한 씬 초기화 전 처리 =====
+        // preserveDrawingBuffer는 A-Frame 씬 생성 전에 설정해야 함
+        AFRAME.registerComponent('webgl-settings', {
+            init: function() {
+                // 렌더러가 생성된 후 설정 확인
+                const renderer = this.el.renderer;
+                if (renderer) {
+                    const gl = renderer.getContext();
+                    const attrs = gl.getContextAttributes();
+                    console.log('🎨 WebGL 설정:', attrs);
+                }
+            }
+        });
+        
         // ===== 🔥 ar-recorder: 벚꽃 파티클 완벽 캡처/녹화 A-Frame 컴포넌트 =====
         // tock (렌더링 직후)에 기생하여 합성 → 빈 버퍼 문제 완전 해결
         AFRAME.registerComponent('ar-recorder', {
@@ -2048,7 +2063,6 @@
         
         // 기존 switchCamera 함수를 toggleCamera로 대체
         const switchCamera = toggleCamera;
-        }
         
         // 프리뷰 모달 닫기
         capturePreviewClose.addEventListener('click', (e) => {
