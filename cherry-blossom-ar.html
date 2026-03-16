@@ -13,12 +13,12 @@
     
     <!-- SEO Meta Tags -->
     <title>🌸 벚꽃 터널 AR 포토존 | Epispace</title>
-    <meta name="description" content="직접 색칠한 도안이 3D AR로 살아나는 벚꽃 터널 포토존을 체험하세요. 앱 설치 없이 브라우저에서 바로!">
+    <meta name="description" content="직접 색칠한 도안이 AR로 살아나는 벚꽃 터널 포토존을 체험하세요. 앱 설치 없이 브라우저에서 바로!">
     <meta name="keywords" content="벚꽃AR, 포토존, AR체험, 에피스페이스, Epispace, 증강현실">
     
     <!-- Open Graph -->
     <meta property="og:title" content="🌸 벚꽃 터널 AR 포토존 | Epispace">
-    <meta property="og:description" content="직접 색칠한 도안이 3D AR로 살아나는 특별한 체험!">
+    <meta property="og:description" content="직접 색칠한 도안이 AR로 살아나는 특별한 체험!">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://epispace.kr/cherry-blossom-ar.html">
     
@@ -35,11 +35,12 @@
             overflow: hidden;
             width: 100%;
             height: 100%;
-            background: #000 !important;
+            background: transparent !important;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
         
+        /* 검은 화면 방지를 위한 비디오 스타일 강제 적용 */
         video {
             position: fixed !important;
             top: 0 !important;
@@ -47,17 +48,62 @@
             width: 100vw !important;
             height: 100vh !important;
             object-fit: cover !important;
-            z-index: -2 !important;
+            z-index: -100 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+            background: transparent !important;
+            pointer-events: none !important;
         }
         
         a-scene {
             position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 100% !important;
             height: 100% !important;
             z-index: 1 !important;
+            background: transparent !important;
         }
         
-        .a-canvas { background: transparent !important; }
+        /* A-Frame 캔버스 투명하게 */
+        .a-canvas {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* 에러 메시지 UI */
+        #error-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        #error-overlay.show { display: flex; }
+        
+        #error-overlay .error-icon { font-size: 60px; margin-bottom: 20px; }
+        #error-overlay .error-title { font-size: 20px; font-weight: 600; margin-bottom: 10px; color: #ff6b9d; }
+        #error-overlay .error-message { font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6; }
+        #error-overlay .retry-btn {
+            margin-top: 25px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8a65 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
         
         /* 뒤로가기 버튼 */
         #back-button {
@@ -79,9 +125,7 @@
             backdrop-filter: blur(10px);
         }
         
-        #back-button:active {
-            transform: scale(0.95);
-        }
+        #back-button:active { transform: scale(0.95); }
         
         /* 따뜻한 톤 오버레이 */
         #warm-overlay {
@@ -110,9 +154,7 @@
             pointer-events: none;
         }
         
-        #shutter-flash.flash {
-            animation: shutterFlash 0.4s ease-out;
-        }
+        #shutter-flash.flash { animation: shutterFlash 0.4s ease-out; }
         
         @keyframes shutterFlash {
             0% { opacity: 1; }
@@ -301,11 +343,7 @@
             transform: translate(-50%, -50%) scale(1);
         }
         
-        #toast .icon {
-            font-size: 40px;
-            display: block;
-            margin-bottom: 10px;
-        }
+        #toast .icon { font-size: 40px; display: block; margin-bottom: 10px; }
         
         /* 상태바 */
         #status-bar {
@@ -465,6 +503,14 @@
     </style>
 </head>
 <body>
+    <!-- 에러 오버레이 -->
+    <div id="error-overlay">
+        <span class="error-icon">⚠️</span>
+        <p class="error-title">리소스 로드 실패</p>
+        <p class="error-message" id="error-message">필요한 파일을 불러오지 못했습니다.</p>
+        <button class="retry-btn" onclick="location.reload()">다시 시도</button>
+    </div>
+    
     <!-- 뒤로가기 버튼 -->
     <button id="back-button" onclick="history.back()">←</button>
     
@@ -515,15 +561,17 @@
     
     <!-- A-Frame AR 씬 -->
     <a-scene
+        id="ar-scene"
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
         renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true; preserveDrawingBuffer: true;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
+        embedded
     >
-        <a-assets>
+        <a-assets timeout="10000">
             <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
-            <a-asset-item id="relief-model" src="./assets/cherry-blossom-ar/relief.glb"></a-asset-item>
+            <img id="relief-flat-img" src="./assets/cherry-blossom-ar/relief_flat.png" crossorigin="anonymous">
         </a-assets>
         
         <a-entity light="type: ambient; color: #fff5f0; intensity: 1.3;"></a-entity>
@@ -534,38 +582,41 @@
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
-            <a-gltf-model
-                id="relief-model-entity"
-                src="#relief-model"
-                position="0 0 0"
-                rotation="0 0 0"
-                scale="0.5 0.5 0.5"
-                visible="true"
-            ></a-gltf-model>
+            <!-- 2D 이미지 기반 평면 (부조 도안) -->
+            <a-plane
+                id="relief-plane"
+                position="0 0 0.01"
+                width="1"
+                height="0.667"
+                material="shader: flat; src: #relief-flat-img; transparent: true; opacity: 1; side: double;"
+                animation="property: position; from: 0 -0.05 0.01; to: 0 0.05 0.01; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true;"
+            ></a-plane>
+            
+            <!-- 색상 오버레이 평면 (스캔한 색상을 합성) -->
+            <a-plane
+                id="color-overlay-plane"
+                position="0 0 0.02"
+                width="1"
+                height="0.667"
+                material="shader: flat; color: #ffffff; transparent: true; opacity: 0; side: double; blending: normal;"
+                animation="property: position; from: 0 -0.05 0.02; to: 0 0.05 0.02; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true;"
+                visible="false"
+            ></a-plane>
             
             <a-entity light="type: point; color: #ffb6c1; intensity: 0.8; distance: 2; decay: 1.5;" position="0.3 0.2 0.3"></a-entity>
             <a-entity light="type: point; color: #ffc0cb; intensity: 0.6; distance: 1.5; decay: 1.5;" position="-0.3 0.1 0.2"></a-entity>
             
-            <a-plane
-                id="paint-surface-fallback"
-                position="0 0 0.001"
-                width="1"
-                height="0.667"
-                material="shader: flat; color: #ffffff; side: double;"
-                visible="false"
-            ></a-plane>
-            
             <a-entity id="petals-container" visible="false">
-                <a-image src="#petal-img" position="0 0.6 0.02" scale="0.18 0.18 0.18" opacity="0.9"
-                    animation__fall="property: position; from: 0.4 1.5 0.02; to: -0.4 -1.5 0.02; dur: 5500; easing: easeInOutSine; loop: true;"
+                <a-image src="#petal-img" position="0 0.6 0.03" scale="0.18 0.18 0.18" opacity="0.9"
+                    animation__fall="property: position; from: 0.4 1.5 0.03; to: -0.4 -1.5 0.03; dur: 5500; easing: easeInOutSine; loop: true;"
                     animation__rotate="property: rotation; from: 0 0 0; to: 45 180 720; dur: 6000; easing: linear; loop: true;">
                 </a-image>
-                <a-image src="#petal-img" position="-0.5 0.4 0.02" scale="0.14 0.14 0.14" opacity="0.85"
-                    animation__fall="property: position; from: -0.6 1.3 0.02; to: 0.6 -1.3 0.02; dur: 6000; easing: easeInOutSine; loop: true; delay: 400;"
+                <a-image src="#petal-img" position="-0.5 0.4 0.03" scale="0.14 0.14 0.14" opacity="0.85"
+                    animation__fall="property: position; from: -0.6 1.3 0.03; to: 0.6 -1.3 0.03; dur: 6000; easing: easeInOutSine; loop: true; delay: 400;"
                     animation__rotate="property: rotation; from: 30 0 45; to: -30 360 765; dur: 7000; easing: linear; loop: true;">
                 </a-image>
-                <a-image src="#petal-img" position="0.5 0.3 0.02" scale="0.12 0.12 0.12" opacity="0.8"
-                    animation__fall="property: position; from: 0.7 1.2 0.02; to: -0.7 -1.2 0.02; dur: 5000; easing: easeInOutSine; loop: true; delay: 800;"
+                <a-image src="#petal-img" position="0.5 0.3 0.03" scale="0.12 0.12 0.12" opacity="0.8"
+                    animation__fall="property: position; from: 0.7 1.2 0.03; to: -0.7 -1.2 0.03; dur: 5000; easing: easeInOutSine; loop: true; delay: 800;"
                     animation__rotate="property: rotation; from: -20 0 -30; to: 20 -360 -750; dur: 5500; easing: linear; loop: true;">
                 </a-image>
             </a-entity>
@@ -585,9 +636,9 @@
         const loadingScreen = document.getElementById('loading-screen');
         const guideUI = document.getElementById('guide-ui');
         const arTarget = document.getElementById('ar-target');
-        const sceneEl = document.querySelector('a-scene');
-        const reliefModelEntity = document.getElementById('relief-model-entity');
-        const fallbackSurface = document.getElementById('paint-surface-fallback');
+        const sceneEl = document.getElementById('ar-scene');
+        const reliefPlane = document.getElementById('relief-plane');
+        const colorOverlayPlane = document.getElementById('color-overlay-plane');
         const petalsContainer = document.getElementById('petals-container');
         const paintCanvas = document.getElementById('paint-canvas');
         const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
@@ -608,6 +659,8 @@
         const capturePreviewImage = document.getElementById('capture-preview-image');
         const capturePreviewInfo = document.getElementById('capture-preview-info');
         const capturePreviewClose = document.getElementById('capture-preview-close');
+        const errorOverlay = document.getElementById('error-overlay');
+        const errorMessage = document.getElementById('error-message');
         
         let videoElement = null;
         let isTargetFound = false;
@@ -616,14 +669,96 @@
         let isTextureScanned = false;
         let fgPetalInterval = null;
         let hasExploded = false;
-        let modelLoaded = false;
-        let targetMeshes = [];
         let lostTimeout = null;
         let isCapturing = false;
         let audioContext = null;
+        let resourcesLoaded = false;
         let petalImage = new Image();
         petalImage.crossOrigin = 'anonymous';
         petalImage.src = './assets/cherry-blossom-ar/petal.png';
+        
+        // 에러 표시 함수
+        function showError(title, message) {
+            const titleEl = errorOverlay.querySelector('.error-title');
+            if (titleEl) titleEl.textContent = title;
+            errorMessage.textContent = message;
+            errorOverlay.classList.add('show');
+        }
+        
+        // 검은 화면 수정 함수
+        function fixBlackScreen() {
+            // 모든 비디오 요소 강제 스타일링
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.style.cssText = `
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    object-fit: cover !important;
+                    z-index: -100 !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    display: block !important;
+                    background: transparent !important;
+                `;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                if (video.paused) {
+                    video.play().catch(() => {});
+                }
+                videoElement = video;
+            });
+            
+            // 모든 캔버스 배경 투명하게
+            const canvases = document.querySelectorAll('canvas.a-canvas, .a-canvas');
+            canvases.forEach(canvas => {
+                canvas.style.background = 'transparent';
+                canvas.style.backgroundColor = 'transparent';
+            });
+            
+            // A-Frame 씬 배경 투명
+            if (sceneEl) {
+                sceneEl.style.background = 'transparent';
+                sceneEl.style.backgroundColor = 'transparent';
+            }
+            
+            // body 배경 투명
+            document.body.style.background = 'transparent';
+            document.body.style.backgroundColor = 'transparent';
+            
+            // 렌더러 투명 설정
+            if (sceneEl && sceneEl.renderer) {
+                sceneEl.renderer.setClearColor(0x000000, 0);
+            }
+        }
+        
+        // 비디오 노출 강제
+        function forceVideoExpose() {
+            const video = document.querySelector('video');
+            if (video) {
+                video.style.cssText = `
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    object-fit: cover !important;
+                    z-index: -100 !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    display: block !important;
+                `;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                videoElement = video;
+                return true;
+            }
+            return false;
+        }
         
         // 찰칵 소리
         function createShutterSound() {
@@ -658,20 +793,6 @@
             if (fgPetalInterval) return;
             for (let i = 0; i < 8; i++) setTimeout(() => createForegroundPetal(), i * 200);
             fgPetalInterval = setInterval(createForegroundPetal, FG_PETAL_INTERVAL);
-        }
-        
-        // 비디오 노출
-        function forceVideoExpose() {
-            const video = document.querySelector('video');
-            if (video) {
-                video.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-2;';
-                video.setAttribute('playsinline', '');
-                video.setAttribute('autoplay', '');
-                video.setAttribute('muted', '');
-                videoElement = video;
-                return true;
-            }
-            return false;
         }
         
         // UI
@@ -829,22 +950,6 @@
             }
         }
         
-        // GLTF 설정
-        function setupGLTFModel() {
-            if (!reliefModelEntity) return false;
-            const model = reliefModelEntity.getObject3D('mesh');
-            if (!model) return false;
-            targetMeshes = [];
-            model.traverse((child) => {
-                if (child.isMesh) {
-                    targetMeshes.push(child);
-                    if (child.material) { child.material = child.material.clone(); child.material.needsUpdate = true; }
-                }
-            });
-            if (targetMeshes.length > 0) { modelLoaded = true; return true; }
-            return false;
-        }
-        
         // 마커 영역 추출
         function extractMarkerRegion() {
             if (!videoElement) return null;
@@ -855,7 +960,7 @@
             return { x: Math.max(0, (vw - cw) / 2), y: Math.max(0, (vh - ch) / 2), width: cw, height: ch };
         }
         
-        // 텍스처 스캔
+        // 텍스처 스캔 및 색상 오버레이 적용
         function scanTexture() {
             if (!videoElement || !isTargetFound) { showToast('도안을 카메라에 비춰주세요', '📷'); return false; }
             try {
@@ -866,6 +971,8 @@
                 paintCtx.imageSmoothingEnabled = true;
                 paintCtx.imageSmoothingQuality = 'high';
                 paintCtx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
+                
+                // THREE.js 텍스처 생성
                 staticTexture = new THREE.CanvasTexture(paintCanvas);
                 staticTexture.flipY = false;
                 staticTexture.wrapS = THREE.ClampToEdgeWrapping;
@@ -874,11 +981,20 @@
                 staticTexture.magFilter = THREE.LinearFilter;
                 staticTexture.generateMipmaps = false;
                 staticTexture.needsUpdate = true;
-                targetMeshes.forEach(mesh => { if (mesh.material) { mesh.material.map = staticTexture; mesh.material.needsUpdate = true; } });
-                if (!modelLoaded && fallbackSurface) {
-                    const mesh = fallbackSurface.getObject3D('mesh');
-                    if (mesh && mesh.material) { mesh.material.map = staticTexture; mesh.material.needsUpdate = true; }
+                
+                // 색상 오버레이 평면에 텍스처 적용
+                if (colorOverlayPlane) {
+                    const mesh = colorOverlayPlane.getObject3D('mesh');
+                    if (mesh && mesh.material) {
+                        mesh.material.map = staticTexture;
+                        mesh.material.opacity = 0.85;
+                        mesh.material.transparent = true;
+                        mesh.material.needsUpdate = true;
+                    }
+                    colorOverlayPlane.setAttribute('visible', 'true');
                 }
+                
+                // 프리뷰 업데이트
                 texturePreview.src = paintCanvas.toDataURL('image/jpeg', 0.9);
                 texturePreview.classList.add('show');
                 isTextureScanned = true;
@@ -895,11 +1011,62 @@
         scanButton.addEventListener('click', () => { if (isTextureScanned) { showToast('이미 스캔이 완료되었습니다', '✅'); return; } scanTexture(); });
         photoCaptureButton.addEventListener('click', () => startPhotoCapture());
         
+        // 리소스 로드 확인
+        function checkTargetMindFile() {
+            const img = new Image();
+            img.onload = function() {
+                resourcesLoaded = true;
+            };
+            img.onerror = function() {
+                showError('타겟 파일 로드 실패', 'target.mind 파일을 불러올 수 없습니다.\n경로: ./assets/cherry-blossom-ar/target.mind');
+            };
+            
+            // target.mind는 이미지가 아니므로 fetch로 확인
+            fetch('./assets/cherry-blossom-ar/target.mind')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('target.mind 로드 실패');
+                    }
+                    resourcesLoaded = true;
+                })
+                .catch(err => {
+                    console.error(err);
+                    showError('타겟 파일 로드 실패', 'target.mind 파일을 불러올 수 없습니다.\n경로를 확인해주세요: ./assets/cherry-blossom-ar/target.mind');
+                });
+        }
+        
         // A-Frame 이벤트
-        sceneEl.addEventListener('loaded', () => sceneEl.renderer?.setClearColor(0x000000, 0));
-        sceneEl.addEventListener('arReady', () => { hideLoadingScreen(); forceVideoExpose(); setTimeout(forceVideoExpose, 500); startForegroundPetals(); });
-        reliefModelEntity.addEventListener('model-loaded', () => setTimeout(() => { if (setupGLTFModel()) fallbackSurface.setAttribute('visible', 'false'); else fallbackSurface.setAttribute('visible', 'true'); }, 100));
-        reliefModelEntity.addEventListener('model-error', () => fallbackSurface.setAttribute('visible', 'true'));
+        sceneEl.addEventListener('loaded', () => {
+            if (sceneEl.renderer) {
+                sceneEl.renderer.setClearColor(0x000000, 0);
+            }
+            // 검은 화면 수정 지연 실행
+            setTimeout(fixBlackScreen, 500);
+            setTimeout(fixBlackScreen, 1000);
+            setTimeout(fixBlackScreen, 2000);
+        });
+        
+        sceneEl.addEventListener('arReady', () => {
+            hideLoadingScreen();
+            forceVideoExpose();
+            fixBlackScreen();
+            setTimeout(fixBlackScreen, 500);
+            setTimeout(fixBlackScreen, 1000);
+            startForegroundPetals();
+        });
+        
+        sceneEl.addEventListener('arError', (e) => {
+            console.error('AR Error:', e);
+            showError('AR 초기화 실패', '카메라 접근 권한을 확인해주세요.\n또는 HTTPS 환경에서 실행해주세요.');
+        });
+        
+        // 에셋 로드 에러 처리
+        const assets = document.querySelector('a-assets');
+        if (assets) {
+            assets.addEventListener('timeout', () => {
+                console.warn('Assets loading timeout');
+            });
+        }
         
         // 마커 인식
         arTarget.addEventListener('targetFound', () => {
@@ -908,8 +1075,7 @@
             hideGuide(); showStatus('🌸 도안 인식 완료!');
             if (!isTextureScanned) scanButton.classList.add('show');
             if (petalsContainer) petalsContainer.setAttribute('visible', 'true');
-            if (modelLoaded) reliefModelEntity.setAttribute('visible', 'true');
-            else fallbackSurface.setAttribute('visible', 'true');
+            if (reliefPlane) reliefPlane.setAttribute('visible', 'true');
             if (!hasExploded && isTextureScanned) { createPetalBurst(); hasExploded = true; }
         });
         
@@ -923,8 +1089,24 @@
         });
         
         // 초기화
-        window.onload = function() { forceVideoExpose(); setTimeout(forceVideoExpose, 1000); setTimeout(forceVideoExpose, 2000); setTimeout(() => { if (!modelLoaded) setupGLTFModel(); }, 3000); };
-        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료');
+        window.onload = function() {
+            checkTargetMindFile();
+            forceVideoExpose();
+            fixBlackScreen();
+            setTimeout(forceVideoExpose, 500);
+            setTimeout(fixBlackScreen, 500);
+            setTimeout(forceVideoExpose, 1000);
+            setTimeout(fixBlackScreen, 1000);
+            setTimeout(forceVideoExpose, 2000);
+            setTimeout(fixBlackScreen, 2000);
+        };
+        
+        // DOMContentLoaded에서도 검은 화면 수정
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(fixBlackScreen, 100);
+        });
+        
+        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (2D 이미지 기반)');
     </script>
 </body>
 </html>
