@@ -1022,9 +1022,9 @@
         <a-assets timeout="10000">
             <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
             <!-- 2.5D 팝업 디오라마 레이어 이미지 -->
-            <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png" crossorigin="anonymous">
-            <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png" crossorigin="anonymous">
-            <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png" crossorigin="anonymous">
+            <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png">
+            <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png">
+            <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png">
             <!-- paint-canvas를 A-Frame 에셋으로 등록 → src: #paint-canvas 참조 가능 -->
             <canvas id="paint-canvas" width="1024" height="1024"></canvas>
         </a-assets>
@@ -1067,7 +1067,7 @@
                 position="0 0 0.01"
                 width="1"
                 height="0.667"
-                material="shader: flat; src: #layer1; transparent: true; opacity: 1; side: double;"
+                material="shader: flat; src: #layer1; transparent: true; alphaTest: 0.5; depthWrite: false; opacity: 1; side: double;"
             ></a-plane>
 
             <!-- 사용자 색칠 오버레이: 레이어 1과 2 사이 -->
@@ -1076,7 +1076,7 @@
                 position="0 0 0.04"
                 width="1"
                 height="0.667"
-                material="shader: flat; color: #ffffff; transparent: true; opacity: 0; side: double; blending: normal;"
+                material="shader: flat; color: #ffffff; transparent: true; depthWrite: false; opacity: 0; side: double; blending: normal;"
                 visible="false"
             ></a-plane>
 
@@ -1086,7 +1086,7 @@
                 position="0 0 0.08"
                 width="1"
                 height="0.667"
-                material="shader: flat; src: #layer2; transparent: true; opacity: 1; side: double;"
+                material="shader: flat; src: #layer2; transparent: true; alphaTest: 0.5; depthWrite: false; opacity: 1; side: double;"
             ></a-plane>
 
             <!-- 2.5D 팝업 디오라마: 레이어 3 (전경 · 가장 빠르고 크게) -->
@@ -1095,7 +1095,7 @@
                 position="0 0 0.15"
                 width="1"
                 height="0.667"
-                material="shader: flat; src: #layer3; transparent: true; opacity: 1; side: double;"
+                material="shader: flat; src: #layer3; transparent: true; alphaTest: 0.5; depthWrite: false; opacity: 1; side: double;"
             ></a-plane>
             
             <a-entity light="type: point; color: #ffb6c1; intensity: 0.8; distance: 2; decay: 1.5;" position="0.3 0.2 0.3"></a-entity>
@@ -2269,7 +2269,7 @@
                 // A-Frame 네이티브 방식으로 캔버스 텍스처 맵핑
                 const colorPlane = document.getElementById('color-overlay-plane');
                 if (colorPlane) {
-                    colorPlane.setAttribute('material', 'src: #paint-canvas; transparent: true; opacity: 0.85; shader: flat; side: double;');
+                    colorPlane.setAttribute('material', 'src: #paint-canvas; transparent: true; depthWrite: false; opacity: 0.85; shader: flat; side: double;');
                     if (colorPlane.components.material && colorPlane.components.material.material) {
                         colorPlane.components.material.material.needsUpdate = true;
                     }
