@@ -370,10 +370,6 @@
             box-shadow: 0 6px 25px rgba(76, 175, 80, 0.5);
         }
         
-        #photo-capture-button {
-            background: linear-gradient(135deg, #9c27b0 0%, #e91e63 100%);
-            box-shadow: 0 6px 25px rgba(156, 39, 176, 0.5);
-        }
         
         @keyframes buttonPop {
             0% { transform: scale(0); opacity: 0; }
@@ -592,6 +588,208 @@
         
         /* 캔버스 숨김 */
         #paint-canvas { display: none; }
+        
+        /* ===== 인스타그램 스토리 스타일 촬영 버튼 ===== */
+        #capture-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            border: 5px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+        }
+        
+        #capture-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s ease;
+        }
+        
+        #capture-btn.pressing {
+            transform: scale(1.15);
+        }
+        
+        #capture-btn.pressing::before {
+            background: #ff4757;
+            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+        }
+        
+        #capture-btn.recording::before {
+            background: #ff4757;
+            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+            animation: recordPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes recordPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* 녹화 타이머 */
+        #record-timer {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 71, 87, 0.9);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 600;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        #record-timer.show {
+            display: flex;
+        }
+        
+        #record-timer::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: recordDot 1s ease-in-out infinite;
+        }
+        
+        @keyframes recordDot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* 카메라 전환 버튼 */
+        #camera-switch-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        #camera-switch-btn.show {
+            display: flex;
+        }
+        
+        #camera-switch-btn.hidden {
+            display: none !important;
+        }
+        
+        #camera-switch-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        #camera-switch-btn svg {
+            width: 26px;
+            height: 26px;
+            fill: white;
+            transition: transform 0.5s ease;
+        }
+        
+        #camera-switch-btn.switching svg {
+            transform: rotate(180deg);
+        }
+        
+        /* 셀카 모드 (거울 효과) */
+        .selfie-mode video {
+            transform: scaleX(-1) !important;
+        }
+        
+        .selfie-mode .a-canvas {
+            transform: scaleX(-1) !important;
+        }
+        
+        /* 녹화 중 프로그레스 링 */
+        #capture-btn .progress-ring {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: 96px;
+            height: 96px;
+            transform: rotate(-90deg);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        #capture-btn.recording .progress-ring {
+            opacity: 1;
+        }
+        
+        .progress-ring circle {
+            fill: none;
+            stroke: #ff4757;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+        }
+        
+        /* 녹화용 숨김 캔버스 */
+        #recording-canvas {
+            display: none;
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+        }
+        
+        /* 촬영 모드 힌트 */
+        #capture-hint {
+            position: fixed;
+            bottom: 130px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 300;
+            display: none;
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+        
+        #capture-hint.show {
+            display: block;
+            animation: hintFadeIn 0.3s ease;
+        }
+        
+        @keyframes hintFadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -624,6 +822,26 @@
     <!-- 뒤로가기 버튼 -->
     <button type="button" id="back-button">←</button>
     
+    <!-- 카메라 전환 버튼 -->
+    <button type="button" id="camera-switch-btn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-8 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+            <path d="M12 10c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+            <path d="M7 8l2-2M17 8l-2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+    </button>
+    
+    <!-- 녹화 타이머 -->
+    <div id="record-timer">
+        <span id="record-time">00:00</span>
+    </div>
+    
+    <!-- 촬영 힌트 -->
+    <div id="capture-hint">탭: 사진 | 길게 누르기: 동영상</div>
+    
+    <!-- 녹화용 캔버스 -->
+    <canvas id="recording-canvas"></canvas>
+    
     <!-- 셔터 플래시 -->
     <div id="shutter-flash"></div>
     
@@ -648,7 +866,12 @@
     
     <div id="button-container">
         <button type="button" id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
-        <button type="button" id="photo-capture-button" class="ar-btn">📸 사진 찍기</button>
+        <!-- 인스타그램 스타일 통합 촬영 버튼 -->
+        <button type="button" id="capture-btn" style="display: none;">
+            <svg class="progress-ring" viewBox="0 0 96 96">
+                <circle cx="48" cy="48" r="45"></circle>
+            </svg>
+        </button>
     </div>
     
     <div id="photo-countdown"></div>
@@ -846,8 +1069,9 @@
         
         // 설정
         const TRACKING_PERSISTENCE_MS = 10000;
-        const COUNTDOWN_SECONDS = 3;
         const FG_PETAL_INTERVAL = 300;
+        const VIDEO_THRESHOLD_MS = 500; // 0.5초 이상 누르면 영상
+        const MAX_RECORD_DURATION_MS = 60000; // 최대 60초 녹화
         
         // 현재 모드
         let currentMode = null; // 'blossom' or 'kit'
@@ -870,9 +1094,8 @@
         const screenPetals = document.getElementById('screen-petals');
         const foregroundPetals = document.getElementById('foreground-petals');
         const scanButton = document.getElementById('scan-button');
-        const photoCaptureButton = document.getElementById('photo-capture-button');
+        const captureBtn = document.getElementById('capture-btn');
         const buttonContainer = document.getElementById('button-container');
-        const photoCountdown = document.getElementById('photo-countdown');
         const toast = document.getElementById('toast');
         const texturePreview = document.getElementById('texture-preview');
         const shutterFlash = document.getElementById('shutter-flash');
@@ -884,6 +1107,12 @@
         const errorOverlay = document.getElementById('error-overlay');
         const errorMessage = document.getElementById('error-message');
         const backButton = document.getElementById('back-button');
+        const cameraSwitchBtn = document.getElementById('camera-switch-btn');
+        const recordTimer = document.getElementById('record-timer');
+        const recordTimeDisplay = document.getElementById('record-time');
+        const captureHint = document.getElementById('capture-hint');
+        const recordingCanvas = document.getElementById('recording-canvas');
+        const recordingCtx = recordingCanvas.getContext('2d', { alpha: false });
         
         let videoElement = null;
         let isTargetFound = false;
@@ -900,6 +1129,21 @@
         let petalImage = new Image();
         petalImage.crossOrigin = 'anonymous';
         petalImage.src = './assets/cherry-blossom-ar/petal.png';
+        
+        // ===== 인스타그램 스타일 촬영 관련 변수 =====
+        let pressStartTime = 0;
+        let isPressing = false;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingAnimationId = null;
+        let recordStartTime = 0;
+        let recordTimerInterval = null;
+        let progressCircle = null;
+        
+        // 카메라 전환 관련
+        let currentFacingMode = 'environment'; // 'environment' = 후면, 'user' = 전면
+        let isSelfieMode = false;
         
         // 에러 표시 함수
         function showError(title, message) {
@@ -1057,12 +1301,16 @@
             guideUI.classList.add('hidden');
             warmOverlay.classList.remove('show');
             foregroundPetals.classList.remove('show');
+            cameraSwitchBtn.classList.add('hidden');
+            captureHint.classList.remove('show');
+            recordTimer.classList.remove('show');
         }
         function showAllUI() {
             buttonContainer.classList.remove('hidden');
             texturePreview.classList.remove('hidden');
             statusBar.classList.remove('hidden');
             warmOverlay.classList.add('show');
+            cameraSwitchBtn.classList.remove('hidden');
             if (currentMode === 'blossom') {
                 foregroundPetals.classList.add('show');
             }
@@ -1078,54 +1326,406 @@
             }
         }
         
-        // 카운트다운 후 스냅샷
-        async function startPhotoCapture(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            if (isCapturing) return false;
+        // ===== 인스타그램 스타일 즉시 사진 촬영 (카운트다운 제거) =====
+        async function takePhotoInstant() {
+            if (isCapturing || isRecording) return;
             isCapturing = true;
             
             try {
-                // 카운트다운
-                for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
-                    photoCountdown.textContent = i;
-                    photoCountdown.classList.remove('show');
-                    void photoCountdown.offsetWidth;
-                    photoCountdown.classList.add('show');
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-                
-                // UI 숨기기
-                hideAllUI();
-                photoCountdown.classList.remove('show');
-                
-                // 잠시 대기 후 플래시 & 촬영
-                await new Promise(r => setTimeout(r, 100));
+                // 플래시 효과
                 shutterFlash.classList.add('flash');
                 createShutterSound();
                 
                 // 스냅샷 촬영 (A-Frame 컴포넌트 방식)
                 triggerPhotoCapture();
                 
-                // 플래시 제거 & UI 복원
+                // 플래시 제거
                 setTimeout(() => {
                     shutterFlash.classList.remove('flash');
+                    isCapturing = false;
                 }, 300);
                 
-                setTimeout(() => {
-                    showAllUI();
-                    isCapturing = false;
-                }, 400);
+                showToast('📸 사진이 저장되었습니다!', '✨');
                 
             } catch (err) {
-                alert('[촬영 에러]\n' + (err.message || err.toString()));
+                console.error('[촬영 에러]', err);
                 isCapturing = false;
             }
+        }
+        
+        // ===== 영상 녹화 관련 함수들 =====
+        
+        // 녹화용 캔버스에 프레임 그리기
+        function drawRecordingFrame() {
+            if (!isRecording) return;
             
-            return false;
+            const video = videoElement || document.querySelector('video');
+            const arCanvas = sceneEl.canvas;
+            
+            if (!video || video.readyState < 2) {
+                recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
+                return;
+            }
+            
+            const w = recordingCanvas.width;
+            const h = recordingCanvas.height;
+            
+            // 1. 비디오 그리기 (object-fit: cover 방식)
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            const videoRatio = vw / vh;
+            const canvasRatio = w / h;
+            
+            let sx = 0, sy = 0, sw = vw, sh = vh;
+            if (videoRatio > canvasRatio) {
+                sw = vh * canvasRatio;
+                sx = (vw - sw) / 2;
+            } else {
+                sh = vw / canvasRatio;
+                sy = (vh - sh) / 2;
+            }
+            
+            // 셀카 모드일 때 좌우 반전
+            if (isSelfieMode) {
+                recordingCtx.save();
+                recordingCtx.scale(-1, 1);
+                recordingCtx.drawImage(video, sx, sy, sw, sh, -w, 0, w, h);
+                recordingCtx.restore();
+            } else {
+                recordingCtx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+            }
+            
+            // 2. AR 캔버스 덧그리기
+            if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
+                if (isSelfieMode) {
+                    recordingCtx.save();
+                    recordingCtx.scale(-1, 1);
+                    recordingCtx.drawImage(arCanvas, -w, 0, w, h);
+                    recordingCtx.restore();
+                } else {
+                    recordingCtx.drawImage(arCanvas, 0, 0, w, h);
+                }
+            }
+            
+            recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
+        }
+        
+        // 녹화 타이머 업데이트
+        function updateRecordTimer() {
+            const elapsed = Date.now() - recordStartTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            recordTimeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            // 프로그레스 링 업데이트
+            if (progressCircle) {
+                const progress = Math.min(elapsed / MAX_RECORD_DURATION_MS, 1);
+                const circumference = 2 * Math.PI * 45; // r=45
+                progressCircle.style.strokeDashoffset = circumference * (1 - progress);
+            }
+            
+            // 최대 시간 도달 시 자동 종료
+            if (elapsed >= MAX_RECORD_DURATION_MS) {
+                stopRecording();
+            }
+        }
+        
+        // 녹화 시작
+        function startRecording() {
+            if (isRecording || isCapturing) return;
+            
+            const video = videoElement || document.querySelector('video');
+            if (!video || video.readyState < 2) {
+                showToast('카메라 준비 중...', '⏳');
+                return;
+            }
+            
+            try {
+                // 녹화 캔버스 크기 설정
+                const scale = 1.5;
+                recordingCanvas.width = Math.floor(window.innerWidth * scale);
+                recordingCanvas.height = Math.floor(window.innerHeight * scale);
+                
+                // 스트림 생성
+                const canvasStream = recordingCanvas.captureStream(30);
+                
+                // 오디오 트랙 추가 (가능한 경우)
+                if (video.srcObject && video.srcObject.getAudioTracks().length > 0) {
+                    const audioTrack = video.srcObject.getAudioTracks()[0];
+                    canvasStream.addTrack(audioTrack);
+                }
+                
+                // MediaRecorder 설정
+                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
+                    ? 'video/webm;codecs=vp9' 
+                    : MediaRecorder.isTypeSupported('video/webm') 
+                        ? 'video/webm' 
+                        : 'video/mp4';
+                
+                mediaRecorder = new MediaRecorder(canvasStream, {
+                    mimeType: mimeType,
+                    videoBitsPerSecond: 5000000 // 5Mbps
+                });
+                
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    
+                    // 다운로드
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cherry-blossom-${Date.now()}.${mimeType.includes('webm') ? 'webm' : 'mp4'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // 메모리 정리
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    
+                    showToast('🎬 동영상이 저장되었습니다!', '✨');
+                };
+                
+                mediaRecorder.onerror = (e) => {
+                    console.error('MediaRecorder error:', e);
+                    stopRecording();
+                    showToast('녹화 중 오류가 발생했습니다', '❌');
+                };
+                
+                // 녹화 시작
+                isRecording = true;
+                mediaRecorder.start(100); // 100ms 단위로 데이터 수집
+                
+                // 프레임 렌더링 시작
+                recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
+                
+                // UI 업데이트
+                captureBtn.classList.add('recording');
+                captureBtn.classList.remove('pressing');
+                recordTimer.classList.add('show');
+                captureHint.classList.remove('show');
+                
+                // 타이머 시작
+                recordStartTime = Date.now();
+                progressCircle = captureBtn.querySelector('.progress-ring circle');
+                if (progressCircle) {
+                    progressCircle.style.strokeDashoffset = '283';
+                }
+                recordTimerInterval = setInterval(updateRecordTimer, 100);
+                
+                // 진동 피드백 (지원되는 경우)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+            } catch (err) {
+                console.error('녹화 시작 실패:', err);
+                showToast('녹화를 시작할 수 없습니다', '❌');
+                isRecording = false;
+            }
+        }
+        
+        // 녹화 종료
+        function stopRecording() {
+            if (!isRecording) return;
+            
+            isRecording = false;
+            
+            // 애니메이션 프레임 중지
+            if (recordingAnimationId) {
+                cancelAnimationFrame(recordingAnimationId);
+                recordingAnimationId = null;
+            }
+            
+            // 타이머 중지
+            if (recordTimerInterval) {
+                clearInterval(recordTimerInterval);
+                recordTimerInterval = null;
+            }
+            
+            // MediaRecorder 종료
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            
+            // UI 복원
+            captureBtn.classList.remove('recording', 'pressing');
+            recordTimer.classList.remove('show');
+            
+            // 프로그레스 링 리셋
+            if (progressCircle) {
+                progressCircle.style.strokeDashoffset = '283';
+            }
+            
+            // 진동 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate([50, 50, 50]);
+            }
+        }
+        
+        // ===== 터치 이벤트 핸들러 (인스타그램 스타일) =====
+        function handlePointerDown(e) {
+            if (isCapturing || isRecording) return;
+            e.preventDefault();
+            
+            isPressing = true;
+            pressStartTime = Date.now();
+            
+            // 버튼 누름 효과
+            captureBtn.classList.add('pressing');
+            captureHint.classList.remove('show');
+            
+            // 진동 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        }
+        
+        function handlePointerUp(e) {
+            if (!isPressing) return;
+            e.preventDefault();
+            
+            const pressDuration = Date.now() - pressStartTime;
+            isPressing = false;
+            
+            if (isRecording) {
+                // 녹화 중이었으면 녹화 종료
+                stopRecording();
+            } else if (pressDuration < VIDEO_THRESHOLD_MS) {
+                // 짧게 눌렀으면 사진 촬영
+                captureBtn.classList.remove('pressing');
+                takePhotoInstant();
+            } else {
+                // 녹화가 시작되지 않았는데 오래 눌렀다면 녹화 시작 (이미 startRecording에서 처리됨)
+                captureBtn.classList.remove('pressing');
+            }
+        }
+        
+        function handlePointerCancel(e) {
+            if (isPressing) {
+                isPressing = false;
+                captureBtn.classList.remove('pressing');
+                if (isRecording) {
+                    stopRecording();
+                }
+            }
+        }
+        
+        // 길게 누르기 감지를 위한 타이머
+        let longPressTimer = null;
+        
+        function setupCaptureButton() {
+            captureBtn.addEventListener('pointerdown', (e) => {
+                handlePointerDown(e);
+                
+                // 0.5초 후 녹화 시작
+                longPressTimer = setTimeout(() => {
+                    if (isPressing && !isRecording && !isCapturing) {
+                        startRecording();
+                    }
+                }, VIDEO_THRESHOLD_MS);
+            });
+            
+            captureBtn.addEventListener('pointerup', (e) => {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                handlePointerUp(e);
+            });
+            
+            captureBtn.addEventListener('pointercancel', (e) => {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                handlePointerCancel(e);
+            });
+            
+            captureBtn.addEventListener('pointerleave', (e) => {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                if (isPressing && !isRecording) {
+                    handlePointerCancel(e);
+                }
+            });
+            
+            // 컨텍스트 메뉴 방지
+            captureBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+        
+        // ===== 카메라 전환 기능 (Selfie Mode) =====
+        async function switchCamera() {
+            if (!arStarted) return;
+            
+            cameraSwitchBtn.classList.add('switching');
+            showToast('카메라 전환 중...', '🔄');
+            
+            try {
+                const mindArSystem = sceneEl.systems['mindar-image-system'];
+                
+                if (mindArSystem) {
+                    // MindAR 정지
+                    await mindArSystem.stop();
+                    
+                    // facingMode 토글
+                    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+                    isSelfieMode = currentFacingMode === 'user';
+                    
+                    // MindAR 속성 업데이트
+                    const mindArAttr = sceneEl.getAttribute('mindar-image');
+                    sceneEl.setAttribute('mindar-image', {
+                        ...mindArAttr,
+                        facingMode: currentFacingMode
+                    });
+                    
+                    // 셀카 모드 CSS 적용
+                    if (isSelfieMode) {
+                        document.body.classList.add('selfie-mode');
+                    } else {
+                        document.body.classList.remove('selfie-mode');
+                    }
+                    
+                    // MindAR 재시작
+                    await mindArSystem.start();
+                    
+                    // 비디오 스타일 재적용
+                    setTimeout(() => {
+                        forceVideoExpose();
+                        fixBlackScreen();
+                        
+                        // 셀카 모드에서 비디오 미러링
+                        const video = document.querySelector('video');
+                        if (video) {
+                            if (isSelfieMode) {
+                                video.style.transform = 'scaleX(-1)';
+                            } else {
+                                video.style.transform = 'none';
+                            }
+                        }
+                    }, 100);
+                    
+                    showToast(isSelfieMode ? '📱 전면 카메라' : '📷 후면 카메라', '✅');
+                }
+                
+            } catch (err) {
+                console.error('카메라 전환 실패:', err);
+                showToast('카메라 전환 실패', '❌');
+            }
+            
+            setTimeout(() => {
+                cameraSwitchBtn.classList.remove('switching');
+            }, 500);
         }
         
         // 프리뷰 모달 닫기
@@ -1205,7 +1805,12 @@
                 isTextureScanned = true;
                 scanButton.textContent = '✅ 스캔 완료!';
                 scanButton.classList.add('scanned');
-                photoCaptureButton.classList.add('show');
+                
+                // 인스타그램 스타일 캡처 버튼 표시
+                captureBtn.style.display = 'block';
+                captureHint.classList.add('show');
+                setTimeout(() => captureHint.classList.remove('show'), 4000);
+                
                 showToast('🌸 도안이 성공적으로 스캔되었습니다!', '✨');
                 createPetalBurst();
                 return true;
@@ -1224,17 +1829,25 @@
             return false;
         });
         
-        photoCaptureButton.addEventListener('click', (e) => {
+        // 카메라 전환 버튼 이벤트
+        cameraSwitchBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            startPhotoCapture(e);
-            return false;
+            switchCamera();
         });
+        
+        // 인스타그램 스타일 캡처 버튼 설정
+        setupCaptureButton();
         
         // 뒤로가기 버튼
         backButton.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            
+            // 녹화 중이면 종료
+            if (isRecording) {
+                stopRecording();
+            }
             
             // AR 정지
             if (sceneEl && sceneEl.systems && sceneEl.systems['mindar-image-system']) {
@@ -1249,7 +1862,16 @@
             guideUI.classList.remove('show');
             warmOverlay.classList.remove('show');
             backButton.classList.remove('show');
+            cameraSwitchBtn.classList.remove('show');
+            captureBtn.style.display = 'none';
+            captureHint.classList.remove('show');
+            recordTimer.classList.remove('show');
             stopForegroundPetals();
+            
+            // 셀카 모드 해제
+            document.body.classList.remove('selfie-mode');
+            currentFacingMode = 'environment';
+            isSelfieMode = false;
             
             // 카메라 꽃잎 숨기기
             if (cameraPetals) cameraPetals.setAttribute('visible', 'false');
@@ -1292,12 +1914,19 @@
                     // 화면 전체 꽃잎 시작
                     startForegroundPetals();
                     
-                    // 촬영 버튼만 표시
+                    // 인스타그램 스타일 촬영 버튼 표시
                     buttonContainer.classList.add('show');
-                    photoCaptureButton.classList.add('show');
+                    captureBtn.style.display = 'block';
                     scanButton.classList.remove('show');
                     
-                    showToast('🌸 벚꽃과 함께 사진을 찍어보세요!', '📸');
+                    // 카메라 전환 버튼 표시
+                    cameraSwitchBtn.classList.add('show');
+                    
+                    // 촬영 힌트 표시 (3초 후 사라짐)
+                    captureHint.classList.add('show');
+                    setTimeout(() => captureHint.classList.remove('show'), 4000);
+                    
+                    showToast('🌸 탭: 사진 | 길게 누르기: 동영상', '📸');
                 }, 1000);
                 
             } else if (mode === 'kit') {
@@ -1313,7 +1942,10 @@
                     // 버튼 컨테이너 표시 (스캔 버튼은 마커 인식 후)
                     buttonContainer.classList.add('show');
                     scanButton.classList.remove('show');
-                    photoCaptureButton.classList.remove('show');
+                    captureBtn.style.display = 'none';
+                    
+                    // 카메라 전환 버튼 표시
+                    cameraSwitchBtn.classList.add('show');
                     
                     showToast('📷 색칠한 도안을 카메라에 비춰주세요', '🎨');
                 }, 1000);
@@ -1395,7 +2027,7 @@
             sceneEl.style.display = 'none';
         };
         
-        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (2D 이미지 기반, 듀얼 모드)');
+        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (인스타그램 스타일 촬영 시스템, 사진/영상 통합, 셀카 모드 지원)');
     </script>
 </body>
 </html>
