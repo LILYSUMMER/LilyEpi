@@ -673,8 +673,7 @@
         id="ar-scene"
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
-        renderer="preserveDrawingBuffer: true; antialias: true; alpha: true; logarithmicDepthBuffer: true; colorManagement: true; physicallyCorrectLights: true;"
-        screenshot="width: 2048; height: 2048;"
+        renderer="preserveDrawingBuffer: true; alpha: true; antialias: true;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
@@ -983,163 +982,90 @@
             }
         }
         
-        // ===== 고해상도 스냅샷 캡처 (슈퍼샘플링 + A-Frame Screenshot) =====
+        // ===== 순수 Canvas API 기반 고해상도 캡처 (전면 재작성) =====
         function takeSnapshot(e) {
-            // 폼 제출/기본 동작 방지
+            // a) 기본 동작 방지
             if (e) {
                 e.preventDefault();
                 e.stopPropagation();
             }
             
-            // 비디오 요소 확인
-            const video = videoElement || document.querySelector('video');
-            if (!video) {
-                alert('[에러] 카메라 비디오를 찾을 수 없습니다.');
-                return false;
-            }
-            
-            // 1. 비디오 상태 & 크기 완벽 검사 (0픽셀 방어)
-            if (video.readyState < 4) {
-                alert('카메라가 아직 준비 중입니다. 잠시 후 다시 시도해주세요.\n\n[디버그] readyState: ' + video.readyState + ' (4 필요)');
-                return false;
-            }
-            
-            if (!(video.videoWidth > 0) || !(video.videoHeight > 0)) {
-                alert('카메라가 아직 준비 중입니다. 잠시 후 다시 시도해주세요.\n\n[디버그] videoWidth: ' + video.videoWidth + ', videoHeight: ' + video.videoHeight);
-                return false;
-            }
-            
-            // 2. A-Frame 씬 확인
-            const sceneEl = document.querySelector('a-scene');
-            if (!sceneEl || !sceneEl.renderer) {
-                alert('[에러] A-Frame 씬 또는 렌더러를 찾을 수 없습니다.');
-                return false;
-            }
-            
-            // 3. requestAnimationFrame으로 렌더링 동기화 후 고해상도 캡처
-            requestAnimationFrame(() => {
-                try {
-                    // === 고해상도 설정 (슈퍼샘플링) ===
-                    const dpr = window.devicePixelRatio || 1;
-                    const scaleFactor = Math.max(2, dpr); // 최소 2배, 기기 DPR 고려
-                    const screenWidth = window.innerWidth;
-                    const screenHeight = window.innerHeight;
-                    
-                    // 고해상도 출력 크기 (최소 2000px 이상)
-                    const outputWidth = Math.max(2000, Math.floor(screenWidth * scaleFactor));
-                    const outputHeight = Math.floor(screenHeight * scaleFactor);
-                    
-                    // 임시 캔버스 생성 (고해상도)
-                    let tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = outputWidth;
-                    tempCanvas.height = outputHeight;
-                    let ctx = tempCanvas.getContext('2d');
-                    
-                    if (!ctx) {
-                        alert('[에러] 캔버스 컨텍스트를 생성할 수 없습니다.');
-                        return;
-                    }
-                    
-                    // 고품질 렌더링 설정
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-                    
-                    // === 1단계: 비디오(카메라) 고해상도 그리기 ===
-                    const vw = video.videoWidth;
-                    const vh = video.videoHeight;
-                    
-                    if (vw > 0 && vh > 0) {
-                        const videoAspect = vw / vh;
-                        const outputAspect = outputWidth / outputHeight;
-                        
-                        let sx = 0, sy = 0, sw = vw, sh = vh;
-                        if (videoAspect > outputAspect) {
-                            sw = vh * outputAspect;
-                            sx = (vw - sw) / 2;
-                        } else {
-                            sh = vw / outputAspect;
-                            sy = (vh - sh) / 2;
-                        }
-                        
-                        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
-                    }
-                    
-                    // === 2단계: A-Frame 고해상도 렌더링 (벚꽃잎 파티클 포함) ===
-                    const renderer = sceneEl.renderer;
-                    let arCapturedCanvas = null;
-                    
-                    // 원본 렌더러 설정 저장
-                    const originalPixelRatio = renderer.getPixelRatio();
-                    const originalSize = renderer.getSize(new THREE.Vector2());
-                    
-                    try {
-                        // 렌더러를 고해상도로 일시 설정
-                        renderer.setPixelRatio(scaleFactor);
-                        renderer.setSize(outputWidth, outputHeight, false);
-                        
-                        // 강제 렌더링 (모든 파티클, 벚꽃잎 포함)
-                        renderer.render(sceneEl.object3D, sceneEl.camera);
-                        
-                        // 방법 1: screenshot 컴포넌트 사용
-                        if (sceneEl.components && sceneEl.components.screenshot) {
-                            arCapturedCanvas = sceneEl.components.screenshot.getCanvas('perspective');
-                        }
-                        
-                        // 방법 2: 렌더러 domElement 직접 사용
-                        if (!arCapturedCanvas || arCapturedCanvas.width <= 0) {
-                            arCapturedCanvas = renderer.domElement;
-                        }
-                        
-                    } catch (renderErr) {
-                        console.warn('AR 고해상도 렌더링 에러:', renderErr);
-                        // 폴백: 원본 렌더러 캔버스 사용
-                        arCapturedCanvas = renderer.domElement;
-                    }
-                    
-                    // === 3단계: AR 캔버스 고해상도로 합성 (크기 > 0 검증) ===
-                    if (arCapturedCanvas && arCapturedCanvas.width > 0 && arCapturedCanvas.height > 0) {
-                        ctx.drawImage(arCapturedCanvas, 0, 0, arCapturedCanvas.width, arCapturedCanvas.height, 0, 0, outputWidth, outputHeight);
-                    }
-                    
-                    // === 4단계: 렌더러 원래 설정으로 복원 ===
-                    try {
-                        renderer.setPixelRatio(originalPixelRatio);
-                        renderer.setSize(originalSize.x, originalSize.y, false);
-                    } catch (restoreErr) {
-                        console.warn('렌더러 복원 에러:', restoreErr);
-                    }
-                    
-                    // === 5단계: 고품질 JPEG 생성 및 다운로드 ===
-                    let dataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
-                    
-                    let link = document.createElement('a');
-                    link.download = 'high-res-cherry-blossom.jpg';
-                    link.href = dataUrl;
-                    link.style.display = 'none';
-                    link.click();
-                    
-                    // 메모리 정리
-                    ctx = null;
-                    tempCanvas = null;
-                    dataUrl = null;
-                    link = null;
-                    arCapturedCanvas = null;
-                    
-                    // 성공 토스트
-                    showToast('📸 고화질 사진이 저장되었습니다!', '🌸');
-                    
-                } catch (err) {
-                    // 상세한 에러 정보 표시
-                    let debugInfo = '\n\n[디버그 정보]';
-                    debugInfo += '\n- video.readyState: ' + (video ? video.readyState : 'N/A');
-                    debugInfo += '\n- video.videoWidth: ' + (video ? video.videoWidth : 'N/A');
-                    debugInfo += '\n- video.videoHeight: ' + (video ? video.videoHeight : 'N/A');
-                    debugInfo += '\n- devicePixelRatio: ' + (window.devicePixelRatio || 1);
-                    debugInfo += '\n- renderer exists: ' + (sceneEl && sceneEl.renderer ? 'yes' : 'no');
-                    
-                    alert('[캡처 에러]\n' + (err.message || err.toString()) + debugInfo);
+            try {
+                // 비디오 요소 확인
+                const video = videoElement || document.querySelector('video');
+                if (!video || video.readyState < 4 || video.videoWidth <= 0 || video.videoHeight <= 0) {
+                    alert('카메라가 아직 준비 중입니다. 잠시 후 다시 시도해주세요.');
+                    return false;
                 }
-            });
+                
+                // b) A-Frame 씬과 실제 WebGL 캔버스 확보
+                const sceneEl = document.querySelector('a-scene');
+                if (!sceneEl || !sceneEl.canvas || !sceneEl.renderer) {
+                    alert('[에러] A-Frame 씬을 찾을 수 없습니다.');
+                    return false;
+                }
+                const arCanvas = sceneEl.canvas;
+                
+                // c) 고화질 & 비율 유지: 화면 크기의 2배로 임시 캔버스 생성
+                const scale = 2;
+                const canvasWidth = window.innerWidth * scale;
+                const canvasHeight = window.innerHeight * scale;
+                
+                let tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvasWidth;
+                tempCanvas.height = canvasHeight;
+                let ctx = tempCanvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                // d) 비디오 그리기 (object-fit: cover 방식으로 비율 유지하며 꽉 채우기)
+                const vw = video.videoWidth;
+                const vh = video.videoHeight;
+                const videoAspect = vw / vh;
+                const canvasAspect = canvasWidth / canvasHeight;
+                
+                let startX = 0, startY = 0, drawWidth = vw, drawHeight = vh;
+                
+                if (videoAspect > canvasAspect) {
+                    // 비디오가 더 넓음 → 좌우 크롭
+                    drawWidth = vh * canvasAspect;
+                    startX = (vw - drawWidth) / 2;
+                } else {
+                    // 비디오가 더 좁음 → 상하 크롭
+                    drawHeight = vw / canvasAspect;
+                    startY = (vh - drawHeight) / 2;
+                }
+                
+                // 비디오를 캔버스에 꽉 차게 그리기
+                ctx.drawImage(video, startX, startY, drawWidth, drawHeight, 0, 0, canvasWidth, canvasHeight);
+                
+                // e) 벚꽃잎 강제 포함: 렌더러 버퍼 최신화 후 AR 캔버스 덮어씌우기
+                sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
+                
+                // AR 캔버스가 유효하면 덮어씌우기
+                if (arCanvas.width > 0 && arCanvas.height > 0) {
+                    ctx.drawImage(arCanvas, 0, 0, canvasWidth, canvasHeight);
+                }
+                
+                // f) JPEG 0.95 화질로 다운로드
+                const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
+                
+                const link = document.createElement('a');
+                link.download = 'cherry-blossom-photo.jpg';
+                link.href = dataUrl;
+                link.click();
+                
+                // 메모리 정리 (임시 캔버스 크기 0으로)
+                tempCanvas.width = 0;
+                tempCanvas.height = 0;
+                tempCanvas = null;
+                ctx = null;
+                
+                showToast('📸 고화질 사진이 저장되었습니다!', '🌸');
+                
+            } catch (err) {
+                alert('[캡처 에러] ' + (err.message || err.toString()));
+            }
             
             return false;
         }
