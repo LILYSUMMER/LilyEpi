@@ -756,14 +756,6 @@
             stroke-dashoffset: 283;
         }
         
-        /* 녹화용 숨김 캔버스 */
-        #recording-canvas {
-            display: none;
-            position: fixed;
-            top: -9999px;
-            left: -9999px;
-        }
-        
         /* ===== 영상 미리보기 모달 (인스타그램 스타일) ===== */
         #video-preview-modal {
             position: fixed;
@@ -980,9 +972,6 @@
     <!-- 촬영 힌트 -->
     <div id="capture-hint">탭: 사진 | 길게 누르기: 동영상</div>
     
-    <!-- 녹화용 캔버스 -->
-    <canvas id="recording-canvas"></canvas>
-    
     <!-- 영상 미리보기 모달 -->
     <div id="video-preview-modal">
         <div class="preview-header">
@@ -1061,7 +1050,7 @@
     <!-- A-Frame AR 씬 -->
     <a-scene
         id="ar-scene"
-        photo-capture
+        ar-recorder
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.00001; filterBeta: 0.0001; missTolerance: 20; warmupTolerance: 10;"
         color-space="sRGB"
         renderer="preserveDrawingBuffer: true; alpha: true; premultipliedAlpha: false; antialias: true; logarithmicDepthBuffer: true;"
@@ -1149,106 +1138,339 @@
     </a-scene>
     
     <script>
-        // ===== A-Frame 캡처 컴포넌트 (렌더링 파이프라인에 안전하게 개입) =====
-        AFRAME.registerComponent('photo-capture', {
+        // ===== 🔥 ar-recorder: 벚꽃 파티클 완벽 캡처/녹화 A-Frame 컴포넌트 =====
+        // tock (렌더링 직후)에 기생하여 합성 → 빈 버퍼 문제 완전 해결
+        AFRAME.registerComponent('ar-recorder', {
             init: function() {
-                this.isCapturing = false;
-                this.showToast = null;
+                // 상태 관리
+                this.isRecording = false;
+                this.isCapturingPhoto = false;
                 this.isSelfieMode = false;
+                this.chunks = [];
+                this.recorder = null;
+                this.recordStartTime = 0;
+                
+                // 합성용 캔버스 (willReadFrequently로 모바일 병목 해결)
+                this.compositeCanvas = document.createElement('canvas');
+                this.ctx = this.compositeCanvas.getContext('2d', { 
+                    willReadFrequently: true,
+                    alpha: false 
+                });
+                
+                // 비디오 요소 참조
+                this.videoEl = null;
+                
+                // 녹화 결과 저장 (미리보기/공유용)
+                this.lastBlob = null;
+                this.lastBlobUrl = null;
+                this.lastMimeType = null;
+                this.lastDuration = 0;
+                
+                console.log('🎬 ar-recorder 컴포넌트 초기화 완료');
             },
             
+            // 비디오 요소 가져오기
+            getVideo: function() {
+                if (!this.videoEl || this.videoEl.readyState < 2) {
+                    this.videoEl = document.querySelector('video');
+                }
+                return this.videoEl;
+            },
+            
+            // object-fit: cover 계산
+            getCoverDimensions: function(video, targetW, targetH) {
+                const vw = video.videoWidth;
+                const vh = video.videoHeight;
+                const videoRatio = vw / vh;
+                const targetRatio = targetW / targetH;
+                
+                let sx = 0, sy = 0, sw = vw, sh = vh;
+                if (videoRatio > targetRatio) {
+                    sw = vh * targetRatio;
+                    sx = (vw - sw) / 2;
+                } else {
+                    sh = vw / targetRatio;
+                    sy = (vh - sh) / 2;
+                }
+                return { sx, sy, sw, sh };
+            },
+            
+            // 캔버스에 비디오 + AR 합성 (셀카 mirror 포함)
+            compositeFrame: function() {
+                const video = this.getVideo();
+                const arCanvas = this.el.canvas;
+                
+                if (!video || video.readyState < 2) return false;
+                
+                const w = this.compositeCanvas.width;
+                const h = this.compositeCanvas.height;
+                const { sx, sy, sw, sh } = this.getCoverDimensions(video, w, h);
+                
+                // 캔버스 클리어
+                this.ctx.clearRect(0, 0, w, h);
+                
+                // 1. 비디오 그리기 (셀카 모드면 좌우 반전)
+                if (this.isSelfieMode) {
+                    this.ctx.save();
+                    this.ctx.scale(-1, 1);
+                    this.ctx.drawImage(video, sx, sy, sw, sh, -w, 0, w, h);
+                    this.ctx.restore();
+                } else {
+                    this.ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+                }
+                
+                // 2. AR 캔버스 덧그리기 (벚꽃 파티클 포함 - tock 타이밍이라 완벽히 포함됨)
+                if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
+                    if (this.isSelfieMode) {
+                        this.ctx.save();
+                        this.ctx.scale(-1, 1);
+                        this.ctx.drawImage(arCanvas, -w, 0, w, h);
+                        this.ctx.restore();
+                    } else {
+                        this.ctx.drawImage(arCanvas, 0, 0, w, h);
+                    }
+                }
+                
+                return true;
+            },
+            
+            // ===== 📸 스크린샷 (tock 타이밍에서 실행) =====
             takePhoto: function(selfieMode = false) {
-                this.isCapturing = true;
                 this.isSelfieMode = selfieMode;
+                this.isCapturingPhoto = true;
             },
             
-            tock: function() {
-                if (!this.isCapturing) return;
-                this.isCapturing = false;
+            processPhoto: function() {
+                const video = this.getVideo();
+                if (!video) return;
+                
+                // 고해상도 캔버스 (devicePixelRatio 고려)
+                const dpr = window.devicePixelRatio || 1;
+                const scale = Math.min(dpr * 2, 4);
+                this.compositeCanvas.width = Math.floor(window.innerWidth * scale);
+                this.compositeCanvas.height = Math.floor(window.innerHeight * scale);
+                
+                // 합성
+                if (!this.compositeFrame()) {
+                    console.warn('사진 캡처 실패: 비디오 준비 안됨');
+                    return;
+                }
+                
+                // JPEG 변환 및 다운로드
+                const dataUrl = this.compositeCanvas.toDataURL('image/jpeg', 0.95);
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = `cherry-blossom-${Date.now()}.jpg`;
+                link.click();
+                
+                if (typeof showToast === 'function') {
+                    showToast('📸 사진이 저장되었습니다!', '🌸');
+                }
+            },
+            
+            // ===== 🎬 영상 녹화 시작 =====
+            startRecording: function(selfieMode = false) {
+                const video = this.getVideo();
+                if (!video || video.readyState < 2) {
+                    if (typeof showToast === 'function') {
+                        showToast('카메라 준비 중...', '⏳');
+                    }
+                    return;
+                }
+                
+                this.isSelfieMode = selfieMode;
+                
+                // 녹화 해상도 설정 (비디오 원본 기준, 최대 1080p)
+                const maxSize = 1080;
+                let w = video.videoWidth || window.innerWidth;
+                let h = video.videoHeight || window.innerHeight;
+                
+                if (w > maxSize || h > maxSize) {
+                    const ratio = Math.min(maxSize / w, maxSize / h);
+                    w = Math.floor(w * ratio);
+                    h = Math.floor(h * ratio);
+                }
+                
+                this.compositeCanvas.width = w;
+                this.compositeCanvas.height = h;
+                
+                this.chunks = [];
+                const stream = this.compositeCanvas.captureStream(30); // 30 FPS
+                
+                // 스마트 MIME 타입 선택 (MP4 우선 for iOS)
+                let mimeType = 'video/webm';
+                const mimeTypes = [
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
+                    'video/webm;codecs=h264',
+                    'video/webm;codecs=vp9',
+                    'video/webm'
+                ];
+                
+                for (const type of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(type)) {
+                        mimeType = type;
+                        break;
+                    }
+                }
+                
+                console.log('🎥 녹화 MIME 타입:', mimeType);
                 
                 try {
-                    // 1. 소스 요소 확보 (렌더링 완료 상태)
-                    const arCanvas = this.el.sceneEl.canvas;
-                    const video = document.querySelector('video');
-                    
-                    if (!video || video.readyState < 2) {
-                        console.warn('비디오 준비 안됨');
-                        return;
-                    }
-                    
-                    // 2. 고화질 캔버스 생성 (devicePixelRatio × 2배)
-                    const dpr = window.devicePixelRatio || 1;
-                    const scale = Math.min(dpr * 2, 4); // 최대 4배
-                    const w = Math.floor(window.innerWidth * scale);
-                    const h = Math.floor(window.innerHeight * scale);
-                    
-                    let tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = w;
-                    tempCanvas.height = h;
-                    let ctx = tempCanvas.getContext('2d', { 
-                        alpha: false,
-                        willReadFrequently: true 
+                    this.recorder = new MediaRecorder(stream, { 
+                        mimeType: mimeType,
+                        videoBitsPerSecond: 5000000 // 5Mbps
                     });
-                    
-                    // 3. 비디오 그리기 (object-fit: cover 방식)
-                    const vw = video.videoWidth;
-                    const vh = video.videoHeight;
-                    const videoRatio = vw / vh;
-                    const canvasRatio = w / h;
-                    
-                    let sx = 0, sy = 0, sw = vw, sh = vh;
-                    if (videoRatio > canvasRatio) {
-                        sw = vh * canvasRatio;
-                        sx = (vw - sw) / 2;
-                    } else {
-                        sh = vw / canvasRatio;
-                        sy = (vh - sh) / 2;
+                } catch (e) {
+                    console.warn('MediaRecorder 생성 실패, 폴백:', e);
+                    this.recorder = new MediaRecorder(stream);
+                    mimeType = 'video/webm';
+                }
+                
+                this.lastMimeType = mimeType;
+                
+                this.recorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) {
+                        this.chunks.push(e.data);
                     }
+                };
+                
+                this.recorder.onstop = () => {
+                    this.lastDuration = Date.now() - this.recordStartTime;
+                    this.lastBlob = new Blob(this.chunks, { type: this.lastMimeType });
                     
-                    // 셀카 모드일 때 좌우 반전
-                    if (this.isSelfieMode) {
-                        ctx.save();
-                        ctx.scale(-1, 1);
-                        ctx.drawImage(video, sx, sy, sw, sh, -w, 0, w, h);
-                        ctx.restore();
-                    } else {
-                        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+                    // 이전 URL 정리
+                    if (this.lastBlobUrl) {
+                        URL.revokeObjectURL(this.lastBlobUrl);
                     }
+                    this.lastBlobUrl = URL.createObjectURL(this.lastBlob);
                     
-                    // 4. [핵심] AR 캔버스 덧그리기 (벚꽃잎 포함)
-                    // premultipliedAlpha: false 설정으로 투명도가 올바르게 처리됨
-                    if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
-                        if (this.isSelfieMode) {
-                            ctx.save();
-                            ctx.scale(-1, 1);
-                            ctx.drawImage(arCanvas, -w, 0, w, h);
-                            ctx.restore();
-                        } else {
-                            ctx.drawImage(arCanvas, 0, 0, w, h);
+                    // 미리보기 모달 표시
+                    this.showPreview();
+                };
+                
+                this.recorder.onerror = (e) => {
+                    console.error('녹화 에러:', e);
+                    this.stopRecording();
+                    if (typeof showToast === 'function') {
+                        showToast('녹화 중 오류 발생', '❌');
+                    }
+                };
+                
+                this.recorder.start(100); // 100ms 단위로 데이터 수집
+                this.isRecording = true;
+                this.recordStartTime = Date.now();
+                
+                console.log('🔴 녹화 시작!');
+            },
+            
+            // ===== 🛑 영상 녹화 종료 =====
+            stopRecording: function() {
+                if (this.recorder && this.isRecording) {
+                    this.recorder.stop();
+                    this.isRecording = false;
+                    console.log('⬛ 녹화 종료!');
+                }
+            },
+            
+            // ===== 미리보기 모달 표시 =====
+            showPreview: function() {
+                const modal = document.getElementById('video-preview-modal');
+                const previewVideo = document.getElementById('preview-video');
+                const formatBadge = document.getElementById('format-badge');
+                const videoSizeInfo = document.getElementById('video-size-info');
+                const videoFormatInfo = document.getElementById('video-format-info');
+                const videoDurationText = document.getElementById('video-duration-text');
+                const btnShare = document.getElementById('btn-video-share');
+                
+                if (!modal || !previewVideo) return;
+                
+                // 비디오 설정
+                previewVideo.src = this.lastBlobUrl;
+                previewVideo.load();
+                
+                // 포맷 정보
+                const ext = this.lastMimeType.includes('mp4') ? 'MP4' : 'WEBM';
+                if (formatBadge) formatBadge.textContent = ext;
+                
+                // 파일 크기
+                const sizeMB = (this.lastBlob.size / (1024 * 1024)).toFixed(1);
+                if (videoSizeInfo) videoSizeInfo.textContent = `📁 ${sizeMB} MB`;
+                
+                // 포맷
+                if (videoFormatInfo) videoFormatInfo.textContent = `🎥 ${ext}`;
+                
+                // 녹화 시간
+                const secs = Math.floor(this.lastDuration / 1000);
+                const mins = Math.floor(secs / 60);
+                const remainSecs = secs % 60;
+                if (videoDurationText) {
+                    videoDurationText.textContent = `${mins}:${String(remainSecs).padStart(2, '0')} 녹화 완료`;
+                }
+                
+                // Web Share API 지원 여부
+                if (btnShare) {
+                    const file = new File([this.lastBlob], `video.${ext.toLowerCase()}`, { type: this.lastMimeType });
+                    btnShare.style.display = (navigator.canShare && navigator.canShare({ files: [file] })) ? 'flex' : 'none';
+                }
+                
+                modal.classList.add('show');
+            },
+            
+            // ===== 다운로드 =====
+            downloadVideo: function() {
+                if (!this.lastBlobUrl) return;
+                
+                const ext = this.lastMimeType.includes('mp4') ? 'mp4' : 'webm';
+                const a = document.createElement('a');
+                a.href = this.lastBlobUrl;
+                a.download = `cherry-blossom-${Date.now()}.${ext}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                if (typeof showToast === 'function') {
+                    showToast('💾 영상이 저장되었습니다!', '✨');
+                }
+            },
+            
+            // ===== 공유 (Web Share API) =====
+            shareVideo: async function() {
+                if (!this.lastBlob) return;
+                
+                try {
+                    const ext = this.lastMimeType.includes('mp4') ? 'mp4' : 'webm';
+                    const file = new File([this.lastBlob], `cherry-blossom-${Date.now()}.${ext}`, { type: this.lastMimeType });
+                    
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: '🌸 벚꽃 AR 영상',
+                            text: '벚꽃 터널 AR에서 촬영한 영상입니다!'
+                        });
+                        if (typeof showToast === 'function') {
+                            showToast('📤 공유 완료!', '✨');
                         }
                     }
-                    
-                    // 5. JPEG 변환 및 다운로드
-                    const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.95);
-                    
-                    const link = document.createElement('a');
-                    link.href = dataUrl;
-                    link.download = `cherry-blossom-${Date.now()}.jpg`;
-                    link.click();
-                    
-                    // 6. 메모리 해제
-                    tempCanvas.width = 0;
-                    tempCanvas.height = 0;
-                    tempCanvas = null;
-                    ctx = null;
-                    
-                    if (typeof showToast === 'function') {
-                        showToast('📸 고화질 사진 저장 완료!', '🌸');
-                    }
-                    
                 } catch (err) {
-                    console.error('캡처 에러:', err);
-                    alert('[캡처 에러] ' + err.message);
+                    if (err.name !== 'AbortError') {
+                        console.error('공유 실패:', err);
+                    }
+                }
+            },
+            
+            // ===== 🔥 핵심: tock (매 프레임 렌더링 직후 실행) =====
+            tock: function() {
+                // 스크린샷 처리 (tock 타이밍에서 실행해야 파티클 포함)
+                if (this.isCapturingPhoto) {
+                    this.isCapturingPhoto = false;
+                    this.processPhoto();
+                    return;
+                }
+                
+                // 녹화 중이면 매 프레임 합성
+                if (this.isRecording) {
+                    this.compositeFrame();
                 }
             }
         });
@@ -1297,11 +1519,6 @@
         const recordTimer = document.getElementById('record-timer');
         const recordTimeDisplay = document.getElementById('record-time');
         const captureHint = document.getElementById('capture-hint');
-        const recordingCanvas = document.getElementById('recording-canvas');
-        const recordingCtx = recordingCanvas.getContext('2d', { 
-            alpha: false,
-            willReadFrequently: true 
-        });
         
         // 영상 미리보기 모달 요소
         const videoPreviewModal = document.getElementById('video-preview-modal');
@@ -1334,18 +1551,9 @@
         let pressStartTime = 0;
         let isPressing = false;
         let isRecording = false;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-        let recordingAnimationId = null;
-        let recordStartTime = 0;
+        // UI 타이머/프로그레스 관련 (ar-recorder 컴포넌트가 녹화 로직 처리)
         let recordTimerInterval = null;
         let progressCircle = null;
-        
-        // 녹화 결과물 저장 (미리보기/공유용)
-        let lastRecordedBlob = null;
-        let lastRecordedUrl = null;
-        let lastRecordedMimeType = null;
-        let lastRecordedDuration = 0;
         
         // 카메라 전환 관련
         let currentFacingMode = 'environment'; // 'environment' = 후면, 'user' = 전면
@@ -1522,110 +1730,46 @@
             }
         }
         
-        // ===== 사진 촬영 트리거 (A-Frame 컴포넌트 호출) =====
-        function triggerPhotoCapture() {
+        // ===== ar-recorder 컴포넌트 래퍼 함수들 =====
+        
+        // ar-recorder 컴포넌트 가져오기
+        function getArRecorder() {
             const sceneEl = document.querySelector('a-scene');
-            if (sceneEl && sceneEl.components && sceneEl.components['photo-capture']) {
-                sceneEl.components['photo-capture'].takePhoto(isSelfieMode);
-            } else {
-                showToast('캡처 준비 중...', '⏳');
-            }
+            return sceneEl && sceneEl.components && sceneEl.components['ar-recorder'];
         }
         
-        // ===== 인스타그램 스타일 즉시 사진 촬영 (카운트다운 제거) =====
-        async function takePhotoInstant() {
+        // 사진 촬영 (tock 타이밍에서 실행됨)
+        function takePhotoInstant() {
             if (isCapturing || isRecording) return;
-            isCapturing = true;
             
-            try {
-                // 플래시 효과
-                shutterFlash.classList.add('flash');
-                createShutterSound();
-                
-                // 스냅샷 촬영 (A-Frame 컴포넌트 방식)
-                triggerPhotoCapture();
-                
-                // 플래시 제거
-                setTimeout(() => {
-                    shutterFlash.classList.remove('flash');
-                    isCapturing = false;
-                }, 300);
-                
-                showToast('📸 사진이 저장되었습니다!', '✨');
-                
-            } catch (err) {
-                console.error('[촬영 에러]', err);
-                isCapturing = false;
-            }
-        }
-        
-        // ===== 영상 녹화 관련 함수들 =====
-        
-        // 녹화용 캔버스에 프레임 그리기
-        function drawRecordingFrame() {
-            if (!isRecording) return;
-            
-            const video = videoElement || document.querySelector('video');
-            const arCanvas = sceneEl.canvas;
-            
-            if (!video || video.readyState < 2) {
-                recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
+            const recorder = getArRecorder();
+            if (!recorder) {
+                showToast('캡처 준비 중...', '⏳');
                 return;
             }
             
-            const w = recordingCanvas.width;
-            const h = recordingCanvas.height;
+            isCapturing = true;
             
-            // [핵심] WebGL 버퍼가 클리어되기 전에 현재 프레임 렌더링 강제
-            // preserveDrawingBuffer: true 설정과 함께 사용
-            if (sceneEl.renderer) {
-                sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
-            }
+            // 플래시 효과
+            shutterFlash.classList.add('flash');
+            createShutterSound();
             
-            // 1. 비디오 그리기 (object-fit: cover 방식)
-            const vw = video.videoWidth;
-            const vh = video.videoHeight;
-            const videoRatio = vw / vh;
-            const canvasRatio = w / h;
+            // ar-recorder 컴포넌트로 사진 촬영 (tock에서 처리됨)
+            recorder.takePhoto(isSelfieMode);
             
-            let sx = 0, sy = 0, sw = vw, sh = vh;
-            if (videoRatio > canvasRatio) {
-                sw = vh * canvasRatio;
-                sx = (vw - sw) / 2;
-            } else {
-                sh = vw / canvasRatio;
-                sy = (vh - sh) / 2;
-            }
-            
-            // 셀카 모드일 때 좌우 반전
-            if (isSelfieMode) {
-                recordingCtx.save();
-                recordingCtx.scale(-1, 1);
-                recordingCtx.drawImage(video, sx, sy, sw, sh, -w, 0, w, h);
-                recordingCtx.restore();
-            } else {
-                recordingCtx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
-            }
-            
-            // 2. [핵심] AR 캔버스 덧그리기 (벚꽃 파티클 포함)
-            // premultipliedAlpha: false 설정으로 반투명 파티클이 올바르게 렌더링됨
-            if (arCanvas && arCanvas.width > 0 && arCanvas.height > 0) {
-                if (isSelfieMode) {
-                    recordingCtx.save();
-                    recordingCtx.scale(-1, 1);
-                    recordingCtx.drawImage(arCanvas, -w, 0, w, h);
-                    recordingCtx.restore();
-                } else {
-                    recordingCtx.drawImage(arCanvas, 0, 0, w, h);
-                }
-            }
-            
-            recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
+            // 플래시 제거
+            setTimeout(() => {
+                shutterFlash.classList.remove('flash');
+                isCapturing = false;
+            }, 300);
         }
         
         // 녹화 타이머 업데이트
         function updateRecordTimer() {
-            const elapsed = Date.now() - recordStartTime;
+            const recorder = getArRecorder();
+            if (!recorder) return;
+            
+            const elapsed = Date.now() - recorder.recordStartTime;
             const seconds = Math.floor(elapsed / 1000);
             const minutes = Math.floor(seconds / 60);
             const secs = seconds % 60;
@@ -1644,243 +1788,75 @@
             }
         }
         
-        // ===== 스마트 MIME 타입 선택 (MP4 우선) =====
-        function getBestVideoMimeType() {
-            const mimeTypes = [
-                'video/mp4;codecs=avc1',
-                'video/mp4',
-                'video/webm;codecs=h264',
-                'video/webm;codecs=vp9',
-                'video/webm;codecs=vp8',
-                'video/webm'
-            ];
-            
-            for (const mimeType of mimeTypes) {
-                if (MediaRecorder.isTypeSupported(mimeType)) {
-                    console.log('✅ 선택된 MIME 타입:', mimeType);
-                    return mimeType;
-                }
-            }
-            
-            console.warn('⚠️ 지원되는 MIME 타입 없음, 기본값 사용');
-            return 'video/webm';
-        }
-        
-        // 파일 확장자 결정
-        function getFileExtension(mimeType) {
-            if (mimeType.includes('mp4')) return 'mp4';
-            return 'webm';
-        }
-        
-        // 파일 크기 포맷팅
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-        }
-        
-        // 영상 미리보기 모달 표시
-        function showVideoPreview(blob, mimeType, duration) {
-            // 이전 URL 정리
-            if (lastRecordedUrl) {
-                URL.revokeObjectURL(lastRecordedUrl);
-            }
-            
-            // 새 데이터 저장
-            lastRecordedBlob = blob;
-            lastRecordedMimeType = mimeType;
-            lastRecordedUrl = URL.createObjectURL(blob);
-            lastRecordedDuration = duration;
-            
-            // 비디오 설정
-            previewVideo.src = lastRecordedUrl;
-            previewVideo.load();
-            
-            // 포맷 뱃지 업데이트
-            const ext = getFileExtension(mimeType).toUpperCase();
-            formatBadge.textContent = ext;
-            
-            // 정보 업데이트
-            const durationSec = Math.floor(duration / 1000);
-            const mins = Math.floor(durationSec / 60);
-            const secs = durationSec % 60;
-            videoDurationText.textContent = `${mins}:${String(secs).padStart(2, '0')} 녹화 완료`;
-            videoSizeInfo.textContent = `📁 ${formatFileSize(blob.size)}`;
-            videoFormatInfo.textContent = `🎥 ${ext} (${mimeType.split(';')[0]})`;
-            
-            // 공유 버튼 활성화/비활성화
-            if (navigator.canShare && navigator.canShare({ files: [new File([blob], 'video.' + getFileExtension(mimeType), { type: mimeType })] })) {
-                btnVideoShare.style.display = 'flex';
-            } else {
-                btnVideoShare.style.display = 'none';
-            }
-            
-            // 모달 표시
-            videoPreviewModal.classList.add('show');
-        }
-        
-        // 영상 다운로드
-        function downloadVideo() {
-            if (!lastRecordedBlob || !lastRecordedUrl) return;
-            
-            const ext = getFileExtension(lastRecordedMimeType);
-            const filename = `cherry-blossom-${Date.now()}.${ext}`;
-            
-            const a = document.createElement('a');
-            a.href = lastRecordedUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            showToast(`💾 ${filename} 저장 완료!`, '✨');
-        }
-        
-        // 영상 공유 (Web Share API)
-        async function shareVideo() {
-            if (!lastRecordedBlob) return;
-            
-            try {
-                const ext = getFileExtension(lastRecordedMimeType);
-                const filename = `cherry-blossom-${Date.now()}.${ext}`;
-                const file = new File([lastRecordedBlob], filename, { type: lastRecordedMimeType });
-                
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: '🌸 벚꽃 AR 영상',
-                        text: '벚꽃 터널 AR 포토존에서 촬영한 영상입니다!'
-                    });
-                    showToast('📤 공유 완료!', '✨');
-                } else {
-                    showToast('이 브라우저에서는 공유가 지원되지 않습니다', '❌');
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    console.error('공유 실패:', err);
-                    showToast('공유 중 오류가 발생했습니다', '❌');
-                }
-            }
-        }
-        
         // 미리보기 모달 닫기
         function closeVideoPreview() {
             videoPreviewModal.classList.remove('show');
             previewVideo.pause();
             previewVideo.src = '';
-            
-            // URL은 유지 (다시 다운로드/공유 가능하도록)
         }
         
-        // 녹화 시작
+        // 영상 다운로드 (ar-recorder 컴포넌트 위임)
+        function downloadVideo() {
+            const recorder = getArRecorder();
+            if (recorder) {
+                recorder.downloadVideo();
+            }
+        }
+        
+        // 영상 공유 (ar-recorder 컴포넌트 위임)
+        async function shareVideo() {
+            const recorder = getArRecorder();
+            if (recorder) {
+                await recorder.shareVideo();
+            }
+        }
+        
+        // 녹화 시작 (ar-recorder 컴포넌트 사용)
         function startRecording() {
             if (isRecording || isCapturing) return;
             
-            const video = videoElement || document.querySelector('video');
-            if (!video || video.readyState < 2) {
-                showToast('카메라 준비 중...', '⏳');
+            const recorder = getArRecorder();
+            if (!recorder) {
+                showToast('녹화 준비 중...', '⏳');
                 return;
             }
             
-            try {
-                // 녹화 캔버스 크기 설정
-                const scale = 1.5;
-                recordingCanvas.width = Math.floor(window.innerWidth * scale);
-                recordingCanvas.height = Math.floor(window.innerHeight * scale);
-                
-                // 스트림 생성
-                const canvasStream = recordingCanvas.captureStream(30);
-                
-                // 오디오 트랙 추가 (가능한 경우)
-                if (video.srcObject && video.srcObject.getAudioTracks().length > 0) {
-                    const audioTrack = video.srcObject.getAudioTracks()[0];
-                    canvasStream.addTrack(audioTrack);
-                }
-                
-                // ===== 스마트 MIME 타입 선택 (MP4 우선) =====
-                const mimeType = getBestVideoMimeType();
-                
-                mediaRecorder = new MediaRecorder(canvasStream, {
-                    mimeType: mimeType,
-                    videoBitsPerSecond: 5000000 // 5Mbps
-                });
-                
-                recordedChunks = [];
-                
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data && e.data.size > 0) {
-                        recordedChunks.push(e.data);
-                    }
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const duration = Date.now() - recordStartTime;
-                    const blob = new Blob(recordedChunks, { type: mimeType });
-                    
-                    // 미리보기 모달 표시 (자동 다운로드 대신)
-                    showVideoPreview(blob, mimeType, duration);
-                };
-                
-                mediaRecorder.onerror = (e) => {
-                    console.error('MediaRecorder error:', e);
-                    stopRecording();
-                    showToast('녹화 중 오류가 발생했습니다', '❌');
-                };
-                
-                // 녹화 시작
-                isRecording = true;
-                mediaRecorder.start(100); // 100ms 단위로 데이터 수집
-                
-                // 프레임 렌더링 시작
-                recordingAnimationId = requestAnimationFrame(drawRecordingFrame);
-                
-                // UI 업데이트
-                captureBtn.classList.add('recording');
-                captureBtn.classList.remove('pressing');
-                recordTimer.classList.add('show');
-                captureHint.classList.remove('show');
-                
-                // 타이머 시작
-                recordStartTime = Date.now();
-                progressCircle = captureBtn.querySelector('.progress-ring circle');
-                if (progressCircle) {
-                    progressCircle.style.strokeDashoffset = '283';
-                }
-                recordTimerInterval = setInterval(updateRecordTimer, 100);
-                
-                // 진동 피드백 (지원되는 경우)
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-            } catch (err) {
-                console.error('녹화 시작 실패:', err);
-                showToast('녹화를 시작할 수 없습니다', '❌');
-                isRecording = false;
+            // ar-recorder 컴포넌트로 녹화 시작
+            recorder.startRecording(isSelfieMode);
+            isRecording = true;
+            
+            // UI 업데이트
+            captureBtn.classList.add('recording');
+            captureBtn.classList.remove('pressing');
+            recordTimer.classList.add('show');
+            captureHint.classList.remove('show');
+            
+            // 타이머 시작
+            progressCircle = captureBtn.querySelector('.progress-ring circle');
+            if (progressCircle) {
+                progressCircle.style.strokeDashoffset = '283';
+            }
+            recordTimerInterval = setInterval(updateRecordTimer, 100);
+            
+            // 진동 피드백
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
             }
         }
         
-        // 녹화 종료
+        // 녹화 종료 (ar-recorder 컴포넌트 사용)
         function stopRecording() {
-            if (!isRecording) return;
+            const recorder = getArRecorder();
+            if (!recorder || !isRecording) return;
             
+            // ar-recorder 컴포넌트로 녹화 종료
+            recorder.stopRecording();
             isRecording = false;
-            
-            // 애니메이션 프레임 중지
-            if (recordingAnimationId) {
-                cancelAnimationFrame(recordingAnimationId);
-                recordingAnimationId = null;
-            }
             
             // 타이머 중지
             if (recordTimerInterval) {
                 clearInterval(recordTimerInterval);
                 recordTimerInterval = null;
-            }
-            
-            // MediaRecorder 종료
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
             }
             
             // UI 복원
@@ -1992,67 +1968,72 @@
         }
         
         // ===== 카메라 전환 기능 (Selfie Mode) =====
-        async function switchCamera() {
+        // ===== 🔄 카메라 전환 (전면/후면) - MindAR 시스템 제어 =====
+        function toggleCamera() {
             if (!arStarted) return;
+            
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            if (!arSystem) {
+                showToast('AR 시스템이 준비되지 않았습니다', '⚠️');
+                return;
+            }
             
             cameraSwitchBtn.classList.add('switching');
             showToast('카메라 전환 중...', '🔄');
             
-            try {
-                const mindArSystem = sceneEl.systems['mindar-image-system'];
-                
-                if (mindArSystem) {
-                    // MindAR 정지
-                    await mindArSystem.stop();
-                    
-                    // facingMode 토글
-                    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-                    isSelfieMode = currentFacingMode === 'user';
-                    
-                    // MindAR 속성 업데이트
-                    const mindArAttr = sceneEl.getAttribute('mindar-image');
-                    sceneEl.setAttribute('mindar-image', {
-                        ...mindArAttr,
-                        facingMode: currentFacingMode
-                    });
-                    
-                    // 셀카 모드 CSS 적용
-                    if (isSelfieMode) {
-                        document.body.classList.add('selfie-mode');
-                    } else {
-                        document.body.classList.remove('selfie-mode');
-                    }
-                    
-                    // MindAR 재시작
-                    await mindArSystem.start();
-                    
-                    // 비디오 스타일 재적용
-                    setTimeout(() => {
-                        forceVideoExpose();
-                        fixBlackScreen();
-                        
-                        // 셀카 모드에서 비디오 미러링
-                        const video = document.querySelector('video');
-                        if (video) {
-                            if (isSelfieMode) {
-                                video.style.transform = 'scaleX(-1)';
-                            } else {
-                                video.style.transform = 'none';
-                            }
-                        }
-                    }, 100);
-                    
-                    showToast(isSelfieMode ? '📱 전면 카메라' : '📷 후면 카메라', '✅');
+            // 1. 현재 돌고 있는 카메라 시스템 중지
+            arSystem.stop();
+            
+            // 2. 전면/후면 모드 토글
+            isSelfieMode = !isSelfieMode;
+            currentFacingMode = isSelfieMode ? 'user' : 'environment';
+            
+            // 3. mindar-image 속성 업데이트 (문자열 파싱 방식)
+            let mindarAttr = sceneEl.getAttribute('mindar-image');
+            
+            if (typeof mindarAttr === 'string') {
+                if (mindarAttr.includes('facingMode')) {
+                    mindarAttr = mindarAttr.replace(/facingMode:\s*(user|environment)/, `facingMode: ${currentFacingMode}`);
+                } else {
+                    mindarAttr += `; facingMode: ${currentFacingMode}`;
                 }
-                
-            } catch (err) {
-                console.error('카메라 전환 실패:', err);
-                showToast('카메라 전환 실패', '❌');
+                sceneEl.setAttribute('mindar-image', mindarAttr);
+            } else if (typeof mindarAttr === 'object') {
+                mindarAttr.facingMode = currentFacingMode;
+                sceneEl.setAttribute('mindar-image', mindarAttr);
             }
             
+            // 4. 셀카 모드 CSS (video + AR 캔버스 모두 반전)
+            if (isSelfieMode) {
+                document.body.classList.add('selfie-mode');
+            } else {
+                document.body.classList.remove('selfie-mode');
+            }
+            
+            // 5. 시스템 재시작 (새로운 카메라로 로드됨)
             setTimeout(() => {
-                cameraSwitchBtn.classList.remove('switching');
-            }, 500);
+                arSystem.start();
+                
+                // 비디오 스타일 재적용
+                setTimeout(() => {
+                    forceVideoExpose();
+                    fixBlackScreen();
+                    
+                    // 셀카 모드에서 비디오 미러링
+                    const video = document.querySelector('video');
+                    if (video) {
+                        video.style.transform = isSelfieMode ? 'scaleX(-1)' : 'scaleX(1)';
+                    }
+                    
+                    cameraSwitchBtn.classList.remove('switching');
+                    showToast(isSelfieMode ? '📱 전면 카메라' : '📷 후면 카메라', '✅');
+                    console.log(`카메라 전환 완료: ${currentFacingMode}`);
+                }, 100);
+            }, 500); // 시스템이 완전히 멈출 시간
+        }
+        
+        // 기존 switchCamera 함수를 toggleCamera로 대체
+        const switchCamera = toggleCamera;
         }
         
         // 프리뷰 모달 닫기
