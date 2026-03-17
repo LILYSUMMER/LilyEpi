@@ -23,23 +23,6 @@
     <meta property="og:url" content="https://epispace.kr/cherry-blossom-ar.html">
     
     <!-- A-Frame & MindAR (독립적으로 로드) -->
-    <!-- WebGL 컨텍스트 생성 시 preserveDrawingBuffer/premultipliedAlpha 강제 설정 -->
-    <!-- A-Frame 1.4.2는 renderer 스키마에서 이 플래그를 지원하지 않으므로 로드 전 패치 필요 -->
-    <script>
-        (function() {
-            var _origGetContext = HTMLCanvasElement.prototype.getContext;
-            HTMLCanvasElement.prototype.getContext = function(type, options) {
-                if (type === 'webgl' || type === 'webgl2') {
-                    options = Object.assign({}, options, {
-                        preserveDrawingBuffer: true,
-                        alpha: true,
-                        premultipliedAlpha: false
-                    });
-                }
-                return _origGetContext.call(this, type, options);
-            };
-        })();
-    </script>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     
