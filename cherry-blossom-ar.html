@@ -1767,13 +1767,13 @@
             resizePetalCanvas();
             petalCanvas.style.display = 'block';
 
-            // 2.5D 디오라마 엇박자 부유 애니메이션 활성화 (레이어별 다른 타이밍)
+            // 2.5D 디오라마 엇박자 부유 애니메이션 — Z축(앞뒤)으로 살짝씩 숨쉬는 느낌
             if (dioramaLayer1) dioramaLayer1.setAttribute('animation__float',
-                'property: position; from: 0 -0.02 0.01; to: 0 0.02 0.01; dir: alternate; dur: 3000; easing: easeInOutSine; loop: true');
+                'property: position; from: 0 0 0.005; to: 0 0 0.015; dir: alternate; dur: 3000; easing: easeInOutSine; loop: true');
             if (dioramaLayer2) dioramaLayer2.setAttribute('animation__float',
-                'property: position; from: 0 -0.04 0.08; to: 0 0.04 0.08; dir: alternate; dur: 2500; easing: easeInOutSine; loop: true');
+                'property: position; from: 0 0 0.06; to: 0 0 0.10; dir: alternate; dur: 2500; easing: easeInOutSine; loop: true');
             if (dioramaLayer3) dioramaLayer3.setAttribute('animation__float',
-                'property: position; from: 0 -0.06 0.15; to: 0 0.06 0.15; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
+                'property: position; from: 0 0 0.12; to: 0 0 0.18; dir: alternate; dur: 2000; easing: easeInOutSine; loop: true');
 
             for (let i = 0; i < 8; i++) setTimeout(() => spawnFloatPetal(), i * 200);
             fgPetalInterval = setInterval(spawnFloatPetal, FG_PETAL_INTERVAL);
@@ -1826,7 +1826,7 @@
             statusBar.classList.add('hidden');
             guideUI.classList.add('hidden');
             warmOverlay.classList.remove('show');
-            foregroundPetals.classList.remove('show');
+            stopForegroundPetals();
             cameraSwitchBtn.classList.add('hidden');
             captureHint.classList.remove('show');
             recordTimer.classList.remove('show');
@@ -1838,7 +1838,7 @@
             warmOverlay.classList.add('show');
             cameraSwitchBtn.classList.remove('hidden');
             if (currentMode === 'blossom') {
-                foregroundPetals.classList.add('show');
+                startForegroundPetals();
             }
         }
         
@@ -2198,6 +2198,49 @@
             }, 2600);
         }
         
+        // 레이어 사이에서 벚꽃이 뿜어져 나오는 이펙트 (kit 모드 전용)
+        function createLayerBurst() {
+            if (petalCanvas.style.display === 'none') {
+                resizePetalCanvas();
+                petalCanvas.style.display = 'block';
+            }
+            const cx = petalCanvas.width / 2;
+            const cy = petalCanvas.height / 2;
+
+            // 3겹 레이어의 깊이를 흉내낸 3단계 폭발 — 시간차로 뿜어냄
+            const waves = [
+                { delay: 0,    count: 8,  speedMin: 2, speedMax: 4, sizeMin: 18, sizeMax: 28, spread: 360 },  // 배경 레이어
+                { delay: 180,  count: 12, speedMin: 4, speedMax: 7, sizeMin: 22, sizeMax: 35, spread: 360 },  // 중경 레이어
+                { delay: 360,  count: 16, speedMin: 6, speedMax: 10, sizeMin: 28, sizeMax: 45, spread: 360 }, // 전경 레이어 — 가장 크고 빠름
+            ];
+
+            waves.forEach(wave => {
+                setTimeout(() => {
+                    for (let i = 0; i < wave.count; i++) {
+                        const angle = (i / wave.count) * wave.spread + (Math.random() - 0.5) * 30;
+                        const speed = wave.speedMin + Math.random() * (wave.speedMax - wave.speedMin);
+                        const size  = wave.sizeMin  + Math.random() * (wave.sizeMax  - wave.sizeMin);
+                        petalParticles.push({
+                            x: cx + (Math.random() - 0.5) * 60,
+                            y: cy + (Math.random() - 0.5) * 60,
+                            vx: Math.cos(angle * Math.PI / 180) * speed,
+                            vy: Math.sin(angle * Math.PI / 180) * speed,
+                            rotation: Math.random() * 360,
+                            rotSpeed: (Math.random() - 0.5) * 18,
+                            size, opacity: 1, maxOpacity: 1,
+                            fadeIn: 1, life: 1, lifeDecay: 0.012
+                        });
+                    }
+                    if (!petalAnimId) animatePetals();
+                }, wave.delay);
+            });
+
+            // 버스트 후 전경 꽃잎으로 전환 (fgPetalInterval이 없으면 약 3초 뒤 canvas 정리)
+            setTimeout(() => {
+                if (!fgPetalInterval) stopForegroundPetals();
+            }, 3500);
+        }
+
         // 마커 영역 추출
         function extractMarkerRegion() {
             if (!videoElement) return null;
@@ -2550,10 +2593,15 @@
                 if (dioramaLayer1) dioramaLayer1.setAttribute('visible', 'true');
                 if (dioramaLayer2) dioramaLayer2.setAttribute('visible', 'true');
                 if (dioramaLayer3) dioramaLayer3.setAttribute('visible', 'true');
-                if (!hasExploded && isTextureScanned) { 
-                    createPetalBurst(); 
+                if (!hasExploded && isTextureScanned) {
+                    createLayerBurst();
                     hasExploded = true; 
                 }
+            } else {
+                // blossom 모드에서는 diorama 레이어 숨김
+                if (dioramaLayer1) dioramaLayer1.setAttribute('visible', 'false');
+                if (dioramaLayer2) dioramaLayer2.setAttribute('visible', 'false');
+                if (dioramaLayer3) dioramaLayer3.setAttribute('visible', 'false');
             }
         });
         
