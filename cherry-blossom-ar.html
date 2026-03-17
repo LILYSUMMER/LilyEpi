@@ -1005,7 +1005,7 @@
         id="ar-scene"
         ar-recorder
         renderer="colorManagement: true; antialias: true; alpha: true; preserveDrawingBuffer: true; sortObjects: true;"
-        mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
+        mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.001; filterBeta: 0.01; missTolerance: 5; warmupTolerance: 5;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
@@ -2473,6 +2473,11 @@
             warmOverlay.classList.add('show');
             
             if (mode === 'blossom') {
+                // 벚꽃 모드: diorama 레이어 완전 숨김
+                if (dioramaLayer1) dioramaLayer1.setAttribute('visible', 'false');
+                if (dioramaLayer2) dioramaLayer2.setAttribute('visible', 'false');
+                if (dioramaLayer3) dioramaLayer3.setAttribute('visible', 'false');
+
                 // 벚꽃 모드: 바로 카메라 + 꽃잎 + 촬영 버튼
                 setTimeout(() => {
                     hideLoadingScreen();
