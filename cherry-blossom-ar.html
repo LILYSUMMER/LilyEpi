@@ -1016,10 +1016,10 @@
             <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png" crossorigin="anonymous">
             <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png" crossorigin="anonymous">
             <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png" crossorigin="anonymous">
-            <!-- 각 레이어 마스킹 결과를 담을 캔버스 — A-Frame 평면 비율(1:0.667 = 3:2)에 맞춤 -->
-            <canvas id="canvas-layer1" width="1024" height="683" style="display:none;"></canvas>
-            <canvas id="canvas-layer2" width="1024" height="683" style="display:none;"></canvas>
-            <canvas id="canvas-layer3" width="1024" height="683" style="display:none;"></canvas>
+            <!-- 각 레이어 마스킹 결과를 담을 캔버스 — 레이어 PNG(1024×1024)와 동일한 정사각형 -->
+            <canvas id="canvas-layer1" width="1024" height="1024" style="display:none;"></canvas>
+            <canvas id="canvas-layer2" width="1024" height="1024" style="display:none;"></canvas>
+            <canvas id="canvas-layer3" width="1024" height="1024" style="display:none;"></canvas>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false">
@@ -1052,15 +1052,16 @@
 
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
 
-            <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="0.667"
+            <!-- 레이어 PNG가 1024×1024 정사각형 → 평면도 width=height=1로 맞춰 찌부 방지 -->
+            <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="1"
                 material="src: #layer1; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
             </a-plane>
 
-            <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="0.667"
+            <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="1"
                 material="src: #layer2; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
             </a-plane>
 
-            <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="0.667"
+            <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="1"
                 material="src: #layer3; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
             </a-plane>
 
@@ -1145,7 +1146,11 @@
             
             // ✅ 비디오 요소를 실시간으로 가져오기 (캐싱하지 않음!)
             getVideo: function() {
-                // preview-video를 제외하고 AR 카메라 비디오만 정확히 타겟팅
+                // 셀피 모드면 selfie-video 우선 반환
+                if (this.isSelfieMode) {
+                    const selfie = document.getElementById('selfie-video');
+                    if (selfie && selfie.readyState >= 2) return selfie;
+                }
                 return document.querySelector('video:not(#preview-video):not(#selfie-video)');
             },
             
@@ -2250,12 +2255,9 @@
             if (!videoElement) return null;
             const vw = videoElement.videoWidth, vh = videoElement.videoHeight;
             if (vw === 0 || vh === 0) return null;
-            // A-Frame 평면 비율(1:0.667 = 1.5:1)에 맞게 추출
-            // 캔버스(1024×683)와 동일한 비율로 잘라야 짜부 없음
-            const PLANE_RATIO = 1024 / 683; // ≈ 1.499
-            let ch = Math.min(vh, vw / PLANE_RATIO) * 0.75;
-            let cw = ch * PLANE_RATIO;
-            return { x: Math.max(0, (vw - cw) / 2), y: Math.max(0, (vh - ch) / 2), width: cw, height: ch };
+            // 레이어 PNG가 1:1 정사각형 → 정사각형 영역 추출
+            const size = Math.min(vw, vh) * 0.78;
+            return { x: Math.max(0, (vw - size) / 2), y: Math.max(0, (vh - size) / 2), width: size, height: size };
         }
         
         // 텍스처 스캔 및 색상 오버레이 적용
