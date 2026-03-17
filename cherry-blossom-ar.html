@@ -543,7 +543,7 @@
             cursor: pointer;
         }
         
-        /* paint-canvas는 a-assets 내부에 있어 A-Frame이 직접 관리 — 별도 CSS 숨김 불필요 */
+        /* canvas-layer1~3 은 style="display:none" 으로 직접 제어 */
         
         /* ===== 인스타그램 스토리 스타일 촬영 버튼 ===== */
         #capture-btn {
@@ -1016,7 +1016,10 @@
             <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png" crossorigin="anonymous">
             <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png" crossorigin="anonymous">
             <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png" crossorigin="anonymous">
-            <canvas id="paint-canvas" width="1024" height="1024"></canvas>
+            <!-- 각 레이어 마스킹 결과를 담을 캔버스 (A-Frame 텍스처 소스) -->
+            <canvas id="canvas-layer1" width="1024" height="1024" style="display:none;"></canvas>
+            <canvas id="canvas-layer2" width="1024" height="1024" style="display:none;"></canvas>
+            <canvas id="canvas-layer3" width="1024" height="1024" style="display:none;"></canvas>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false">
@@ -1053,11 +1056,6 @@
                 material="src: #layer1; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
             </a-plane>
 
-            <a-plane id="color-overlay-plane" position="0 0 0.04" width="1" height="0.667"
-                material="shader: flat; color: #ffffff; transparent: true; opacity: 0; side: double;"
-                visible="false">
-            </a-plane>
-
             <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="0.667"
                 material="src: #layer2; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
             </a-plane>
@@ -1084,76 +1082,8 @@
         </a-entity>
     </a-scene>
 
-    <!-- ===== 🔍 디버그 오버레이 (문제 해결 후 제거) ===== -->
-    <div id="debug-overlay" style="
-        position: fixed; top: 10px; left: 10px; z-index: 99999;
-        background: rgba(0,0,0,0.75); color: #0f0; font-family: monospace;
-        font-size: 11px; padding: 8px 10px; border-radius: 6px;
-        max-width: 92vw; max-height: 60vh; overflow-y: auto;
-        pointer-events: none; white-space: pre-wrap; line-height: 1.5;">
-[디버그 초기화 중...]</div>
     
     <script>
-        // ===== 🔍 디버그 유틸리티 =====
-        const _dbgEl = document.getElementById('debug-overlay');
-        const _dbgLines = [];
-        function dbg(msg) {
-            const ts = new Date().toISOString().substr(11, 8);
-            _dbgLines.push(`[${ts}] ${msg}`);
-            if (_dbgLines.length > 60) _dbgLines.shift();
-            _dbgEl.textContent = _dbgLines.join('\n');
-        }
-
-        // petal-img 로드 감시 (layer1~3은 이제 직접 URL 사용)
-        const _petalImg = document.getElementById('petal-img');
-        if (_petalImg) {
-            if (_petalImg.complete && _petalImg.naturalWidth > 0) {
-                dbg('✅ #petal-img 이미 로드됨');
-            } else {
-                _petalImg.addEventListener('load',  () => dbg('✅ #petal-img 로드 성공'));
-                _petalImg.addEventListener('error', () => dbg('❌ #petal-img 로드 실패'));
-            }
-        }
-        // 레이어 URL 직접 접근 확인
-        ['layer1_bg.png', 'layer2_mid.png', 'layer3_fg.png'].forEach(fn => {
-            const tImg = new Image();
-            tImg.onload  = () => dbg('✅ URL 로드 성공: ' + fn + ' (' + tImg.naturalWidth + 'x' + tImg.naturalHeight + ')');
-            tImg.onerror = () => dbg('❌ URL 로드 실패: ' + fn);
-            tImg.src = './assets/cherry-blossom-ar/' + fn;
-        });
-
-        // A-Frame 씬 이벤트 감시
-        document.addEventListener('DOMContentLoaded', () => {
-            const scene = document.getElementById('ar-scene');
-            if (scene) {
-                scene.addEventListener('loaded',    () => dbg('🎬 a-scene loaded'));
-                scene.addEventListener('renderstart', () => dbg('🖥️ renderstart'));
-            }
-            // AR 타겟 발견/소실
-            const target = document.getElementById('ar-target');
-            if (target) {
-                target.addEventListener('targetFound', () => {
-                    dbg('🎯 targetFound — 레이어 가시성 확인:');
-                    ['diorama-layer1','diorama-layer2','diorama-layer3'].forEach(id => {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            const mat = el.getAttribute('material');
-                            dbg(`  #${id} visible=${el.getAttribute('visible')} mat=${JSON.stringify(mat)}`);
-                        } else {
-                            dbg(`  ❌ #${id} 요소 없음`);
-                        }
-                    });
-                });
-                target.addEventListener('targetLost', () => dbg('👻 targetLost'));
-            }
-        });
-
-        // 전역 에러 캐치
-        window.addEventListener('error', e =>
-            dbg(`🔥 JS ERROR: ${e.message} (${e.filename}:${e.lineno})`));
-
-        dbg('🚀 디버그 시작 — 이미지 감시 중...');
-
         // ===== WebGL 컨텍스트 설정을 위한 씬 초기화 전 처리 =====
         // preserveDrawingBuffer는 A-Frame 씬 생성 전에 설정해야 함
         AFRAME.registerComponent('webgl-settings', {
@@ -1616,11 +1546,8 @@
         const dioramaLayer1 = document.getElementById('diorama-layer1');
         const dioramaLayer2 = document.getElementById('diorama-layer2');
         const dioramaLayer3 = document.getElementById('diorama-layer3');
-        const colorOverlayPlane = document.getElementById('color-overlay-plane');
         const petalsContainer = document.getElementById('petals-container');
         const cameraPetals = document.getElementById('camera-petals');
-        const paintCanvas = document.getElementById('paint-canvas');
-        const paintCtx = paintCanvas.getContext('2d', { willReadFrequently: true });
         const statusBar = document.getElementById('status-bar');
         const petalCanvas = document.getElementById('petal-canvas');
         const scanButton = document.getElementById('scan-button');
@@ -1843,8 +1770,6 @@
             // 2.5D 디오라마 엇박자 부유 애니메이션 활성화 (레이어별 다른 타이밍)
             if (dioramaLayer1) dioramaLayer1.setAttribute('animation__float',
                 'property: position; from: 0 -0.02 0.01; to: 0 0.02 0.01; dir: alternate; dur: 3000; easing: easeInOutSine; loop: true');
-            if (colorOverlayPlane) colorOverlayPlane.setAttribute('animation__float',
-                'property: position; from: 0 -0.03 0.04; to: 0 0.03 0.04; dir: alternate; dur: 2750; easing: easeInOutSine; loop: true');
             if (dioramaLayer2) dioramaLayer2.setAttribute('animation__float',
                 'property: position; from: 0 -0.04 0.08; to: 0 0.04 0.08; dir: alternate; dur: 2500; easing: easeInOutSine; loop: true');
             if (dioramaLayer3) dioramaLayer3.setAttribute('animation__float',
@@ -1866,7 +1791,6 @@
             if (dioramaLayer1) dioramaLayer1.removeAttribute('animation__float');
             if (dioramaLayer2) dioramaLayer2.removeAttribute('animation__float');
             if (dioramaLayer3) dioramaLayer3.removeAttribute('animation__float');
-            if (colorOverlayPlane) colorOverlayPlane.removeAttribute('animation__float');
         }
         
         // UI
@@ -2295,33 +2219,53 @@
             try {
                 const region = extractMarkerRegion();
                 if (!region) { showToast('도안 영역을 찾을 수 없습니다', '❌'); return false; }
-                const cw = paintCanvas.width, ch = paintCanvas.height;
-                paintCtx.clearRect(0, 0, cw, ch);
-                paintCtx.imageSmoothingEnabled = true;
-                paintCtx.imageSmoothingQuality = 'high';
-                paintCtx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
-                
-                // A-Frame 네이티브 방식으로 캔버스 텍스처 맵핑
-                const colorPlane = document.getElementById('color-overlay-plane');
-                if (colorPlane) {
-                    colorPlane.setAttribute('material', 'src: #paint-canvas; transparent: true; depthWrite: false; opacity: 0.85; shader: flat; side: double;');
-                    if (colorPlane.components.material && colorPlane.components.material.material) {
-                        colorPlane.components.material.material.needsUpdate = true;
+
+                // 각 레이어별로 색칠본을 마스킹하여 개별 텍스처로 입힘
+                [1, 2, 3].forEach(num => {
+                    const canvas = document.getElementById(`canvas-layer${num}`);
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    const layerImg = document.getElementById(`layer${num}`);
+                    const cw = canvas.width, ch = canvas.height;
+
+                    ctx.clearRect(0, 0, cw, ch);
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+
+                    // Step 1: 스캔한 비디오 색상을 캔버스에 복사
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
+
+                    // Step 2: 레이어 PNG의 알파 채널로 색칠 영역 마스킹 (오려내기)
+                    ctx.globalCompositeOperation = 'destination-in';
+                    ctx.drawImage(layerImg, 0, 0, cw, ch);
+
+                    // Step 3: 원본 도안의 선(테두리)을 multiply로 덧그려 색감 살리기
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.drawImage(layerImg, 0, 0, cw, ch);
+
+                    ctx.globalCompositeOperation = 'source-over';
+
+                    // Step 4: 마스킹된 캔버스를 해당 레이어 평면의 텍스처로 주입
+                    const plane = document.getElementById(`diorama-layer${num}`);
+                    if (plane) {
+                        plane.setAttribute('material', `src: #canvas-layer${num}; shader: flat; transparent: true; alphaTest: 0.1; side: double;`);
+                        if (plane.components.material && plane.components.material.material && plane.components.material.material.map) {
+                            plane.components.material.material.map.needsUpdate = true;
+                        }
                     }
-                    colorPlane.setAttribute('visible', 'true');
-                }
-                
-                texturePreview.src = paintCanvas.toDataURL('image/jpeg', 0.9);
+                });
+
+                // 프리뷰는 레이어1 캔버스 기준으로 표시
+                texturePreview.src = document.getElementById('canvas-layer1').toDataURL('image/jpeg', 0.9);
                 texturePreview.classList.add('show');
                 isTextureScanned = true;
                 scanButton.textContent = '✅ 스캔 완료!';
                 scanButton.classList.add('scanned');
-                
-                // 인스타그램 스타일 캡처 버튼 표시
+
                 captureBtn.style.display = 'block';
                 captureHint.classList.add('show');
                 setTimeout(() => captureHint.classList.remove('show'), 4000);
-                
+
                 showToast('🌸 도안이 성공적으로 스캔되었습니다!', '✨');
                 createPetalBurst();
                 return true;
