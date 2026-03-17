@@ -1052,18 +1052,23 @@
 
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
 
-            <!-- 레이어 PNG가 1024×1024 정사각형 → 평면도 width=height=1로 맞춰 찌부 방지 -->
-            <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="1"
-                material="src: #layer1; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
-            </a-plane>
+            <!-- 3겹 레이어 래퍼: 핀치줌·회전 제스처는 이 엔티티에 적용 -->
+            <a-entity id="diorama-wrapper" scale="1 1 1" rotation="0 0 0">
 
-            <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="1"
-                material="src: #layer2; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
-            </a-plane>
+                <!-- 레이어 PNG가 1024×1024 정사각형 → 평면도 width=height=1로 맞춰 찌부 방지 -->
+                <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="1"
+                    material="src: #layer1; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
+                </a-plane>
 
-            <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="1"
-                material="src: #layer3; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
-            </a-plane>
+                <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="1"
+                    material="src: #layer2; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
+                </a-plane>
+
+                <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="1"
+                    material="src: #layer3; shader: flat; transparent: true; alphaTest: 0.1; side: double;">
+                </a-plane>
+
+            </a-entity>
 
             <a-entity id="petals-container" visible="false">
                 <a-image src="#petal-img" position="0 0.6 0.03" scale="0.18 0.18 0.18" opacity="0.9"
@@ -2177,7 +2182,67 @@
             e.stopPropagation();
             capturePreviewModal.classList.remove('show');
         });
-        
+
+        // ===== 3겹 디오라마 핀치 줌·회전 제스처 =====
+        // AR 씬 위에서 두 손가락으로 diorama-wrapper 스케일·회전 조작
+        (function initDioramaGesture() {
+            let g = { active: false, startDist: 0, startAngle: 0, baseScale: 1, baseRotZ: 0, curScale: 1, curRotZ: 0 };
+
+            function twoFingerInfo(e) {
+                const t = e.touches;
+                const dx = t[1].clientX - t[0].clientX, dy = t[1].clientY - t[0].clientY;
+                return { dist: Math.sqrt(dx*dx + dy*dy), angle: Math.atan2(dy, dx) * 180 / Math.PI };
+            }
+
+            function applyToWrapper() {
+                const wrapper = document.getElementById('diorama-wrapper');
+                if (!wrapper || !wrapper.object3D) return;
+                const s = g.curScale;
+                wrapper.setAttribute('scale', `${s} ${s} ${s}`);
+                wrapper.setAttribute('rotation', `0 0 ${g.curRotZ}`);
+            }
+
+            // AR 씬 캔버스를 터치 이벤트 대상으로 사용
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 2) return;
+                // 다른 UI 요소(버튼 등)가 아닐 때만 작동
+                const tag = e.target.tagName.toLowerCase();
+                if (['button','input','a','select'].includes(tag)) return;
+                e.preventDefault();
+                const { dist, angle } = twoFingerInfo(e);
+                g.active = true;
+                g.startDist = dist; g.startAngle = angle;
+                g.baseScale = g.curScale; g.baseRotZ = g.curRotZ;
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!g.active || e.touches.length !== 2) return;
+                e.preventDefault();
+                const { dist, angle } = twoFingerInfo(e);
+                g.curScale  = Math.max(0.3, Math.min(4, g.baseScale * (dist / g.startDist)));
+                g.curRotZ   = g.baseRotZ + (angle - g.startAngle);
+                applyToWrapper();
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) g.active = false;
+            });
+
+            // 더블탭으로 원래 크기·각도 복원
+            let lastTap = 0;
+            document.addEventListener('touchend', (e) => {
+                if (e.touches.length !== 0) return;
+                const now = Date.now();
+                if (now - lastTap < 280) {
+                    const tag = e.target.tagName.toLowerCase();
+                    if (['button','input','a','select'].includes(tag)) return;
+                    g.curScale = 1; g.curRotZ = 0;
+                    applyToWrapper();
+                }
+                lastTap = now;
+            });
+        })();
+
         // 꽃잎 폭발 (Canvas 2D)
         function createPetalBurst() {
             if (petalCanvas.style.display === 'none') {
@@ -2255,9 +2320,59 @@
             if (!videoElement) return null;
             const vw = videoElement.videoWidth, vh = videoElement.videoHeight;
             if (vw === 0 || vh === 0) return null;
-            // 레이어 PNG가 1:1 정사각형 → 정사각형 영역 추출
+
+            try {
+                const sceneEl = document.getElementById('ar-scene');
+                const arTargetEl = document.getElementById('ar-target');
+
+                if (sceneEl && sceneEl.camera && arTargetEl && arTargetEl.object3D) {
+                    const cam = sceneEl.camera;
+                    const targetObj = arTargetEl.object3D;
+                    targetObj.updateMatrixWorld(true);
+
+                    const sw = window.innerWidth, sh = window.innerHeight;
+
+                    // 1×1 평면의 네 모서리를 Three.js NDC → 화면 픽셀로 투영
+                    const screenPts = [
+                        [-0.5, -0.5, 0], [0.5, -0.5, 0],
+                        [0.5,  0.5, 0], [-0.5,  0.5, 0]
+                    ].map(([x, y, z]) => {
+                        const v = new THREE.Vector3(x, y, z);
+                        v.applyMatrix4(targetObj.matrixWorld).project(cam);
+                        return { sx: (v.x * 0.5 + 0.5) * sw, sy: (0.5 - v.y * 0.5) * sh };
+                    });
+
+                    const sxs = screenPts.map(p => p.sx), sys = screenPts.map(p => p.sy);
+                    const sMinX = Math.max(0, Math.min(...sxs));
+                    const sMinY = Math.max(0, Math.min(...sys));
+                    const sMaxX = Math.min(sw, Math.max(...sxs));
+                    const sMaxY = Math.min(sh, Math.max(...sys));
+
+                    // object-fit:cover 보정 — 화면 좌표 → 비디오 픽셀 좌표
+                    const videoAspect = vw / vh, screenAspect = sw / sh;
+                    let scale, offX = 0, offY = 0;
+                    if (videoAspect > screenAspect) {
+                        scale = vh / sh; offX = (vw - sw * scale) / 2;
+                    } else {
+                        scale = vw / sw; offY = (vh - sh * scale) / 2;
+                    }
+
+                    const vMinX = sMinX * scale + offX;
+                    const vMinY = sMinY * scale + offY;
+                    const vW = (sMaxX - sMinX) * scale;
+                    const vH = (sMaxY - sMinY) * scale;
+
+                    if (vW > 20 && vH > 20) {
+                        return { x: Math.max(0, vMinX), y: Math.max(0, vMinY), width: vW, height: vH };
+                    }
+                }
+            } catch (e) {
+                console.warn('Three.js projection 실패, fallback 사용:', e);
+            }
+
+            // Fallback: 화면 중앙의 정사각형
             const size = Math.min(vw, vh) * 0.78;
-            return { x: Math.max(0, (vw - size) / 2), y: Math.max(0, (vh - size) / 2), width: size, height: size };
+            return { x: (vw - size) / 2, y: (vh - size) / 2, width: size, height: size };
         }
         
         // 텍스처 스캔 및 색상 오버레이 적용
@@ -2283,9 +2398,17 @@
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
 
-                    // Step 1: 스캔한 비디오 색상을 캔버스에 복사
+                    // Step 1: 비율 보존 letterbox — 추출 영역을 canvas에 맞게 중앙 배치
                     ctx.globalCompositeOperation = 'source-over';
-                    ctx.drawImage(videoElement, region.x, region.y, region.width, region.height, 0, 0, cw, ch);
+                    const srcAspect = region.width / region.height;
+                    const dstAspect = cw / ch;
+                    let dx = 0, dy = 0, dw = cw, dh = ch;
+                    if (srcAspect > dstAspect) {
+                        dh = cw / srcAspect; dy = (ch - dh) / 2;
+                    } else if (srcAspect < dstAspect) {
+                        dw = ch * srcAspect; dx = (cw - dw) / 2;
+                    }
+                    ctx.drawImage(videoElement, region.x, region.y, region.width, region.height, dx, dy, dw, dh);
 
                     // Step 2: 레이어 PNG의 알파 채널로 색칠 영역 마스킹 (오려내기)
                     ctx.globalCompositeOperation = 'destination-in';
