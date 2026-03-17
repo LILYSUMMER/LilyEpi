@@ -545,6 +545,127 @@
         
         /* canvas-layer1~3 은 style="display:none" 으로 직접 제어 */
         
+        /* ===== 벚꽃잎 터치 이벤트 오버레이 ===== */
+        #petal-message-overlay {
+            position: fixed; inset: 0; z-index: 8500;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #petal-message-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .petal-msg-card {
+            text-align: center;
+            animation: msgRise 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .petal-msg-emoji { font-size: 56px; display: block; margin-bottom: 12px;
+            animation: petalSpin 1.2s ease-out; }
+        .petal-msg-text {
+            font-size: 20px; color: #fff;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            letter-spacing: 0.08em; line-height: 1.8;
+            text-shadow: 0 0 24px rgba(255,182,193,0.9), 0 2px 8px rgba(0,0,0,0.4);
+            padding: 0 32px;
+        }
+        .petal-msg-close-hint {
+            margin-top: 20px; font-size: 13px;
+            color: rgba(255,255,255,0.5); letter-spacing: 0.05em;
+        }
+        @keyframes msgRise {
+            from { transform: translateY(40px) scale(0.92); opacity: 0; }
+            to   { transform: translateY(0) scale(1);      opacity: 1; }
+        }
+        @keyframes petalSpin {
+            from { transform: rotate(-30deg) scale(0.5); opacity: 0; }
+            to   { transform: rotate(0deg)  scale(1);   opacity: 1; }
+        }
+
+        /* ===== 황금 벚꽃 쿠폰 오버레이 ===== */
+        #golden-coupon-overlay {
+            position: fixed; inset: 0; z-index: 8600;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #golden-coupon-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .coupon-wrap {
+            width: min(360px, 88vw);
+            animation: couponDrop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes couponDrop {
+            from { transform: scale(0.7) translateY(-40px); opacity: 0; }
+            to   { transform: scale(1)   translateY(0);     opacity: 1; }
+        }
+        .coupon-card {
+            background: linear-gradient(135deg, #fffbe6 0%, #fff3b0 50%, #ffe066 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 24px 24px 8px;
+            box-shadow: 0 0 40px rgba(255,215,0,0.6), 0 8px 32px rgba(0,0,0,0.3);
+            position: relative; overflow: hidden;
+        }
+        .coupon-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.5) 0%, transparent 60%);
+        }
+        .coupon-header {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; margin-bottom: 6px;
+        }
+        .coupon-gold-icon { font-size: 22px; }
+        .coupon-title-top {
+            font-size: 13px; color: #996600; font-weight: 600;
+            letter-spacing: 0.1em; text-align: center;
+        }
+        .coupon-discount-text {
+            font-size: 52px; font-weight: 900; color: #cc8800;
+            text-align: center; line-height: 1;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.12);
+        }
+        .coupon-discount-text span { font-size: 22px; font-weight: 700; vertical-align: super; }
+        .coupon-name {
+            font-size: 18px; font-weight: 700; color: #7a5500;
+            text-align: center; margin: 4px 0 12px;
+        }
+        .coupon-divider {
+            display: flex; align-items: center; margin: 0 -24px;
+            position: relative;
+        }
+        .coupon-hole {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            flex-shrink: 0;
+        }
+        .coupon-dashes {
+            flex: 1; border-top: 2px dashed rgba(180,130,0,0.4);
+        }
+        .coupon-footer {
+            background: linear-gradient(135deg, #7a5500, #cc8800);
+            border-radius: 0 0 20px 20px;
+            padding: 12px 24px 16px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .coupon-detail { font-size: 12px; color: rgba(255,255,255,0.85); text-align: center; }
+        .coupon-validity { font-size: 11px; color: rgba(255,255,255,0.6); text-align: center; margin-top: 2px; }
+        #btn-capture-coupon {
+            margin-top: 16px; width: 100%;
+            background: linear-gradient(135deg, #ff6b9d, #ff8c42);
+            color: #fff; border: none; border-radius: 50px;
+            padding: 14px; font-size: 15px; font-weight: 700;
+            box-shadow: 0 4px 20px rgba(255,107,157,0.5);
+            cursor: pointer; letter-spacing: 0.04em;
+        }
+        #btn-coupon-close {
+            margin-top: 10px; width: 100%; background: transparent;
+            color: rgba(255,255,255,0.55); border: none; padding: 8px;
+            font-size: 13px; cursor: pointer;
+        }
+
         /* ===== 인스타그램 스토리 스타일 촬영 버튼 ===== */
         #capture-btn {
             width: 80px;
@@ -974,6 +1095,42 @@
     </div>
     
     <canvas id="petal-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:400; pointer-events:none; display:none;"></canvas>
+
+    <!-- 일반 벚꽃잎 메시지 오버레이 -->
+    <div id="petal-message-overlay">
+        <div class="petal-msg-card">
+            <span class="petal-msg-emoji">🌸</span>
+            <p class="petal-msg-text" id="petal-msg-text-content"></p>
+            <p class="petal-msg-close-hint">화면을 터치하면 닫혀요</p>
+        </div>
+    </div>
+
+    <!-- 황금 벚꽃 쿠폰 오버레이 -->
+    <div id="golden-coupon-overlay">
+        <div class="coupon-wrap">
+            <div class="coupon-card">
+                <div class="coupon-header">
+                    <span class="coupon-gold-icon">🌟</span>
+                    <h3 style="font-size:15px;color:#7a5500;margin:0;">황금 벚꽃 당첨!</h3>
+                    <span class="coupon-gold-icon">🌟</span>
+                </div>
+                <p class="coupon-title-top">CHERRY BLOSSOM FESTIVAL</p>
+                <div class="coupon-discount-text"><span>할인율</span> 10%</div>
+                <p class="coupon-name">축제 푸드트럭 할인권</p>
+                <div class="coupon-divider">
+                    <div class="coupon-hole"></div>
+                    <div class="coupon-dashes"></div>
+                    <div class="coupon-hole"></div>
+                </div>
+            </div>
+            <div class="coupon-footer">
+                <p class="coupon-detail">🌸 벚꽃 축제 한정 · 전 메뉴 적용</p>
+                <p class="coupon-validity">당일 사용 가능 · 타 할인과 중복 불가</p>
+            </div>
+            <button id="btn-capture-coupon" type="button">📸 캡처해서 사용하기</button>
+            <button id="btn-coupon-close" type="button">닫기</button>
+        </div>
+    </div>
     
     <div id="button-container">
         <button type="button" id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
@@ -1738,31 +1895,62 @@
             });
         }
 
+        let glowParticles = [];
+
+        function spawnGlowExplosion(cx, cy, isGolden) {
+            const color = isGolden ? '#FFD700' : '#FFB6C1';
+            const count = isGolden ? 45 : 28;
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+                const speed = 2 + Math.random() * (isGolden ? 9 : 6);
+                const size  = 2 + Math.random() * (isGolden ? 7 : 4);
+                glowParticles.push({
+                    x: cx, y: cy,
+                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                    life: 1, lifeDecay: 0.018 + Math.random() * 0.018,
+                    size, color
+                });
+            }
+        }
+
         function animatePetals() {
             petalAnimId = requestAnimationFrame(animatePetals);
             const pctx = petalCanvas.getContext('2d');
             pctx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
 
+            const cxC = petalCanvas.width / 2, cyC = petalCanvas.height / 2;
+            const dissolved = [];
+
             petalParticles = petalParticles.filter(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.rotation += p.rotSpeed;
-                p.life -= p.lifeDecay;
-
-                if (p.fadeIn < 1) {
-                    p.fadeIn = Math.min(1, p.fadeIn + 0.04);
-                    p.opacity = p.fadeIn * p.maxOpacity;
-                } else if (p.life < 0.15) {
-                    p.opacity = (p.life / 0.15) * p.maxOpacity;
+                if (p.dissolving) {
+                    p.x += (cxC - p.x) * 0.09;
+                    p.y += (cyC - p.y) * 0.09;
+                    p.size *= 1.015;
+                    p.opacity -= 0.03;
+                    p.rotation += 8;
+                    if (p.opacity <= 0) { dissolved.push(p); return false; }
                 } else {
-                    p.opacity = p.maxOpacity;
+                    p.x += p.vx; p.y += p.vy;
+                    p.rotation += p.rotSpeed;
+                    p.life -= p.lifeDecay;
+                    if (p.fadeIn < 1) {
+                        p.fadeIn = Math.min(1, p.fadeIn + 0.04);
+                        p.opacity = p.fadeIn * p.maxOpacity;
+                    } else if (p.life < 0.15) {
+                        p.opacity = (p.life / 0.15) * p.maxOpacity;
+                    } else {
+                        p.opacity = p.maxOpacity;
+                    }
+                    if (p.y > petalCanvas.height + 80 || p.life <= 0) return false;
                 }
-
-                if (p.y > petalCanvas.height + 80 || p.life <= 0) return false;
 
                 if (petalImage.complete && petalImage.naturalWidth > 0) {
                     pctx.save();
                     pctx.globalAlpha = Math.max(0, p.opacity);
+                    if (p.dissolving && p.isGolden) {
+                        pctx.shadowBlur = 30; pctx.shadowColor = '#FFD700';
+                        pctx.filter = 'sepia(1) saturate(5) hue-rotate(5deg)';
+                    }
                     pctx.translate(p.x, p.y);
                     pctx.rotate(p.rotation * Math.PI / 180);
                     pctx.drawImage(petalImage, -p.size / 2, -p.size / 2, p.size, p.size);
@@ -1770,6 +1958,31 @@
                 }
                 return true;
             });
+
+            dissolved.forEach(p => { if (typeof showPetalReward === 'function') showPetalReward(p.isGolden); });
+
+            if (glowParticles.length > 0) {
+                pctx.save();
+                pctx.globalCompositeOperation = 'lighter';
+                glowParticles = glowParticles.filter(g => {
+                    g.x += g.vx; g.y += g.vy; g.vy += 0.14;
+                    g.life -= g.lifeDecay;
+                    if (g.life <= 0) return false;
+                    pctx.globalAlpha = g.life * 0.85;
+                    pctx.shadowBlur = 18; pctx.shadowColor = g.color;
+                    pctx.fillStyle = g.color;
+                    pctx.beginPath();
+                    pctx.arc(g.x, g.y, Math.max(0.5, g.size * g.life), 0, Math.PI * 2);
+                    pctx.fill();
+                    return true;
+                });
+                pctx.restore();
+            }
+
+            if (petalParticles.length === 0 && glowParticles.length === 0 && !fgPetalInterval) {
+                cancelAnimationFrame(petalAnimId); petalAnimId = null;
+                petalCanvas.style.display = 'none';
+            }
         }
 
         function startForegroundPetals() {
@@ -2761,6 +2974,106 @@
             sceneEl.style.display = 'none';
         };
         
+        // ===== 🌸 벚꽃잎 터치 이벤트 & 리워드 시스템 =====
+        const petalMessages = [
+            "올해는 좋은 인연이 올 거예요 🌸",
+            "당신의 봄은 이제 시작이에요",
+            "벚꽃처럼 아름답고 향기로운 하루를",
+            "작은 행복이 당신 곁에 피어나요",
+            "꽃잎처럼 가볍게, 향기롭게 살아요",
+            "봄바람이 당신에게 행운을 데려올 거예요",
+            "이 순간을 오래 기억하세요",
+            "당신은 충분히 특별한 사람이에요",
+            "세상에서 가장 예쁜 봄날을 걷고 있어요",
+            "따뜻한 마음으로 피어나는 하루가 되길",
+            "벚꽃이 지기 전에, 소중한 사람에게 연락해보세요",
+            "오늘 하루도 꽃처럼 피어나길 바랍니다",
+        ];
+
+        // 꽃잎 hit test (document 좌표 → canvas 좌표 변환)
+        function handlePetalTouch(screenX, screenY) {
+            if (!petalCanvas || petalCanvas.style.display === 'none') return false;
+            if (petalParticles.length === 0) return false;
+
+            const rect = petalCanvas.getBoundingClientRect();
+            const cx = (screenX - rect.left) * (petalCanvas.width  / rect.width);
+            const cy = (screenY - rect.top)  * (petalCanvas.height / rect.height);
+
+            let hitPetal = null, minDist = Infinity;
+            for (const p of petalParticles) {
+                if (p.dissolving) continue;
+                const dist = Math.hypot(cx - p.x, cy - p.y);
+                const hitR = Math.max(44, p.size * 0.9);
+                if (dist < hitR && dist < minDist) { hitPetal = p; minDist = dist; }
+            }
+            if (!hitPetal) return false;
+
+            // 진동
+            if (navigator.vibrate) navigator.vibrate([25, 10, 40]);
+
+            // 황금 벚꽃 RNG (10%)
+            const isGolden = Math.random() < 0.1;
+
+            // 폭발 파티클
+            spawnGlowExplosion(hitPetal.x, hitPetal.y, isGolden);
+            if (!petalAnimId) animatePetals();
+
+            // Dissolve
+            hitPetal.dissolving = true;
+            hitPetal.isGolden   = isGolden;
+            hitPetal.vx = 0; hitPetal.vy = 0;
+            hitPetal.lifeDecay  = 0; // life로 제거 방지 (opacity로만 제거)
+
+            return true;
+        }
+
+        // 리워드 표시
+        function showPetalReward(isGolden) {
+            if (isGolden) {
+                document.getElementById('golden-coupon-overlay').classList.add('show');
+            } else {
+                const msg = petalMessages[Math.floor(Math.random() * petalMessages.length)];
+                document.getElementById('petal-msg-text-content').textContent = msg;
+                document.getElementById('petal-message-overlay').classList.add('show');
+                setTimeout(() => document.getElementById('petal-message-overlay').classList.remove('show'), 4000);
+            }
+        }
+
+        // 메시지 오버레이 닫기 (탭)
+        document.getElementById('petal-message-overlay').addEventListener('click', () => {
+            document.getElementById('petal-message-overlay').classList.remove('show');
+        });
+
+        // 쿠폰 닫기
+        document.getElementById('btn-coupon-close').addEventListener('click', () => {
+            document.getElementById('golden-coupon-overlay').classList.remove('show');
+        });
+
+        // 쿠폰 캡처 버튼
+        document.getElementById('btn-capture-coupon').addEventListener('click', () => {
+            if (navigator.vibrate) navigator.vibrate(50);
+            showToast('📸 화면을 길게 눌러 캡처해 주세요!', '💛');
+            setTimeout(() => document.getElementById('golden-coupon-overlay').classList.remove('show'), 1800);
+        });
+
+        // 터치 감지 (petal-canvas는 pointer-events:none 이므로 document 레벨에서 처리)
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            // 다른 오버레이가 열려있으면 스킵
+            if (document.querySelector('#golden-coupon-overlay.show, #petal-message-overlay.show,#video-preview-modal.show')) return;
+            const tag = e.target.tagName.toLowerCase();
+            if (['button','input','a','select','canvas'].includes(tag) && e.target.id !== 'petal-canvas') return;
+            handlePetalTouch(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        // PC 테스트용 클릭
+        document.addEventListener('click', (e) => {
+            if (document.querySelector('#golden-coupon-overlay.show, #petal-message-overlay.show')) return;
+            const tag = e.target.tagName.toLowerCase();
+            if (['button','input','a','select'].includes(tag)) return;
+            handlePetalTouch(e.clientX, e.clientY);
+        });
+
         console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (인스타그램 스타일 촬영 시스템, 사진/영상 통합, 셀카 모드 지원)');
     </script>
 </body>
