@@ -1016,10 +1016,10 @@
             <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png" crossorigin="anonymous">
             <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png" crossorigin="anonymous">
             <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png" crossorigin="anonymous">
-            <!-- 각 레이어 마스킹 결과를 담을 캔버스 (A-Frame 텍스처 소스) -->
-            <canvas id="canvas-layer1" width="1024" height="1024" style="display:none;"></canvas>
-            <canvas id="canvas-layer2" width="1024" height="1024" style="display:none;"></canvas>
-            <canvas id="canvas-layer3" width="1024" height="1024" style="display:none;"></canvas>
+            <!-- 각 레이어 마스킹 결과를 담을 캔버스 — A-Frame 평면 비율(1:0.667 = 3:2)에 맞춤 -->
+            <canvas id="canvas-layer1" width="1024" height="683" style="display:none;"></canvas>
+            <canvas id="canvas-layer2" width="1024" height="683" style="display:none;"></canvas>
+            <canvas id="canvas-layer3" width="1024" height="683" style="display:none;"></canvas>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false">
@@ -1146,7 +1146,7 @@
             // ✅ 비디오 요소를 실시간으로 가져오기 (캐싱하지 않음!)
             getVideo: function() {
                 // preview-video를 제외하고 AR 카메라 비디오만 정확히 타겟팅
-                return document.querySelector('video:not(#preview-video)');
+                return document.querySelector('video:not(#preview-video):not(#selfie-video)');
             },
             
             // ✅ 비디오가 준비되었는지 확인
@@ -1620,7 +1620,7 @@
         
         // 검은 화면 수정 함수
         function fixBlackScreen() {
-            const videos = document.querySelectorAll('video:not(#preview-video)');
+            const videos = document.querySelectorAll('video:not(#preview-video):not(#selfie-video)');
             videos.forEach(video => {
                 video.style.cssText = `
                     position: fixed !important;
@@ -1665,7 +1665,7 @@
         
         // 비디오 노출 강제
         function forceVideoExpose() {
-            const video = document.querySelector('video:not(#preview-video)');
+            const video = document.querySelector('video:not(#preview-video):not(#selfie-video)');
             if (video) {
                 video.style.cssText = `
                     position: fixed !important;
@@ -2098,7 +2098,7 @@
             document.body.classList.toggle('selfie-mode', isSelfieMode);
 
             if (isSelfieMode) {
-                // ── 후면 → 전면: MindAR 완전 종료 후 순수 비디오 스트림으로 전면 표시 ──
+                // ── 후면 → 전면: MindAR 종료 + 독립 video 요소로 전면 카메라 표시 ──
                 arSystem.stop();
 
                 navigator.mediaDevices.getUserMedia({
@@ -2107,25 +2107,33 @@
                 .then(stream => {
                     selfieStream = stream;
 
-                    // MindAR이 만든 비디오 요소에 직접 스트림을 주입
-                    const arVideo = document.querySelector('video:not(#preview-video)');
-                    if (arVideo) {
-                        arVideo.srcObject = stream;
-                        arVideo.style.transform = 'scaleX(-1)';   // 거울 반전
-                        arVideo.play().catch(() => {});
+                    // MindAR의 video를 건드리지 않고 새 video 요소를 화면 위에 올림
+                    let selfieVideo = document.getElementById('selfie-video');
+                    if (!selfieVideo) {
+                        selfieVideo = document.createElement('video');
+                        selfieVideo.id = 'selfie-video';
+                        selfieVideo.setAttribute('playsinline', '');
+                        selfieVideo.setAttribute('autoplay', '');
+                        selfieVideo.setAttribute('muted', '');
+                        selfieVideo.style.cssText = `
+                            position: fixed; top: 0; left: 0;
+                            width: 100vw; height: 100vh;
+                            object-fit: cover;
+                            z-index: 2;
+                            transform: scaleX(-1);
+                            pointer-events: none;
+                        `;
+                        document.body.appendChild(selfieVideo);
                     }
+                    selfieVideo.srcObject = stream;
+                    selfieVideo.play().catch(() => {});
 
-                    setTimeout(() => {
-                        forceVideoExpose();
-                        fixBlackScreen();
-                        cameraSwitchBtn.classList.remove('switching');
-                        showToast('📱 전면 카메라', '✅');
-                        console.log('카메라 전환 완료: user (selfie)');
-                    }, 300);
+                    cameraSwitchBtn.classList.remove('switching');
+                    showToast('📱 전면 카메라', '✅');
+                    console.log('카메라 전환 완료: user (selfie, 독립 video)');
                 })
                 .catch(err => {
                     console.error('전면 카메라 요청 실패:', err);
-                    // 롤백
                     isSelfieMode = false;
                     currentFacingMode = 'environment';
                     document.body.classList.remove('selfie-mode');
@@ -2135,17 +2143,13 @@
                 });
 
             } else {
-                // ── 전면 → 후면: 셀피 스트림 해제 후 MindAR 재기동 ──
+                // ── 전면 → 후면: 셀피 video/스트림 완전 제거 후 MindAR 재기동 ──
                 if (selfieStream) {
                     selfieStream.getTracks().forEach(track => track.stop());
                     selfieStream = null;
                 }
-
-                const arVideo = document.querySelector('video:not(#preview-video)');
-                if (arVideo) {
-                    arVideo.srcObject = null;
-                    arVideo.style.transform = 'scaleX(1)';
-                }
+                const selfieVideo = document.getElementById('selfie-video');
+                if (selfieVideo) selfieVideo.remove();
 
                 arSystem.start();
 
@@ -2246,8 +2250,11 @@
             if (!videoElement) return null;
             const vw = videoElement.videoWidth, vh = videoElement.videoHeight;
             if (vw === 0 || vh === 0) return null;
-            const size = Math.min(vw, vh) * 0.55;
-            let cw = size * 0.9, ch = (size / 1.5) * 0.9;
+            // A-Frame 평면 비율(1:0.667 = 1.5:1)에 맞게 추출
+            // 캔버스(1024×683)와 동일한 비율로 잘라야 짜부 없음
+            const PLANE_RATIO = 1024 / 683; // ≈ 1.499
+            let ch = Math.min(vh, vw / PLANE_RATIO) * 0.75;
+            let cw = ch * PLANE_RATIO;
             return { x: Math.max(0, (vw - cw) / 2), y: Math.max(0, (vh - ch) / 2), width: cw, height: ch };
         }
         
