@@ -1057,26 +1057,17 @@
         </a-camera>
         
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target">
-            <!-- 2.5D 팝업 디오라마: 레이어 1 (배경) -->
-            <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="0.667"
-                material="shader: flat; src: url(./assets/cherry-blossom-ar/layer1_bg.png); transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
-            </a-plane>
+            <!-- [디버그] 솔리드 컬러 평면 — transparent/alphaTest 완전 제거 -->
+            <a-plane id="diorama-layer1" position="0 0 0.01" width="1" height="0.667" color="blue" side="double"></a-plane>
 
-            <!-- 사용자 색칠 오버레이: 레이어 1과 2 사이 -->
             <a-plane id="color-overlay-plane" position="0 0 0.04" width="1" height="0.667"
                 material="shader: flat; color: #ffffff; transparent: true; opacity: 0; side: double; depthWrite: false;"
                 visible="false">
             </a-plane>
 
-            <!-- 2.5D 팝업 디오라마: 레이어 2 (중경) -->
-            <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="0.667"
-                material="shader: flat; src: url(./assets/cherry-blossom-ar/layer2_mid.png); transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
-            </a-plane>
+            <a-plane id="diorama-layer2" position="0 0 0.08" width="1" height="0.667" color="green" side="double"></a-plane>
 
-            <!-- 2.5D 팝업 디오라마: 레이어 3 (전경) — 빨간 틴트로 렌더링 확인 -->
-            <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="0.667"
-                material="shader: flat; src: url(./assets/cherry-blossom-ar/layer3_fg.png); color: #ff0000; transparent: true; alphaTest: 0.01; depthWrite: false; side: double;">
-            </a-plane>
+            <a-plane id="diorama-layer3" position="0 0 0.15" width="1" height="0.667" color="red" side="double"></a-plane>
             
             <a-entity light="type: point; color: #ffb6c1; intensity: 0.8; distance: 2; decay: 1.5;" position="0.3 0.2 0.3"></a-entity>
             <a-entity light="type: point; color: #ffc0cb; intensity: 0.6; distance: 1.5; decay: 1.5;" position="-0.3 0.1 0.2"></a-entity>
