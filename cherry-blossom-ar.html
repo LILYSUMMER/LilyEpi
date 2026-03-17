@@ -67,6 +67,7 @@
         .a-canvas {
             background: transparent !important;
             background-color: transparent !important;
+            z-index: 10 !important;
         }
         
         /* 시작 메뉴 */
@@ -994,7 +995,7 @@
     <a-scene
         id="ar-scene"
         ar-recorder
-        renderer="colorManagement: true; antialias: true; alpha: true; preserveDrawingBuffer: true; premultipliedAlpha: false; sortObjects: true;"
+        renderer="colorManagement: true; antialias: true; alpha: true; preserveDrawingBuffer: true; sortObjects: true;"
         mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
         embedded
         style="display: none;"
