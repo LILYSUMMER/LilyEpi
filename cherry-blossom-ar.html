@@ -157,6 +157,49 @@
             opacity: 0.9;
         }
         
+        #btn-mode-fifa {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #FFD700 100%);
+            color: white;
+            box-shadow: 0 8px 30px rgba(220, 20, 60, 0.5),
+                        0 0 20px rgba(255, 215, 0, 0.3);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #btn-mode-fifa::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 215, 0, 0.2) 50%,
+                transparent 70%
+            );
+            animation: fifaShine 3s infinite;
+        }
+        
+        @keyframes fifaShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+        
+        #btn-mode-fifa .mode-desc {
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        #btn-mode-fifa:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(220, 20, 60, 0.6),
+                        0 0 30px rgba(255, 215, 0, 0.4);
+        }
+        
         .start-footer {
             position: absolute;
             bottom: 40px;
@@ -665,6 +708,94 @@
             color: rgba(255,255,255,0.55); border: none; padding: 8px;
             font-size: 13px; cursor: pointer;
         }
+        /* 쿠폰 고유번호 */
+        .coupon-code-box {
+            background: rgba(0,0,0,0.06); border-radius: 8px;
+            padding: 6px 12px; margin: 8px 0 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px; font-weight: 700; color: #7a5500;
+            letter-spacing: 0.12em; text-align: center;
+        }
+        /* 사용 완료 스탬프 */
+        .coupon-used-stamp {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            font-size: 44px; font-weight: 900;
+            color: rgba(200, 30, 30, 0.75);
+            border: 5px solid rgba(200, 30, 30, 0.75);
+            border-radius: 8px; padding: 2px 12px;
+            pointer-events: none; display: none;
+            white-space: nowrap; letter-spacing: 0.05em;
+        }
+        .coupon-card.used .coupon-used-stamp { display: block; }
+        .coupon-card.used { filter: grayscale(0.5); }
+        /* 사용하기 버튼 */
+        #btn-use-coupon {
+            margin-top: 16px; width: 100%;
+            background: linear-gradient(135deg, #cc8800, #FFD700);
+            color: #fff; border: none; border-radius: 50px;
+            padding: 14px; font-size: 15px; font-weight: 700;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.5);
+            cursor: pointer; letter-spacing: 0.04em;
+        }
+        #btn-use-coupon:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* 비밀번호 모달 */
+        #coupon-pwd-modal {
+            position: fixed; inset: 0; z-index: 9100;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #coupon-pwd-modal.show { opacity: 1; pointer-events: auto; }
+        .pwd-modal-card {
+            background: #fff; border-radius: 20px;
+            padding: 28px 24px; width: min(320px, 85vw);
+            text-align: center;
+            animation: msgRise 0.4s cubic-bezier(0.22,1,0.36,1);
+        }
+        .pwd-modal-card h3 { margin: 0 0 6px; font-size: 18px; color: #333; }
+        .pwd-modal-card p { font-size: 13px; color: #888; margin: 0 0 16px; }
+        #coupon-pwd-input {
+            width: 100%; box-sizing: border-box;
+            border: 2px solid #eee; border-radius: 12px;
+            padding: 12px 16px; font-size: 22px; letter-spacing: 0.3em;
+            text-align: center; outline: none; margin-bottom: 8px;
+        }
+        #coupon-pwd-input:focus { border-color: #FFD700; }
+        .pwd-error { font-size: 12px; color: #e53e3e; min-height: 18px; margin: 0 0 8px; }
+        .pwd-btn-row { display: flex; gap: 8px; margin-top: 4px; }
+        #btn-pwd-confirm {
+            flex: 1; background: linear-gradient(135deg,#cc8800,#FFD700);
+            color: #fff; border: none; border-radius: 50px;
+            padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+        }
+        #btn-pwd-cancel {
+            flex: 1; background: #f5f5f5; color: #888;
+            border: none; border-radius: 50px;
+            padding: 12px; font-size: 15px; cursor: pointer;
+        }
+        /* 매진 오버레이 */
+        #coupon-soldout-overlay {
+            position: fixed; inset: 0; z-index: 8700;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        #coupon-soldout-overlay.show { opacity: 1; pointer-events: auto; }
+        .soldout-card {
+            background: #fff; border-radius: 24px;
+            padding: 36px 28px; width: min(300px, 82vw); text-align: center;
+            animation: couponDrop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .soldout-icon { font-size: 56px; margin-bottom: 12px; }
+        .soldout-card h3 { font-size: 18px; color: #333; margin: 0 0 8px; line-height: 1.5; }
+        .soldout-card p { font-size: 13px; color: #888; margin: 0 0 20px; }
+        #btn-soldout-close {
+            background: linear-gradient(135deg,#ff6b9d,#ff8c42);
+            color: #fff; border: none; border-radius: 50px;
+            padding: 12px 32px; font-size: 15px; font-weight: 700; cursor: pointer;
+        }
 
         /* ===== 인스타그램 스토리 스타일 촬영 버튼 ===== */
         #capture-btn {
@@ -1017,7 +1148,12 @@
             🎨 색칠 키트 체험하기
             <span class="mode-desc">색칠한 도안을 스캔해서 AR로 보기</span>
         </button>
-        
+
+        <a href="fifa-ar.html" id="btn-mode-fifa" class="mode-btn" style="text-decoration: none;">
+            ⚽ FIFA AR 체험하기
+            <span class="mode-desc">FIFA 월드컵 AR 체험</span>
+        </a>
+
         <p class="start-footer">Epispace AR Experience</p>
     </div>
     
@@ -1108,7 +1244,8 @@
     <!-- 황금 벚꽃 쿠폰 오버레이 -->
     <div id="golden-coupon-overlay">
         <div class="coupon-wrap">
-            <div class="coupon-card">
+            <div class="coupon-card" id="coupon-card-inner">
+                <div class="coupon-used-stamp">사용완료</div>
                 <div class="coupon-header">
                     <span class="coupon-gold-icon">🌟</span>
                     <h3 style="font-size:15px;color:#7a5500;margin:0;">황금 벚꽃 당첨!</h3>
@@ -1117,6 +1254,7 @@
                 <p class="coupon-title-top">CHERRY BLOSSOM FESTIVAL</p>
                 <div class="coupon-discount-text"><span>할인율</span> 10%</div>
                 <p class="coupon-name">축제 푸드트럭 할인권</p>
+                <div class="coupon-code-box" id="coupon-code-display">BC---------</div>
                 <div class="coupon-divider">
                     <div class="coupon-hole"></div>
                     <div class="coupon-dashes"></div>
@@ -1127,8 +1265,33 @@
                 <p class="coupon-detail">🌸 벚꽃 축제 한정 · 전 메뉴 적용</p>
                 <p class="coupon-validity">당일 사용 가능 · 타 할인과 중복 불가</p>
             </div>
-            <button id="btn-capture-coupon" type="button">📸 캡처해서 사용하기</button>
+            <button id="btn-use-coupon" type="button">✅ 사용하기 (직원 확인)</button>
+            <button id="btn-capture-coupon" type="button">📸 캡처하기</button>
             <button id="btn-coupon-close" type="button">닫기</button>
+        </div>
+    </div>
+
+    <!-- 직원 비밀번호 모달 -->
+    <div id="coupon-pwd-modal">
+        <div class="pwd-modal-card">
+            <h3>🔐 직원 확인</h3>
+            <p>쿠폰 사용을 위해 직원 비밀번호를 입력해주세요</p>
+            <input type="password" id="coupon-pwd-input" placeholder="••••" maxlength="20">
+            <p class="pwd-error" id="coupon-pwd-error"></p>
+            <div class="pwd-btn-row">
+                <button id="btn-pwd-confirm" type="button">확인</button>
+                <button id="btn-pwd-cancel" type="button">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 쿠폰 매진 오버레이 -->
+    <div id="coupon-soldout-overlay">
+        <div class="soldout-card">
+            <div class="soldout-icon">🍂</div>
+            <h3>오늘의 황금 벚꽃 쿠폰이<br>모두 소진되었습니다</h3>
+            <p>매일 오전 9시에 새로운 쿠폰 10장이 발행돼요!</p>
+            <button id="btn-soldout-close" type="button">확인</button>
         </div>
     </div>
     
@@ -3027,10 +3190,80 @@
             return true;
         }
 
+        // ===== 🎫 쿠폰 발행 & 검증 시스템 =====
+        // 직원 비밀번호 (운영 시 변경하세요)
+        const COUPON_PASSWORD = 'epispace2025';
+        const DAILY_MAX_COUPONS = 10;
+
+        function getTodayStr() {
+            const d = new Date();
+            return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        // 오늘 발행 수 조회
+        function getDailyCount() {
+            const key = `cpn_daily_${getTodayStr()}`;
+            return parseInt(localStorage.getItem(key) || '0', 10);
+        }
+
+        // 고유 쿠폰 코드 생성 (일일 한도 초과 시 null 반환)
+        function generateCouponCode() {
+            const today = getTodayStr();
+            const dailyKey = `cpn_daily_${today}`;
+            const count = getDailyCount();
+
+            if (count >= DAILY_MAX_COUPONS) return null;
+
+            const newCount = count + 1;
+            localStorage.setItem(dailyKey, String(newCount));
+
+            const seq  = String(newCount).padStart(3, '0');
+            const rand = Math.random().toString(36).substr(2, 4).toUpperCase();
+            const code = `BC-${today}-${seq}-${rand}`;
+
+            // 발행 쿠폰 목록 저장
+            const list = JSON.parse(localStorage.getItem('issued_coupons') || '[]');
+            list.push({ code, issuedAt: new Date().toISOString(), status: 'active' });
+            localStorage.setItem('issued_coupons', JSON.stringify(list));
+
+            return code;
+        }
+
+        // 쿠폰 사용 처리 (비밀번호 검증)
+        function redeemCoupon(code, password) {
+            if (password !== COUPON_PASSWORD) return 'wrong_password';
+            const list = JSON.parse(localStorage.getItem('issued_coupons') || '[]');
+            const idx  = list.findIndex(c => c.code === code);
+            if (idx === -1) return 'not_found';
+            if (list[idx].status === 'used') return 'already_used';
+            list[idx].status = 'used';
+            list[idx].usedAt = new Date().toISOString();
+            localStorage.setItem('issued_coupons', JSON.stringify(list));
+            return 'ok';
+        }
+
+        let activeCouponCode = null;
+
         // 리워드 표시
         function showPetalReward(isGolden) {
             if (isGolden) {
+                const remaining = DAILY_MAX_COUPONS - getDailyCount();
+                if (remaining <= 0) {
+                    document.getElementById('coupon-soldout-overlay').classList.add('show');
+                    return;
+                }
+                const code = generateCouponCode();
+                if (!code) {
+                    document.getElementById('coupon-soldout-overlay').classList.add('show');
+                    return;
+                }
+                activeCouponCode = code;
+                document.getElementById('coupon-code-display').textContent = code;
+                document.getElementById('coupon-card-inner').classList.remove('used');
+                document.getElementById('btn-use-coupon').disabled = false;
+                document.getElementById('btn-use-coupon').textContent = '✅ 사용하기 (직원 확인)';
                 document.getElementById('golden-coupon-overlay').classList.add('show');
+                if (navigator.vibrate) navigator.vibrate([50, 30, 80, 30, 50]);
             } else {
                 const msg = petalMessages[Math.floor(Math.random() * petalMessages.length)];
                 document.getElementById('petal-msg-text-content').textContent = msg;
@@ -3039,7 +3272,9 @@
             }
         }
 
-        // 메시지 오버레이 닫기 (탭)
+        // ── 이벤트 리스너 ──
+
+        // 메시지 오버레이 닫기
         document.getElementById('petal-message-overlay').addEventListener('click', () => {
             document.getElementById('petal-message-overlay').classList.remove('show');
         });
@@ -3049,26 +3284,68 @@
             document.getElementById('golden-coupon-overlay').classList.remove('show');
         });
 
-        // 쿠폰 캡처 버튼
+        // 캡처 버튼
         document.getElementById('btn-capture-coupon').addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
             showToast('📸 화면을 길게 눌러 캡처해 주세요!', '💛');
-            setTimeout(() => document.getElementById('golden-coupon-overlay').classList.remove('show'), 1800);
         });
 
-        // 터치 감지 (petal-canvas는 pointer-events:none 이므로 document 레벨에서 처리)
+        // 사용하기 → 비밀번호 모달 열기
+        document.getElementById('btn-use-coupon').addEventListener('click', () => {
+            document.getElementById('coupon-pwd-input').value = '';
+            document.getElementById('coupon-pwd-error').textContent = '';
+            document.getElementById('coupon-pwd-modal').classList.add('show');
+            setTimeout(() => document.getElementById('coupon-pwd-input').focus(), 200);
+        });
+
+        // 비밀번호 확인
+        document.getElementById('btn-pwd-confirm').addEventListener('click', () => {
+            const pwd = document.getElementById('coupon-pwd-input').value;
+            const result = redeemCoupon(activeCouponCode, pwd);
+            if (result === 'ok') {
+                document.getElementById('coupon-pwd-modal').classList.remove('show');
+                document.getElementById('coupon-card-inner').classList.add('used');
+                document.getElementById('btn-use-coupon').disabled = true;
+                document.getElementById('btn-use-coupon').textContent = '✅ 사용 완료';
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                showToast('쿠폰이 사용되었습니다! 🎉', '✅');
+            } else if (result === 'wrong_password') {
+                document.getElementById('coupon-pwd-error').textContent = '❌ 비밀번호가 틀렸습니다';
+                document.getElementById('coupon-pwd-input').value = '';
+            } else if (result === 'already_used') {
+                document.getElementById('coupon-pwd-error').textContent = '⚠️ 이미 사용된 쿠폰입니다';
+            } else {
+                document.getElementById('coupon-pwd-error').textContent = '❌ 유효하지 않은 쿠폰입니다';
+            }
+        });
+
+        // Enter 키로 확인
+        document.getElementById('coupon-pwd-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('btn-pwd-confirm').click();
+        });
+
+        // 비밀번호 모달 취소
+        document.getElementById('btn-pwd-cancel').addEventListener('click', () => {
+            document.getElementById('coupon-pwd-modal').classList.remove('show');
+        });
+
+        // 매진 닫기
+        document.getElementById('btn-soldout-close').addEventListener('click', () => {
+            document.getElementById('coupon-soldout-overlay').classList.remove('show');
+        });
+
+        // 터치 감지 (petal-canvas는 pointer-events:none → document 레벨에서 처리)
         document.addEventListener('touchstart', (e) => {
             if (e.touches.length !== 1) return;
-            // 다른 오버레이가 열려있으면 스킵
-            if (document.querySelector('#golden-coupon-overlay.show, #petal-message-overlay.show,#video-preview-modal.show')) return;
+            if (document.querySelector('#golden-coupon-overlay.show, #petal-message-overlay.show, #coupon-pwd-modal.show, #coupon-soldout-overlay.show, #video-preview-modal.show')) return;
             const tag = e.target.tagName.toLowerCase();
-            if (['button','input','a','select','canvas'].includes(tag) && e.target.id !== 'petal-canvas') return;
+            if (['button','input','a','select'].includes(tag)) return;
             handlePetalTouch(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: true });
 
         // PC 테스트용 클릭
         document.addEventListener('click', (e) => {
-            if (document.querySelector('#golden-coupon-overlay.show, #petal-message-overlay.show')) return;
+            if (document.querySelector('#golden-coupon-overlay.show, #petal-message-overlay.show, #coupon-pwd-modal.show, #coupon-soldout-overlay.show')) return;
             const tag = e.target.tagName.toLowerCase();
             if (['button','input','a','select'].includes(tag)) return;
             handlePetalTouch(e.clientX, e.clientY);

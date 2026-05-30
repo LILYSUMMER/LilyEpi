@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Meta tags for HTTPS camera permissions -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#8B0000">
+    
+    <!-- SEO Meta Tags -->
+    <title>⚽ FIFA AR Experience | Epispace</title>
+    <meta name="description" content="Experience FIFA World Cup AR. No app installation required - directly in your browser!">
+    <meta name="keywords" content="FIFA, AR Experience, World Cup, Epispace, Augmented Reality, GPS AR">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="⚽ FIFA AR Experience | Epispace">
+    <meta property="og:description" content="Experience FIFA World Cup AR!">
+    <meta property="og:type" content="website">
+    
+    <!-- A-Frame (version 1.3.0+) -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    
+    <!-- AR.js Location-based -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    
+    <!-- AR.js Location-based specific -->
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* GPS Guide Overlay */
+        #gps-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        #gps-overlay.hidden {
+            display: none;
+        }
+        
+        .gps-icon {
+            font-size: 80px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+        
+        .gps-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .gps-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .gps-status {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 20px;
+        }
+        
+        .gps-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 215, 0, 0.3);
+            border-top: 3px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Permission Request Button */
+        #permission-btn {
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 8px 30px rgba(220, 20, 60, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        #permission-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #permission-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #8B0000 0%, #1a1a2e 50%, #8B0000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+        }
+        
+        #loading-screen.hidden {
+            display: none;
+        }
+        
+        .loading-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #FFD700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .loading-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Back Button */
+        #back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            color: white;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        #back-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Info Panel */
+        #info-panel {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(220, 20, 60, 0.9) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 20px;
+            padding: 20px 30px;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            max-width: 90%;
+        }
+        
+        #info-panel h2 {
+            font-size: 18px;
+            color: #FFD700;
+            margin-bottom: 8px;
+        }
+        
+        #info-panel p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        #info-panel .coords {
+            font-size: 11px;
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+        
+        /* Distance Display */
+        #distance-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(220, 20, 60, 0.9) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 15px;
+            padding: 12px 18px;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        #distance-display .label {
+            font-size: 10px;
+            opacity: 0.7;
+        }
+        
+        #distance-display .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFD700;
+        }
+        
+        .a-enter-vr-button {
+            display: none !important;
+        }
+
+        /* Error Overlay */
+        #error-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10002;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        #error-overlay.show {
+            display: flex;
+        }
+        
+        #error-overlay .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        #error-overlay .error-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #DC143C;
+            margin-bottom: 10px;
+        }
+        
+        #error-overlay .error-message {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        #error-overlay .retry-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 25px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Bottom Action Panel */
+        #action-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(139, 0, 0, 0.7) 30%, rgba(139, 0, 0, 0.85) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 30px 20px 40px;
+            z-index: 1001;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #action-panel.show {
+            display: flex;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .action-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .action-text .highlight {
+            color: #FFD700;
+            font-weight: 700;
+        }
+
+        #claim-trophy-btn {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+            border: none;
+            border-radius: 30px;
+            color: #8B0000;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5),
+                        0 0 20px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #claim-trophy-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 70%
+            );
+            animation: btnShine 2s infinite;
+        }
+
+        @keyframes btnShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        #claim-trophy-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Coupon Modal */
+        #coupon-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10003;
+            padding: 20px;
+        }
+
+        #coupon-modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1a1a2e 0%, #2d1f3d 50%, #1a1a2e 100%);
+            border: 3px solid;
+            border-image: linear-gradient(135deg, #FFD700, #DC143C, #FFD700) 1;
+            border-radius: 25px;
+            padding: 35px 25px;
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FFD700, #DC143C, #FFD700);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .modal-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .modal-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .modal-message .restaurant-name {
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        .modal-message .discount {
+            font-size: 22px;
+            font-weight: 700;
+            color: #DC143C;
+            display: block;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(220, 20, 60, 0.5);
+        }
+
+        .coupon-code {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(220, 20, 60, 0.2) 100%);
+            border: 2px dashed #FFD700;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+        }
+
+        .coupon-code .label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .coupon-code .code {
+            font-size: 20px;
+            font-weight: 700;
+            color: #FFD700;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            padding: 16px 24px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+
+        #save-coupon-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: none;
+            color: #8B0000;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        #save-coupon-btn .icon {
+            font-size: 18px;
+        }
+
+        #map-btn {
+            background: transparent;
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            color: #FFD700;
+        }
+
+        #map-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        /* Save Complete Toast */
+        #toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            z-index: 10004;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- GPS Guide Overlay -->
+    <div id="gps-overlay">
+        <div class="gps-icon">📍</div>
+        <h1 class="gps-title">Point your camera towards<br>Vancouver Science World</h1>
+        <p class="gps-subtitle">
+            Checking GPS location and device orientation.<br>
+            Please allow location and camera permissions.
+        </p>
+        <button type="button" id="permission-btn">🎯 Start AR Experience</button>
+        <div class="gps-spinner" id="gps-spinner" style="display: none;"></div>
+        <p class="gps-status" id="gps-status">Waiting for permission request...</p>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="hidden">
+        <h1 class="loading-title">⚽ FIFA AR</h1>
+        <p class="loading-subtitle">Loading AR scene...</p>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Error Overlay -->
+    <div id="error-overlay">
+        <div class="error-icon">⚠️</div>
+        <h2 class="error-title">An error occurred</h2>
+        <p class="error-message" id="error-message">An unknown error occurred.</p>
+        <button type="button" class="retry-btn" onclick="location.reload()">Try Again</button>
+    </div>
+    
+    <!-- Back Button -->
+    <a href="cherry-blossom-ar.html" id="back-button">←</a>
+    
+    <!-- Distance Display -->
+    <div id="distance-display" style="display: none;">
+        <div class="label">To Science World</div>
+        <div class="value" id="distance-value">--</div>
+    </div>
+    
+    <!-- Info Panel -->
+    <div id="info-panel" style="display: none;">
+        <h2>⚽ FIFA World Cup Trophy</h2>
+        <p>Point towards Science World!</p>
+        <p class="coords" id="user-coords">Checking current location...</p>
+    </div>
+
+    <!-- Bottom Action Panel -->
+    <div id="action-panel">
+        <p class="action-text">
+            Found the <span class="highlight">FIFA AR Trophy</span>? Tap here!
+        </p>
+        <button type="button" id="claim-trophy-btn">🏆 Claim Trophy</button>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div id="coupon-modal">
+        <div class="modal-content">
+            <button type="button" class="modal-close" id="modal-close">✕</button>
+            <div class="modal-icon">🎉</div>
+            <h2 class="modal-title">Congratulations!</h2>
+            <p class="modal-message">
+                You've earned a FIFA commemorative discount!<br>
+                Get your exclusive deal at<br>
+                <span class="restaurant-name">Tap & Barrel Shipyards</span><br>
+                <span class="discount">10% OFF</span>
+                on your next visit!
+            </p>
+            <div class="coupon-code">
+                <div class="label">Coupon Code</div>
+                <div class="code" id="coupon-code-text">FIFA2026</div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn" id="save-coupon-btn">
+                    <span class="icon">💾</span>
+                    Save Coupon
+                </button>
+                <button type="button" class="modal-btn" id="map-btn">
+                    <span class="icon">📍</span>
+                    View Restaurant on Map
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Message -->
+    <div id="toast">✅ Coupon saved successfully!</div>
+    
+    <!-- A-Frame AR Scene (GPS Location-based) -->
+    <a-scene
+        id="ar-scene"
+        vr-mode-ui="enabled: false"
+        arjs="sourceType: webcam; debugUIEnabled: false;"
+        renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
+        loading-screen="enabled: false"
+        style="display: none;"
+    >
+        <!-- Asset Definition -->
+        <a-assets>
+            <a-asset-item id="fifa-trophy" src="./assets/fifa_trophy.glb"></a-asset-item>
+        </a-assets>
+        
+        <!-- FIFA Trophy placed at Science World location -->
+        <!-- Coordinates: latitude: 49.2734, longitude: -123.1038 -->
+        <a-entity
+            id="trophy-entity"
+            gps-entity-place="latitude: 49.2734; longitude: -123.1038;"
+            gltf-model="#fifa-trophy"
+            scale="150 150 150"
+            position="0 100 0"
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 10000; easing: linear"
+            look-at="[gps-camera]"
+        ></a-entity>
+        
+        <!-- GPS Camera -->
+        <a-camera
+            gps-camera="simulateLatitude: 49.2827; simulateLongitude: -123.1207; simulateAltitude: 10;"
+            rotation-reader
+        ></a-camera>
+    </a-scene>
+    
+    <script>
+        // Science World coordinates
+        const SCIENCE_WORLD = {
+            latitude: 49.2734,
+            longitude: -123.1038
+        };
+        
+        // DOM elements
+        const gpsOverlay = document.getElementById('gps-overlay');
+        const permissionBtn = document.getElementById('permission-btn');
+        const gpsStatus = document.getElementById('gps-status');
+        const gpsSpinner = document.getElementById('gps-spinner');
+        const loadingScreen = document.getElementById('loading-screen');
+        const errorOverlay = document.getElementById('error-overlay');
+        const errorMessage = document.getElementById('error-message');
+        const arScene = document.getElementById('ar-scene');
+        const infoPanel = document.getElementById('info-panel');
+        const distanceDisplay = document.getElementById('distance-display');
+        const distanceValue = document.getElementById('distance-value');
+        const userCoordsEl = document.getElementById('user-coords');
+        
+        // State variables
+        let deviceOrientationGranted = false;
+        let gpsGranted = false;
+        let userPosition = null;
+        
+        // Calculate distance between two coordinates using Haversine formula (km)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius (km)
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        
+        // Format distance
+        function formatDistance(km) {
+            if (km < 1) {
+                return Math.round(km * 1000) + 'm';
+            }
+            return km.toFixed(1) + 'km';
+        }
+        
+        // Request DeviceOrientation permission (iOS 13+)
+        async function requestDeviceOrientationPermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' &&
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission === 'granted') {
+                        deviceOrientationGranted = true;
+                        return true;
+                    } else {
+                        throw new Error('Device orientation permission was denied.');
+                    }
+                } catch (error) {
+                    console.error('DeviceOrientation permission error:', error);
+                    throw error;
+                }
+            } else {
+                // iOS below 13 or Android - no permission request needed
+                deviceOrientationGranted = true;
+                return true;
+            }
+        }
+        
+        // Request GPS location permission
+        function requestGPSPermission() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('GPS is not supported in this browser.'));
+                    return;
+                }
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        gpsGranted = true;
+                        userPosition = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+                        resolve(position);
+                    },
+                    (error) => {
+                        let errorMsg = 'Unable to get GPS location.';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg = 'GPS permission denied. Please enable location access in settings.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg = 'GPS location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg = 'GPS location request timed out.';
+                                break;
+                        }
+                        reject(new Error(errorMsg));
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    }
+                );
+            });
+        }
+        
+        // Start GPS location tracking
+        function startGPSTracking() {
+            if (!navigator.geolocation) return;
+            
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    userPosition = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    updateDistanceDisplay();
+                    updateUserCoords();
+                },
+                (error) => {
+                    console.warn('GPS tracking error:', error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 1000
+                }
+            );
+        }
+        
+        // Update distance display
+        function updateDistanceDisplay() {
+            if (!userPosition) return;
+            
+            const distance = calculateDistance(
+                userPosition.latitude,
+                userPosition.longitude,
+                SCIENCE_WORLD.latitude,
+                SCIENCE_WORLD.longitude
+            );
+            
+            distanceValue.textContent = formatDistance(distance);
+        }
+        
+        // Update user coordinates
+        function updateUserCoords() {
+            if (!userPosition) return;
+            
+            userCoordsEl.textContent = `Current location: ${userPosition.latitude.toFixed(4)}, ${userPosition.longitude.toFixed(4)}`;
+        }
+        
+        // Show error
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorOverlay.classList.add('show');
+        }
+        
+        // Start AR scene
+        async function startARExperience() {
+            try {
+                // Disable button and show loading
+                permissionBtn.disabled = true;
+                permissionBtn.style.display = 'none';
+                gpsSpinner.style.display = 'block';
+                gpsStatus.textContent = 'Requesting device orientation permission...';
+                
+                // 1. Request DeviceOrientation permission
+                await requestDeviceOrientationPermission();
+                gpsStatus.textContent = 'Getting GPS location...';
+                
+                // 2. Request GPS permission
+                await requestGPSPermission();
+                gpsStatus.textContent = 'Preparing AR scene...';
+                
+                // 3. Calculate and display distance
+                updateDistanceDisplay();
+                updateUserCoords();
+                
+                // 4. Hide GPS overlay
+                gpsOverlay.classList.add('hidden');
+                
+                // 5. Show loading screen
+                loadingScreen.classList.remove('hidden');
+                
+                // 6. Display AR scene
+                arScene.style.display = 'block';
+                
+                // 7. Wait for A-Frame scene to load
+                if (arScene.hasLoaded) {
+                    onSceneLoaded();
+                } else {
+                    arScene.addEventListener('loaded', onSceneLoaded);
+                }
+                
+                // 8. Start GPS tracking
+                startGPSTracking();
+                
+            } catch (error) {
+                console.error('AR initialization error:', error);
+                gpsOverlay.classList.add('hidden');
+                showError(error.message);
+            }
+        }
+        
+        // When scene is loaded
+        function onSceneLoaded() {
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                infoPanel.style.display = 'block';
+                distanceDisplay.style.display = 'block';
+                actionPanel.classList.add('show');
+                setupTrophyClickHandler();
+            }, 1500);
+        }
+
+        // Modal DOM elements
+        const actionPanel = document.getElementById('action-panel');
+        const claimTrophyBtn = document.getElementById('claim-trophy-btn');
+        const couponModal = document.getElementById('coupon-modal');
+        const modalClose = document.getElementById('modal-close');
+        const saveCouponBtn = document.getElementById('save-coupon-btn');
+        const mapBtn = document.getElementById('map-btn');
+        const toast = document.getElementById('toast');
+
+        // Tap & Barrel Shipyards location (North Vancouver)
+        const RESTAURANT_LOCATION = {
+            latitude: 49.3103,
+            longitude: -123.0826,
+            name: 'Tap & Barrel Shipyards',
+            address: '175 1st St E, North Vancouver, BC'
+        };
+
+        // Open modal
+        function openCouponModal() {
+            couponModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeCouponModal() {
+            couponModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Show toast message
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Save coupon
+        function saveCoupon() {
+            const couponData = {
+                code: 'FIFA2026',
+                discount: '10%',
+                restaurant: RESTAURANT_LOCATION.name,
+                address: RESTAURANT_LOCATION.address,
+                expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                savedAt: new Date().toISOString()
+            };
+
+            try {
+                const savedCoupons = JSON.parse(localStorage.getItem('fifaCoupons') || '[]');
+                const alreadySaved = savedCoupons.some(c => c.code === couponData.code);
+                
+                if (alreadySaved) {
+                    showToast('⚠️ Coupon already saved!');
+                } else {
+                    savedCoupons.push(couponData);
+                    localStorage.setItem('fifaCoupons', JSON.stringify(savedCoupons));
+                    showToast('✅ Coupon saved successfully!');
+                    saveCouponBtn.innerHTML = '<span class="icon">✓</span> Saved';
+                    saveCouponBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #218838 100%)';
+                    saveCouponBtn.style.color = 'white';
+                }
+            } catch (e) {
+                console.error('Failed to save coupon:', e);
+                showToast('❌ Failed to save. Please try again.');
+            }
+        }
+
+        // Open restaurant location on map
+        function openMapToRestaurant() {
+            const lat = RESTAURANT_LOCATION.latitude;
+            const lng = RESTAURANT_LOCATION.longitude;
+            const name = encodeURIComponent(RESTAURANT_LOCATION.name);
+            
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            let mapUrl;
+            if (isIOS) {
+                mapUrl = `maps://maps.apple.com/?q=${name}&ll=${lat},${lng}`;
+            } else if (isAndroid) {
+                mapUrl = `geo:${lat},${lng}?q=${lat},${lng}(${name})`;
+            } else {
+                mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${name}`;
+            }
+            
+            window.open(mapUrl, '_blank');
+        }
+
+        // Setup trophy click handler
+        function setupTrophyClickHandler() {
+            const trophyEntity = document.getElementById('trophy-entity');
+            if (trophyEntity) {
+                trophyEntity.setAttribute('class', 'clickable');
+                trophyEntity.addEventListener('click', function() {
+                    openCouponModal();
+                });
+                
+                // Add cursor for A-Frame click support
+                const camera = document.querySelector('a-camera');
+                if (camera && !camera.querySelector('a-cursor')) {
+                    const cursor = document.createElement('a-cursor');
+                    cursor.setAttribute('fuse', 'false');
+                    cursor.setAttribute('raycaster', 'objects: .clickable');
+                    camera.appendChild(cursor);
+                }
+            }
+        }
+        
+        // Setup event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Permission request button click
+            permissionBtn.addEventListener('click', startARExperience);
+
+            // Trophy claim button click
+            claimTrophyBtn.addEventListener('click', openCouponModal);
+
+            // Modal close button
+            modalClose.addEventListener('click', closeCouponModal);
+
+            // Close modal on outside click
+            couponModal.addEventListener('click', function(e) {
+                if (e.target === couponModal) {
+                    closeCouponModal();
+                }
+            });
+
+            // Save coupon button
+            saveCouponBtn.addEventListener('click', saveCoupon);
+
+            // Map button
+            mapBtn.addEventListener('click', openMapToRestaurant);
+            
+            // Listen to gps-camera events
+            const camera = document.querySelector('[gps-camera]');
+            if (camera) {
+                camera.addEventListener('gps-camera-update-position', (e) => {
+                    if (e.detail.position) {
+                        userPosition = {
+                            latitude: e.detail.position.latitude,
+                            longitude: e.detail.position.longitude
+                        };
+                        updateDistanceDisplay();
+                        updateUserCoords();
+                    }
+                });
+            }
+
+            // Close modal with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && couponModal.classList.contains('show')) {
+                    closeCouponModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
