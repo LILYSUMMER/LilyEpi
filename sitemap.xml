@@ -1,27 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
         <loc>https://epispace.kr/</loc>
         <lastmod>2026-10-05</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/en/</loc>
+        <lastmod>2026-10-05</lastmod>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/"/>
     </url>
     <url>
         <loc>https://epispace.kr/news.html</loc>
         <lastmod>2026-10-05</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/news.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/news.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/news.html"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/en/news.html</loc>
+        <lastmod>2026-10-05</lastmod>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/news.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/news.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/news.html"/>
     </url>
     <url>
         <loc>https://epispace.kr/cherry-blossom-ar.html</loc>
         <lastmod>2026-10-05</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/cherry-blossom-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/cherry-blossom-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/cherry-blossom-ar.html"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/en/cherry-blossom-ar.html</loc>
+        <lastmod>2026-10-05</lastmod>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/cherry-blossom-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/cherry-blossom-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/cherry-blossom-ar.html"/>
     </url>
     <url>
         <loc>https://epispace.kr/proposal-download.html</loc>
         <lastmod>2026-10-05</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.6</priority>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/proposal-download.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/proposal-download.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/proposal-download.html"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/en/proposal-download.html</loc>
+        <lastmod>2026-10-05</lastmod>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/proposal-download.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/proposal-download.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/proposal-download.html"/>
     </url>
 </urlset>

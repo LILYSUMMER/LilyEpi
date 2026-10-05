@@ -8,8 +8,19 @@
         "logo": "https://epispace.kr/assets/epispace-logo.png",
         "description": "지역에 숨어 있는 설화·신화·전설을 그 장소 위에 AR로 되살려, 사람들이 골목을 걷고 가게에 들르게 하는 로컬 스토리 AR 회사입니다.",
         "email": "contact@epispace.kr",
+        "foundingDate": "2025-05-25",
+        "founder": {
+            "@type": "Person",
+            "name": "윤수련"
+        },
+        "identifier": {
+            "@type": "PropertyValue",
+            "name": "사업자등록번호",
+            "value": "308-16-32557"
+        },
         "address": {
             "@type": "PostalAddress",
+            "streetAddress": "중정로 86, 3층 302-D호(서귀동)",
             "addressLocality": "서귀포시",
             "addressRegion": "제주특별자치도",
             "addressCountry": "KR"

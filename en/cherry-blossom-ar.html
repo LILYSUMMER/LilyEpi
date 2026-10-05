@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,22 +12,22 @@
     <meta name="theme-color" content="#ffb6c1">
     
     <!-- SEO Meta Tags -->
-    <title>벚꽃 터널 AR 체험 | 에피스페이스</title>
-    <meta name="description" content="에피스페이스의 벚꽃 터널 AR 포토존. 색칠한 도안을 스캔하거나, 카메라 앞에서 벚꽃과 함께 촬영합니다. 앱 설치 없이 브라우저에서 열립니다.">
-    <meta name="keywords" content="에피스페이스, 벚꽃 AR, Web-AR, 포토존, 축제">
-    <link rel="canonical" href="https://epispace.kr/cherry-blossom-ar.html">
+    <title>Cherry blossom tunnel AR | Epispace</title>
+    <meta name="description" content="Epispace's cherry-blossom tunnel photo spot. Scan a drawing you colored, or take a photo among the blossoms. It opens in the browser, with no app to install.">
+    <meta name="keywords" content="Epispace, cherry blossom AR, Web-AR, photo spot, festival">
+    <link rel="canonical" href="https://epispace.kr/en/cherry-blossom-ar.html">
     <link rel="alternate" hreflang="ko" href="https://epispace.kr/cherry-blossom-ar.html">
     <link rel="alternate" hreflang="en" href="https://epispace.kr/en/cherry-blossom-ar.html">
     <link rel="alternate" hreflang="x-default" href="https://epispace.kr/cherry-blossom-ar.html">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="벚꽃 터널 AR 체험 | 에피스페이스">
-    <meta property="og:description" content="색칠한 도안을 스캔하거나, 카메라 앞에서 벚꽃과 함께 촬영하는 Web-AR 포토존입니다.">
+    <meta property="og:title" content="Cherry blossom tunnel AR | Epispace">
+    <meta property="og:description" content="A Web-AR photo spot: scan a colored drawing, or take a picture among the blossoms.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://epispace.kr/cherry-blossom-ar.html">
     <meta property="og:image" content="https://epispace.kr/assets/epispace-logo.png">
-    <meta property="og:locale" content="ko_KR">
-    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:locale:alternate" content="ko_KR">
     
     <!-- A-Frame & MindAR (독립적으로 로드) -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -1134,30 +1134,30 @@
 <body>
     <!-- 시작 메뉴 -->
     <div id="start-menu">
-        <a href="index.html" class="start-home"><img src="assets/epispace-logo.png" alt="에피스페이스 로고">홈</a>
-        <p class="start-lang"><a href="index.html" hreflang="ko" lang="ko">KO</a> | <a href="en/cherry-blossom-ar.html" hreflang="en" lang="en">EN</a></p>
-        <h1 class="start-title">🌸 벚꽃 터널 AR</h1>
-        <p class="start-subtitle">체험 모드를 선택해주세요</p>
+        <a href="index.html" class="start-home"><img src="../assets/epispace-logo.png" alt="Epispace logo">Home</a>
+        <p class="start-lang"><a href="../cherry-blossom-ar.html" hreflang="ko" lang="ko">KO</a> | <a href="cherry-blossom-ar.html" hreflang="en" lang="en" aria-current="page">EN</a></p>
+        <h1 class="start-title">Cherry blossom tunnel</h1>
+        <p class="start-subtitle">Choose how you want to try it</p>
         
         <button type="button" id="btn-mode-blossom" class="mode-btn">
-            🌸 벚꽃이랑 촬영하기
-            <span class="mode-desc">바로 카메라와 벚꽃잎으로 사진 촬영</span>
+            Photograph with the blossoms
+            <span class="mode-desc">Open the camera and take a photo among falling petals</span>
         </button>
         
         <button type="button" id="btn-mode-kit" class="mode-btn">
-            🎨 색칠 키트 체험하기
-            <span class="mode-desc">색칠한 도안을 스캔해서 AR로 보기</span>
+            Try the coloring kit
+            <span class="mode-desc">Scan a drawing you colored and see it in AR</span>
         </button>
 
-        <p class="start-footer">에피스페이스 · 서귀포</p>
+        <p class="start-footer">Epispace · Seogwipo</p>
     </div>
     
     <!-- 에러 오버레이 -->
     <div id="error-overlay">
         <span class="error-icon">⚠️</span>
-        <p class="error-title">리소스 로드 실패</p>
-        <p class="error-message" id="error-message">필요한 파일을 불러오지 못했습니다.</p>
-        <button type="button" class="retry-btn" onclick="location.reload()">다시 시도</button>
+        <p class="error-title">Couldn't load what we need</p>
+        <p class="error-message" id="error-message">A required file did not load.</p>
+        <button type="button" class="retry-btn" onclick="location.reload()">Try again</button>
     </div>
     
     <!-- 뒤로가기 버튼 -->
@@ -1178,12 +1178,12 @@
     </div>
     
     <!-- 촬영 힌트 -->
-    <div id="capture-hint">탭: 사진 | 길게 누르기: 동영상</div>
+    <div id="capture-hint">Tap for a photo. Hold for video.</div>
     
     <!-- 영상 미리보기 모달 -->
     <div id="video-preview-modal">
         <div class="preview-header">
-            <span id="video-duration-text">녹화 완료</span>
+            <span id="video-duration-text">Recording saved</span>
         </div>
         <div class="preview-video-container">
             <video id="preview-video" controls autoplay loop playsinline></video>
@@ -1195,13 +1195,13 @@
         </div>
         <div class="preview-actions">
             <button type="button" class="preview-btn btn-download" id="btn-video-download">
-                💾 저장하기
+                Save
             </button>
             <button type="button" class="preview-btn btn-share" id="btn-video-share">
-                📤 공유하기
+                Share
             </button>
             <button type="button" class="preview-btn btn-close" id="btn-video-close">
-                ✕ 닫기
+                Close
             </button>
         </div>
     </div>
@@ -1212,17 +1212,17 @@
     <!-- 따뜻한 톤 오버레이 -->
     <div id="warm-overlay"></div>
     
-    <div id="status-bar">🌸 도안 인식 완료!</div>
+    <div id="status-bar">Drawing recognized</div>
     
     <div id="loading-screen">
         <div class="loading-spinner"></div>
-        <p class="loading-text">🌸 벚꽃 터널 포토존</p>
-        <p class="loading-subtitle">카메라를 준비하고 있어요...</p>
+        <p class="loading-text">Cherry blossom tunnel</p>
+        <p class="loading-subtitle">Getting the camera ready...</p>
     </div>
     
     <div id="guide-ui">
-        <img id="guide-image" src="./assets/cherry-blossom-ar/guide.png" alt="벚꽃 도안을 카메라 프레임에 맞추는 안내 그림">
-        <p id="guide-text">도안을 프레임에 맞춰주세요 🌸</p>
+        <img id="guide-image" src="../assets/cherry-blossom-ar/guide.png" alt="Guide showing how to frame the blossom drawing">
+        <p id="guide-text">Fit the drawing inside the frame</p>
     </div>
     
     <canvas id="petal-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:400; pointer-events:none; display:none;"></canvas>
@@ -1232,7 +1232,7 @@
         <div class="petal-msg-card">
             <span class="petal-msg-emoji">🌸</span>
             <p class="petal-msg-text" id="petal-msg-text-content"></p>
-            <p class="petal-msg-close-hint">화면을 터치하면 닫혀요</p>
+            <p class="petal-msg-close-hint">Tap the screen to close</p>
         </div>
     </div>
 
@@ -1240,15 +1240,15 @@
     <div id="golden-coupon-overlay">
         <div class="coupon-wrap">
             <div class="coupon-card" id="coupon-card-inner">
-                <div class="coupon-used-stamp">사용완료</div>
+                <div class="coupon-used-stamp">Used</div>
                 <div class="coupon-header">
                     <span class="coupon-gold-icon">🌟</span>
-                    <h3 style="font-size:15px;color:#7a5500;margin:0;">황금 벚꽃 당첨!</h3>
+                    <h3 style="font-size:15px;color:#7a5500;margin:0;">You found a golden blossom</h3>
                     <span class="coupon-gold-icon">🌟</span>
                 </div>
                 <p class="coupon-title-top">CHERRY BLOSSOM FESTIVAL</p>
-                <div class="coupon-discount-text"><span>할인율</span> 10%</div>
-                <p class="coupon-name">축제 푸드트럭 할인권</p>
+                <div class="coupon-discount-text"><span>Off</span> 10%</div>
+                <p class="coupon-name">Festival food-truck discount</p>
                 <div class="coupon-code-box" id="coupon-code-display">BC---------</div>
                 <div class="coupon-divider">
                     <div class="coupon-hole"></div>
@@ -1257,25 +1257,25 @@
                 </div>
             </div>
             <div class="coupon-footer">
-                <p class="coupon-detail">🌸 벚꽃 축제 한정 · 전 메뉴 적용</p>
-                <p class="coupon-validity">당일 사용 가능 · 타 할인과 중복 불가</p>
+                <p class="coupon-detail">Cherry blossom festival only · every item</p>
+                <p class="coupon-validity">Valid today · cannot be combined</p>
             </div>
-            <button id="btn-use-coupon" type="button">✅ 사용하기 (직원 확인)</button>
-            <button id="btn-capture-coupon" type="button">📸 캡처하기</button>
-            <button id="btn-coupon-close" type="button">닫기</button>
+            <button id="btn-use-coupon" type="button">Redeem (staff check)</button>
+            <button id="btn-capture-coupon" type="button">Capture</button>
+            <button id="btn-coupon-close" type="button">Close</button>
         </div>
     </div>
 
     <!-- 직원 비밀번호 모달 -->
     <div id="coupon-pwd-modal">
         <div class="pwd-modal-card">
-            <h3>🔐 직원 확인</h3>
-            <p>쿠폰 사용을 위해 직원 비밀번호를 입력해주세요</p>
+            <h3>Staff check</h3>
+            <p>Ask a staff member to enter the code</p>
             <input type="password" id="coupon-pwd-input" placeholder="••••" maxlength="20">
             <p class="pwd-error" id="coupon-pwd-error"></p>
             <div class="pwd-btn-row">
-                <button id="btn-pwd-confirm" type="button">확인</button>
-                <button id="btn-pwd-cancel" type="button">취소</button>
+                <button id="btn-pwd-confirm" type="button">OK</button>
+                <button id="btn-pwd-cancel" type="button">Cancel</button>
             </div>
         </div>
     </div>
@@ -1284,14 +1284,14 @@
     <div id="coupon-soldout-overlay">
         <div class="soldout-card">
             <div class="soldout-icon">🍂</div>
-            <h3>오늘의 황금 벚꽃 쿠폰이<br>모두 소진되었습니다</h3>
-            <p>매일 오전 9시에 새로운 쿠폰 10장이 발행돼요!</p>
-            <button id="btn-soldout-close" type="button">확인</button>
+            <h3>Today's golden-blossom coupons<br>are gone</h3>
+            <p>Ten new coupons are issued every day at 9:00.</p>
+            <button id="btn-soldout-close" type="button">OK</button>
         </div>
     </div>
     
     <div id="button-container">
-        <button type="button" id="scan-button" class="ar-btn">🎨 색칠 완료! AR 보기</button>
+        <button type="button" id="scan-button" class="ar-btn">Coloring done. See it in AR</button>
         <!-- 인스타그램 스타일 통합 촬영 버튼 -->
         <button type="button" id="capture-btn" style="display: none;">
             <svg class="progress-ring" viewBox="0 0 96 96">
@@ -1304,15 +1304,15 @@
     
     <div id="toast">
         <span class="icon">✨</span>
-        <span class="message">도안이 성공적으로 스캔되었습니다!</span>
+        <span class="message">The drawing scanned.</span>
     </div>
     
-    <img id="texture-preview" alt="색칠한 도안에서 추출한 텍스처 미리보기">
+    <img id="texture-preview" alt="Preview of the texture taken from the colored drawing">
     
     <div id="capture-preview-modal">
-        <img id="capture-preview-image" alt="벚꽃 AR로 촬영한 사진 미리보기">
-        <p id="capture-preview-info">고화질 (0 x 0)</p>
-        <button type="button" id="capture-preview-close">확인</button>
+        <img id="capture-preview-image" alt="Preview of the cherry-blossom AR photo">
+        <p id="capture-preview-info">High resolution (0 x 0)</p>
+        <button type="button" id="capture-preview-close">OK</button>
     </div>
     
     <!-- A-Frame AR 씬 -->
@@ -1320,17 +1320,17 @@
         id="ar-scene"
         ar-recorder
         renderer="colorManagement: true; antialias: true; alpha: true; preserveDrawingBuffer: true; sortObjects: true;"
-        mindar-image="imageTargetSrc: ./assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.001; filterBeta: 0.01; missTolerance: 5; warmupTolerance: 5;"
+        mindar-image="imageTargetSrc: ../assets/cherry-blossom-ar/target.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.001; filterBeta: 0.01; missTolerance: 5; warmupTolerance: 5;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
         embedded
         style="display: none;"
     >
         <a-assets timeout="10000">
-            <img id="petal-img" src="./assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
-            <img id="layer1" src="./assets/cherry-blossom-ar/layer1_bg.png" crossorigin="anonymous">
-            <img id="layer2" src="./assets/cherry-blossom-ar/layer2_mid.png" crossorigin="anonymous">
-            <img id="layer3" src="./assets/cherry-blossom-ar/layer3_fg.png" crossorigin="anonymous">
+            <img id="petal-img" src="../assets/cherry-blossom-ar/petal.png" crossorigin="anonymous">
+            <img id="layer1" src="../assets/cherry-blossom-ar/layer1_bg.png" crossorigin="anonymous">
+            <img id="layer2" src="../assets/cherry-blossom-ar/layer2_mid.png" crossorigin="anonymous">
+            <img id="layer3" src="../assets/cherry-blossom-ar/layer3_fg.png" crossorigin="anonymous">
             <!-- 각 레이어 마스킹 결과를 담을 캔버스 — 레이어 PNG(1024×1024)와 동일한 정사각형 -->
             <canvas id="canvas-layer1" width="1024" height="1024" style="display:none;"></canvas>
             <canvas id="canvas-layer2" width="1024" height="1024" style="display:none;"></canvas>
@@ -1583,7 +1583,7 @@
                     } else {
                         this.photoRetryCount = 0;
                         console.error('❌ 사진 캡처 실패: 30회 시도 후에도 비디오가 준비되지 않았습니다');
-                        alert('카메라 준비에 실패했습니다. 새로고침 해주세요.');
+                        alert('The camera did not become ready. Please refresh.');
                         return;
                     }
                 }
@@ -1603,7 +1603,7 @@
                 if (!this.compositeFrame()) {
                     console.warn('❌ 사진 캡처 실패: 합성 오류');
                     if (typeof showToast === 'function') {
-                        showToast('캡처 중 오류가 발생했습니다', '❌');
+                        showToast('Something went wrong while capturing', '❌');
                     }
                     return;
                 }
@@ -1617,7 +1617,7 @@
                 
                 console.log('✅ 사진 저장 완료');
                 if (typeof showToast === 'function') {
-                    showToast('📸 사진이 저장되었습니다!', '🌸');
+                    showToast('Photo saved', '🌸');
                 }
             },
             
@@ -1635,7 +1635,7 @@
 
                     if (this.recordRetryCount < 30) {
                         if (typeof showToast === 'function' && this.recordRetryCount === 1) {
-                            showToast('카메라 준비 중...', '⏳');
+                            showToast('Getting the camera ready...', '⏳');
                         }
                         setTimeout(function() {
                             self.startRecording(selfieMode, true);
@@ -1644,7 +1644,7 @@
                     } else {
                         this.recordRetryCount = 0;
                         console.error('❌ 녹화 실패: 30회 시도 후에도 비디오가 준비되지 않았습니다');
-                        alert('카메라 준비에 실패했습니다. 새로고침 해주세요.');
+                        alert('The camera did not become ready. Please refresh.');
                         return;
                     }
                 }
@@ -1728,7 +1728,7 @@
                     console.error('녹화 에러:', e);
                     this.stopRecording();
                     if (typeof showToast === 'function') {
-                        showToast('녹화 중 오류 발생', '❌');
+                        showToast('Something went wrong while recording', '❌');
                     }
                 };
                 
@@ -1780,7 +1780,7 @@
                 const mins = Math.floor(secs / 60);
                 const remainSecs = secs % 60;
                 if (videoDurationText) {
-                    videoDurationText.textContent = `${mins}:${String(remainSecs).padStart(2, '0')} 녹화 완료`;
+                    videoDurationText.textContent = `${mins}:${String(remainSecs).padStart(2, '0')} Recording saved`;
                 }
                 
                 // Web Share API 지원 여부
@@ -1805,7 +1805,7 @@
                 document.body.removeChild(a);
                 
                 if (typeof showToast === 'function') {
-                    showToast('💾 영상이 저장되었습니다!', '✨');
+                    showToast('Video saved', '✨');
                 }
             },
             
@@ -1820,11 +1820,11 @@
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
-                            title: '🌸 벚꽃 AR 영상',
-                            text: '벚꽃 터널 AR에서 촬영한 영상입니다!'
+                            title: 'Cherry blossom AR video',
+                            text: 'A video from the Epispace cherry blossom tunnel.'
                         });
                         if (typeof showToast === 'function') {
-                            showToast('📤 공유 완료!', '✨');
+                            showToast('Shared', '✨');
                         }
                     }
                 } catch (err) {
@@ -1921,7 +1921,7 @@
         let arStarted = false;
         let petalImage = new Image();
         petalImage.crossOrigin = 'anonymous';
-        petalImage.src = './assets/cherry-blossom-ar/petal.png';
+        petalImage.src = '../assets/cherry-blossom-ar/petal.png';
         
         // ===== 인스타그램 스타일 촬영 관련 변수 =====
         let pressStartTime = 0;
@@ -2237,7 +2237,7 @@
             
             const recorder = getArRecorder();
             if (!recorder) {
-                showToast('캡처 준비 중...', '⏳');
+                showToast('Getting ready to capture...', '⏳');
                 return;
             }
             
@@ -2310,7 +2310,7 @@
             
             const recorder = getArRecorder();
             if (!recorder) {
-                showToast('녹화 준비 중...', '⏳');
+                showToast('Getting ready to record...', '⏳');
                 return;
             }
             
@@ -2467,12 +2467,12 @@
 
             const arSystem = sceneEl.systems['mindar-image-system'];
             if (!arSystem) {
-                showToast('AR 시스템이 준비되지 않았습니다', '⚠️');
+                showToast('AR is not ready yet', '⚠️');
                 return;
             }
 
             cameraSwitchBtn.classList.add('switching');
-            showToast('카메라 전환 중...', '🔄');
+            showToast('Switching camera...', '🔄');
 
             isSelfieMode = !isSelfieMode;
             currentFacingMode = isSelfieMode ? 'user' : 'environment';
@@ -2510,7 +2510,7 @@
                     selfieVideo.play().catch(() => {});
 
                     cameraSwitchBtn.classList.remove('switching');
-                    showToast('📱 전면 카메라', '✅');
+                    showToast('Front camera', '✅');
                     console.log('카메라 전환 완료: user (selfie, 독립 video)');
                 })
                 .catch(err => {
@@ -2520,7 +2520,7 @@
                     document.body.classList.remove('selfie-mode');
                     arSystem.start();
                     cameraSwitchBtn.classList.remove('switching');
-                    showToast('카메라 전환에 실패했습니다.', '❌');
+                    showToast('Could not switch the camera.', '❌');
                 });
 
             } else {
@@ -2538,7 +2538,7 @@
                     forceVideoExpose();
                     fixBlackScreen();
                     cameraSwitchBtn.classList.remove('switching');
-                    showToast('📷 후면 카메라', '✅');
+                    showToast('Back camera', '✅');
                     console.log('카메라 전환 완료: environment');
                 }, 500);
             }
@@ -2753,10 +2753,10 @@
                 event.stopPropagation();
             }
             
-            if (!videoElement || !isTargetFound) { showToast('도안을 카메라에 비춰주세요', '📷'); return false; }
+            if (!videoElement || !isTargetFound) { showToast('Point the camera at the drawing', '📷'); return false; }
             try {
                 const region = extractMarkerRegion();
-                if (!region) { showToast('도안 영역을 찾을 수 없습니다', '❌'); return false; }
+                if (!region) { showToast('Could not find the drawing', '❌'); return false; }
 
                 // 각 레이어별로 색칠본을 마스킹하여 개별 텍스처로 입힘
                 [1, 2, 3].forEach(num => {
@@ -2805,14 +2805,14 @@
                 texturePreview.src = document.getElementById('canvas-layer1').toDataURL('image/jpeg', 0.9);
                 texturePreview.classList.add('show');
                 isTextureScanned = true;
-                scanButton.textContent = '✅ 스캔 완료!';
+                scanButton.textContent = 'Scan complete';
                 scanButton.classList.add('scanned');
 
                 captureBtn.style.display = 'block';
                 captureHint.classList.add('show');
                 setTimeout(() => captureHint.classList.remove('show'), 4000);
 
-                showToast('🌸 도안이 성공적으로 스캔되었습니다!', '✨');
+                showToast('🌸 The drawing scanned.', '✨');
                 createPetalBurst();
                 return true;
             } catch (e) { console.error(e); showToast('스캔 중 오류가 발생했습니다', '❌'); return false; }
@@ -2823,7 +2823,7 @@
             e.preventDefault();
             e.stopPropagation();
             if (isTextureScanned) { 
-                showToast('이미 스캔이 완료되었습니다', '✅'); 
+                showToast('Already scanned', '✅'); 
                 return false; 
             } 
             scanTexture(e);
@@ -2949,7 +2949,7 @@
                                 if (sceneEl.systems && sceneEl.systems['mindar-image-system']) {
                                     resolve();
                                 } else if (attempts >= maxAttempts) {
-                                    reject(new Error('MindAR 시스템 로드 타임아웃'));
+                                    reject(new Error('MindAR load timed out'));
                                 } else {
                                     setTimeout(checkSystem, 100);
                                 }
@@ -2966,7 +2966,7 @@
                 } catch (err) {
                     console.error('❌ MindAR 시작 실패:', err);
                     hideLoadingScreen();
-                    showError('AR 초기화 실패', '카메라 권한을 확인하고 다시 시도해주세요.');
+                    showError('AR did not start', 'Check camera permission and try again.');
                     return;
                 }
             }
@@ -3005,7 +3005,7 @@
                     captureHint.classList.add('show');
                     setTimeout(() => captureHint.classList.remove('show'), 4000);
                     
-                    showToast('🌸 탭: 사진 | 길게 누르기: 동영상', '📸');
+                    showToast('🌸 Tap for a photo. Hold for video.', '📸');
                 }, 1000);
                 
             } else if (mode === 'kit') {
@@ -3029,7 +3029,7 @@
                     // 카메라 전환 버튼 표시
                     cameraSwitchBtn.classList.add('show');
                     
-                    showToast('📷 색칠한 도안을 카메라에 비춰주세요', '🎨');
+                    showToast('Point the camera at your colored drawing', '🎨');
                 }, 1000);
             }
         }
@@ -3080,7 +3080,7 @@
         
         sceneEl.addEventListener('arError', (e) => {
             console.error('AR Error:', e);
-            showError('AR 초기화 실패', '카메라 접근 권한을 확인해주세요.\n또는 HTTPS 환경에서 실행해주세요.');
+            showError('AR did not start', 'Allow camera access.\nThis page also needs HTTPS.');
         });
         
         // 마커 인식 (키트 모드에서만 사용)
@@ -3095,7 +3095,7 @@
             
             if (currentMode === 'kit') {
                 hideGuide(); 
-                showStatus('🌸 도안 인식 완료!');
+                showStatus('Drawing recognized');
                 if (!isTextureScanned) scanButton.classList.add('show');
                 if (petalsContainer) petalsContainer.setAttribute('visible', 'true');
                 if (dioramaLayer1) dioramaLayer1.setAttribute('visible', 'true');
@@ -3120,7 +3120,7 @@
                 if (!isTargetFound && currentMode === 'kit') { 
                     isTargetVisible = false; 
                     showGuide(); 
-                    showStatus('📷 도안을 다시 비춰주세요');
+                    showStatus('Show the drawing to the camera again');
                     if (petalsContainer) petalsContainer.setAttribute('visible', 'false'); 
                 }
             }, TRACKING_PERSISTENCE_MS);
@@ -3134,18 +3134,18 @@
         
         // ===== 🌸 벚꽃잎 터치 이벤트 & 리워드 시스템 =====
         const petalMessages = [
-            "올해는 좋은 인연이 올 거예요 🌸",
-            "당신의 봄은 이제 시작이에요",
-            "벚꽃처럼 아름답고 향기로운 하루를",
-            "작은 행복이 당신 곁에 피어나요",
-            "꽃잎처럼 가볍게, 향기롭게 살아요",
-            "봄바람이 당신에게 행운을 데려올 거예요",
-            "이 순간을 오래 기억하세요",
-            "당신은 충분히 특별한 사람이에요",
-            "세상에서 가장 예쁜 봄날을 걷고 있어요",
-            "따뜻한 마음으로 피어나는 하루가 되길",
-            "벚꽃이 지기 전에, 소중한 사람에게 연락해보세요",
-            "오늘 하루도 꽃처럼 피어나길 바랍니다",
+            "A good meeting is on its way this year",
+            "Your spring is just beginning",
+            "A day as fragrant as the blossoms",
+            "A small happiness is opening beside you",
+            "Live lightly, the way a petal does",
+            "The spring wind is bringing you some luck",
+            "Keep this moment",
+            "You are already someone particular",
+            "You are walking through a fine spring day",
+            "May the day open with a warm heart",
+            "Before the blossoms fall, write to someone you miss",
+            "May today open the way a flower does",
         ];
 
         // 꽃잎 hit test (document 좌표 → canvas 좌표 변환)
@@ -3256,7 +3256,7 @@
                 document.getElementById('coupon-code-display').textContent = code;
                 document.getElementById('coupon-card-inner').classList.remove('used');
                 document.getElementById('btn-use-coupon').disabled = false;
-                document.getElementById('btn-use-coupon').textContent = '✅ 사용하기 (직원 확인)';
+                document.getElementById('btn-use-coupon').textContent = 'Redeem (staff check)';
                 document.getElementById('golden-coupon-overlay').classList.add('show');
                 if (navigator.vibrate) navigator.vibrate([50, 30, 80, 30, 50]);
             } else {
@@ -3282,7 +3282,7 @@
         // 캡처 버튼
         document.getElementById('btn-capture-coupon').addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(50);
-            showToast('📸 화면을 길게 눌러 캡처해 주세요!', '💛');
+            showToast('Press and hold the screen to capture', '💛');
         });
 
         // 사용하기 → 비밀번호 모달 열기
@@ -3301,16 +3301,16 @@
                 document.getElementById('coupon-pwd-modal').classList.remove('show');
                 document.getElementById('coupon-card-inner').classList.add('used');
                 document.getElementById('btn-use-coupon').disabled = true;
-                document.getElementById('btn-use-coupon').textContent = '✅ 사용 완료';
+                document.getElementById('btn-use-coupon').textContent = 'Redeemed';
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                showToast('쿠폰이 사용되었습니다! 🎉', '✅');
+                showToast('Coupon redeemed', '✅');
             } else if (result === 'wrong_password') {
-                document.getElementById('coupon-pwd-error').textContent = '❌ 비밀번호가 틀렸습니다';
+                document.getElementById('coupon-pwd-error').textContent = 'That code is not right';
                 document.getElementById('coupon-pwd-input').value = '';
             } else if (result === 'already_used') {
-                document.getElementById('coupon-pwd-error').textContent = '⚠️ 이미 사용된 쿠폰입니다';
+                document.getElementById('coupon-pwd-error').textContent = 'This coupon was already used';
             } else {
-                document.getElementById('coupon-pwd-error').textContent = '❌ 유효하지 않은 쿠폰입니다';
+                document.getElementById('coupon-pwd-error').textContent = 'This coupon is not valid';
             }
         });
 
@@ -3346,7 +3346,7 @@
             handlePetalTouch(e.clientX, e.clientY);
         });
 
-        console.log('🌸 벚꽃 터널 AR 포토존 준비 완료 (인스타그램 스타일 촬영 시스템, 사진/영상 통합, 셀카 모드 지원)');
+        console.log('Cherry blossom tunnel 포토존 준비 완료 (인스타그램 스타일 촬영 시스템, 사진/영상 통합, 셀카 모드 지원)');
     </script>
 </body>
 </html>
