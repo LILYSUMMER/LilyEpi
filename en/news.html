@@ -62,8 +62,8 @@
                         sans: ['Pretendard', 'Noto Sans KR', 'Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#00C79F',
-                        'primary-dark': '#009E7E',
+                        'primary': '#FF6B00',
+                        'primary-dark': '#E55A00',
                         'dark': '#1a1a1a',
                         'light': '#fafafa',
                         'accent': '#6366f1',
@@ -96,7 +96,7 @@
             transform: translateY(0);
         }
         .gradient-text {
-            color: #00C79F;
+            color: #FF6B00;
         }
         
         /* Slide Panel Styles */
@@ -198,7 +198,7 @@
                     <span class="gradient-text">Epispace</span> news
                 </h1>
                 <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    Selection, field work, and press.
+                    Selection, events, and press.
                 </p>
             </div>
         </div>
@@ -228,142 +228,107 @@
 
             <!-- News Grid -->
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="newsGrid">
-                <!-- News Item 1 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="update" data-news-id="news-1">
-                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-next">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">Updates</span>
-                            <span class="text-gray-500 text-sm">2025.10.28</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">Event</span>
+                            <span class="text-gray-500 text-sm">2025.11.21</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            Web-AR performance update
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            A Web-AR engine update the site describes as a 40% faster load and steadier tracking.
-                        </p>
-                        <button onclick="openNewsDetail('news-1')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            Read
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Joined 2025 The Next Step</h3>
+                        <p class="text-gray-600 mb-4">On 21 November 2025, Epispace took part in 2025 The Next Step.</p>
+                        <button onclick="openNewsDetail('news-next')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
                     </div>
                 </article>
-
-                <!-- News Item 2 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="event" data-news-id="news-2">
-                    <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-launch">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">Events</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">Event</span>
+                            <span class="text-gray-500 text-sm">2025.11</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Offline AR launched on Lee Jung-seop Street</h3>
+                        <p class="text-gray-600 mb-4">A Web AR pilot ran there from June through December 2025. Paid offline AR launched in November.</p>
+                        <button onclick="openNewsDetail('news-launch')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
+                    </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-youth">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">Event</span>
                             <span class="text-gray-500 text-sm">2025.10.25</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            A Jeju AR experience event
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            The page describes a November AR event at major Jeju sites, with a reward for people who take part.
-                        </p>
-                        <button onclick="openNewsDetail('news-2')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            Read
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">AR booth at the Seogwipo Youth Ieum Camp</h3>
+                        <p class="text-gray-600 mb-4">On 25 October 2025, Epispace ran an AR tourism booth at the camp.</p>
+                        <button onclick="openNewsDetail('news-youth')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
                     </div>
                 </article>
-
-                <!-- News Item 3 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="update" data-news-id="news-5">
-                    <div class="h-48 bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="partnership" data-news-id="news-mou">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-sm font-medium">Updates</span>
-                            <span class="text-gray-500 text-sm">2025.10.10</span>
+                            <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">Partnership</span>
+                            <span class="text-gray-500 text-sm">2025.09.24</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            A fuller visitor data dashboard
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            The page describes a stronger live view of visitors, and new charts.
-                        </p>
-                        <button onclick="openNewsDetail('news-5')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            Read
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Partnership agreement with Samwol Port</h3>
+                        <p class="text-gray-600 mb-4">On 24 September 2025, Samwol Port and Epispace signed a working agreement.</p>
+                        <button onclick="openNewsDetail('news-mou')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
                     </div>
                 </article>
-
-                <!-- News Item 5 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="event" data-news-id="news-6">
-                    <div class="h-48 bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-ieum">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-medium">Events</span>
-                            <span class="text-gray-500 text-sm">2025.10.05</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">Event</span>
+                            <span class="text-gray-500 text-sm">2025.09.23</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            AR photo-spot contest
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            Share a photo from a Jeju AR photo spot. The page describes an Instagram hashtag contest.
-                        </p>
-                        <button onclick="openNewsDetail('news-6')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            Read
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Korea Tourism Organization Ieum Week demo day</h3>
+                        <p class="text-gray-600 mb-4">From 23 to 24 September 2025, Epispace showed AR tourism content at the demo day.</p>
+                        <button onclick="openNewsDetail('news-ieum')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
                     </div>
                 </article>
-
-                <!-- News Item 6 - 한라일보 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="press" data-news-id="news-7">
-                    <div class="h-48 bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                        </svg>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="update" data-news-id="news-patent">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">Update</span>
+                            <span class="text-gray-500 text-sm">2025.09.02</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Patent application for NFC-based AR</h3>
+                        <p class="text-gray-600 mb-4">On 2 September 2025, Epispace filed a patent application. It is an application, not a granted patent.</p>
+                        <button onclick="openNewsDetail('news-patent')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
                     </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="press" data-news-id="news-halla">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="px-3 py-1 bg-teal-100 text-teal-600 rounded-full text-sm font-medium">Press</span>
                             <span class="text-gray-500 text-sm">2025.07.15</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            Halla Ilbo — starting a company on Jeju stories
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            "Stories and technology, bringing life to Lee Jung-seop Street in Seogwipo" — selected as a Preliminary Tourism Venture
-                        </p>
-                        <button onclick="openNewsDetail('news-7')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            Read
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Halla Ilbo on starting a company from Jeju stories</h3>
+                        <p class="text-gray-600 mb-4">The paper profiled founder Sooryeon Yoon.</p>
+                        <button onclick="openNewsDetail('news-halla')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
+                    </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-market">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">Event</span>
+                            <span class="text-gray-500 text-sm">2025.06.06</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">XR booth at the Jeju flea market</h3>
+                        <p class="text-gray-600 mb-4">From 6 to 7 June 2025, Epispace ran an XR booth at the Jeju provincial flea market.</p>
+                        <button onclick="openNewsDetail('news-market')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
+                    </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="press" data-news-id="news-venture">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-600 rounded-full text-sm font-medium">Press</span>
+                            <span class="text-gray-500 text-sm">2025.04</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Selected for the 16th Preliminary Tourism Venture</h3>
+                        <p class="text-gray-600 mb-4">The Korea Tourism Organization selected Epispace in immersive tourism content.</p>
+                        <button onclick="openNewsDetail('news-venture')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
                     </div>
                 </article>
             </div>
+
         </div>
     </section>
 
@@ -480,225 +445,68 @@
 
         // 뉴스 상세 데이터
         const newsData = {
-            'news-1': {
-                title: 'Web-AR performance update',
-                category: 'Update',
-                date: '2025.10.28',
-                image: 'from-blue-400 to-blue-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">The page says the Web-AR engine was updated for a faster, steadier experience.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">What the update claims</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span><strong>Load time, described as 40% faster:</strong> 3D models are described as loading much faster.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span><strong>Steadier tracking:</strong> A newer SLAM approach is described as holding objects more steadily.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span><strong>Battery use:</strong> Rendering is described as using 25% less battery.</span>
-                            </li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">Technical notes on the page</h3>
-                        <p class="text-gray-700 mb-4">The page says a current WebXR Device API is used so mid-range phones can hold a smooth 60fps.</p>
-                        
-                        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 my-8">
-                            <p class="text-blue-900 font-semibold">💡 The page says the update applies on its own.</p>
-                        </div>
-                        
-                        <p class="text-gray-700">The page says the update is meant for Jeju sites.</p>
-                    </div>
-                `
+            'news-next': {
+                title: 'Joined 2025 The Next Step',
+                category: 'Event',
+                date: '2025.11.21',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">On 21 November 2025, Epispace took part in 2025 The Next Step. The date is in the final review deck for the 16th Preliminary Tourism Venture cohort.</p></div>`
             },
-            'news-2': {
-                title: 'A Jeju AR experience event',
+            'news-launch': {
+                title: 'Offline AR launched on Lee Jung-seop Street',
+                category: 'Event',
+                date: '2025.11',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">From June through December 2025, Epispace ran a Web AR pilot on Lee Jung-seop Street in Seogwipo, the lane named for the painter Lee Jung-seop. In November, offline AR launched and paid sessions were sold.</p><p class="text-gray-700">The pilot window is listed in the 16th cohort’s final review as “Lee Jung-seop Street Web AR tourism pilot, June–December 2025.”</p></div>`
+            },
+            'news-youth': {
+                title: 'AR booth at the Seogwipo Youth Ieum Camp',
                 category: 'Event',
                 date: '2025.10.25',
-                image: 'from-purple-400 to-purple-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">The page announces a November AR event at major Jeju sites.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">As described</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li><strong>Dates:</strong> 1–30 November 2025</li>
-                            <li><strong>Places:</strong> major Jeju sites, including Seongsan Ilchulbong, Manjanggul cave, and the Jungmun resort area</li>
-                            <li><strong>How:</strong> tap an NFC tag, do the AR, finish the mission</li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">Rewards described</h3>
-                        <div class="grid md:grid-cols-2 gap-4 my-6">
-                            <div class="bg-purple-50 p-6 rounded-xl">
-                                <h4 class="font-bold text-purple-900 mb-2">🎁 For finishing a mission</h4>
-                                <p class="text-purple-800">A drink coupon at a Jeju cafe</p>
-                            </div>
-                            <div class="bg-purple-50 p-6 rounded-xl">
-                                <h4 class="font-bold text-purple-900 mb-2">🏆 For finishing the set</h4>
-                                <p class="text-purple-800">A digital item</p>
-                            </div>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">How to take part</h3>
-                        <ol class="list-decimal list-inside space-y-3 text-gray-700 mb-8">
-                            <li>Tap an NFC tag at a Jeju site</li>
-                            <li>Do the AR and take a photo</li>
-                            <li>A reward is issued when the mission is done</li>
-                            <li>Optionally share with #EpispaceAR</li>
-                        </ol>
-                        
-                        <div class="bg-purple-50 border-l-4 border-purple-500 p-6 my-8">
-                            <p class="text-purple-900 font-semibold">🎉 The page invites people to join.</p>
-                        </div>
-                    </div>
-                `
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">On 25 October 2025, Epispace ran an AR tourism booth at the Seogwipo Youth Ieum Camp, “Connecting youth and the local.” The final review marks the date complete.</p></div>`
             },
-            'news-5': {
-                title: 'A fuller visitor data dashboard',
-                category: 'Update',
-                date: '2025.10.10',
-                image: 'from-indigo-400 to-indigo-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">The page says the visitor dashboard for site operators was expanded.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">Features described</h3>
-                        <ul class="space-y-4 text-gray-700 mb-8">
-                            <li>
-                                <strong class="text-indigo-600">Live heatmap:</strong>
-                                <p class="mt-1">Where visitors are, shown live.</p>
-                            </li>
-                            <li>
-                                <strong class="text-indigo-600">Time on site:</strong>
-                                <p class="mt-1">Average time and popularity at each AR stop.</p>
-                            </li>
-                            <li>
-                                <strong class="text-indigo-600">Missions finished:</strong>
-                                <p class="mt-1">Patterns in how people finish missions.</p>
-                            </li>
-                            <li>
-                                <strong class="text-indigo-600">What the coupons do:</strong>
-                                <p class="mt-1">Redemption and return visits.</p>
-                            </li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">Charts</h3>
-                        <p class="text-gray-700 mb-4">The page says the charts can be read by month, week, or day, and exported as CSV.</p>
-                        
-                        <div class="grid md:grid-cols-3 gap-4 my-8">
-                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                                <div class="text-3xl font-bold text-indigo-600">+150%</div>
-                                <div class="text-sm text-indigo-800 mt-2">Lookup speed, as stated</div>
-                            </div>
-                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                                <div class="text-3xl font-bold text-indigo-600">12+</div>
-                                <div class="text-sm text-indigo-800 mt-2">New chart types, as stated</div>
-                            </div>
-                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                                <div class="text-3xl font-bold text-indigo-600">Live</div>
-                                <div class="text-sm text-indigo-800 mt-2">Data refresh</div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-6 my-8">
-                            <p class="text-indigo-900 font-semibold">💡 The page says operators sign in to use the dashboard.</p>
-                        </div>
-                    </div>
-                `
+            'news-mou': {
+                title: 'Partnership agreement with Samwol Port',
+                category: 'Partnership',
+                date: '2025.09.24',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">On 24 September 2025, Samwol Port and Epispace signed a working agreement. The signing is recorded in the 16th cohort’s final review.</p></div>`
             },
-            'news-6': {
-                title: 'AR photo-spot contest',
+            'news-ieum': {
+                title: 'Korea Tourism Organization Ieum Week demo day',
                 category: 'Event',
-                date: '2025.10.05',
-                image: 'from-pink-400 to-pink-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">Share a photo from a Jeju AR photo spot.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">Contest, as described</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li><strong>Dates:</strong> 15 October–15 November 2025</li>
-                            <li><strong>Who:</strong> anyone who photographed at an Epispace AR photo spot</li>
-                            <li><strong>Judging, as stated:</strong> creativity, finish, and likes, one third each</li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">How to take part</h3>
-                        <ol class="list-decimal list-inside space-y-3 text-gray-700 mb-8">
-                            <li>Take the photo at a Jeju AR photo spot</li>
-                            <li>Post it on Instagram with <strong class="text-pink-600">#EpispaceAR</strong></li>
-                            <li>Follow the Epispace Instagram</li>
-                            <li>That enters you</li>
-                        </ol>
-                        
-                        <div class="bg-pink-50 border-l-4 border-pink-500 p-6 my-8">
-                            <p class="text-pink-900 font-semibold">📸 The page invites people to post.</p>
-                        </div>
-                        
-                        <p class="text-gray-700">The page asks people to take part.</p>
-                    </div>
-                `
+                date: '2025.09.23',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">From 23 to 24 September 2025, Epispace exhibited AR tourism content at the Korea Tourism Organization’s Ieum Week demo day.</p></div>`
             },
-            'news-7': {
-                title: 'Halla Ilbo — starting a company on Jeju stories',
+            'news-patent': {
+                title: 'Patent application for NFC-based AR',
+                category: 'Update',
+                date: '2025.09.02',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">On 2 September 2025, Epispace filed a patent application for a method of delivering AR content from an NFC tag.</p><p class="text-gray-700">This is a filing, not a granted patent. The 16th cohort’s final review lists one application.</p></div>`
+            },
+            'news-halla': {
+                title: 'Halla Ilbo on starting a company from Jeju stories',
                 category: 'Press',
                 date: '2025.07.15',
-                image: 'from-teal-400 to-teal-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">Halla Ilbo profiled Sooryeon Yoon, founder of Epispace, on starting the company in Jeju.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">The piece</h3>
-                        <div class="bg-teal-50 p-6 rounded-xl mb-6">
-                            <p class="text-teal-900 font-semibold mb-2">"Stories and technology, bringing life to Lee Jung-seop Street in Seogwipo"</p>
-                            <p class="text-teal-800">Yoon's first year in Jeju after leaving Seoul to start the company</p>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">What the article lists</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-teal-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>Selected in April 2025 as a Korea Tourism Organization <strong>Preliminary Tourism Venture</strong></span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-teal-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>Tenant company at <strong>Seogwipo Startup Bay</strong></span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-teal-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>A project using NFC and AR to <strong>bring life to Lee Jung-seop Street</strong></span>
-                            </li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">How it works, in the article</h3>
-                        <p class="text-gray-700 mb-4">The article describes a browser experience: scan a QR code, scan the place, and the AR opens with no app. That is how new stories were added to Lee Jung-seop Street.</p>
-                        
-                        <div class="bg-gray-100 p-6 rounded-xl my-8">
-                            <p class="text-gray-800 italic">"People said Jeju was a good place to start, and that there was room. While looking for the idea, I walked Lee Jung-seop Street. A themed street needs something to do, and this one looked short on that. That was the start."</p>
-                            <p class="text-gray-600 mt-2">— Sooryeon Yoon, Epispace</p>
-                        </div>
-                        
-                        <a href="https://m.ihalla.com/article.php?aid=1752583120774242269&page=1#_PA" target="_blank" class="inline-block mt-6 px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors duration-300">
-                            Read the article →
-                        </a>
-                    </div>
-                `
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">On 15 July 2025, Halla Ilbo profiled Sooryeon Yoon, founder of Epispace, on starting the company in Jeju.</p><p class="font-semibold text-gray-900 mb-2">“Stories and technology, bringing life to Lee Jung-seop Street in Seogwipo.”</p><p class="text-gray-700 mb-4">The article notes the April 2025 Korea Tourism Organization selection, tenancy at Seogwipo Startup Bay, and the Lee Jung-seop Street project.</p><div class="bg-gray-100 p-6 rounded-xl my-6"><p class="text-gray-800 italic">“People said Jeju was a good place to start, and that there was room. While looking for the idea, I walked Lee Jung-seop Street. A themed street needs something to do, and this one looked short on that. That was the start.”</p><p class="text-gray-600 mt-2">Sooryeon Yoon, Epispace, in Halla Ilbo</p></div><a href="https://m.ihalla.com/article.php?aid=1752583120774242269&page=1#_PA" target="_blank" rel="noopener" class="inline-block mt-4 px-6 py-3 bg-gray-900 text-white rounded-lg">Read the article</a></div>`
+            },
+            'news-market': {
+                title: 'XR booth at the Jeju flea market',
+                category: 'Event',
+                date: '2025.06.06',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">From 6 to 7 June 2025, Epispace ran an XR booth at the Jeju Special Self-Governing Province flea market. The final review marks those dates complete.</p></div>`
+            },
+            'news-venture': {
+                title: 'Selected for the 16th Preliminary Tourism Venture',
+                category: 'Press',
+                date: '2025.04',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">In April 2025, the Korea Tourism Organization selected Epispace for the 16th Preliminary Tourism Venture cohort, in immersive tourism content.</p><p class="text-gray-700">The project is an NFC and AR service that activates themed neighborhood streets.</p></div>`
             }
         };
 

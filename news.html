@@ -62,8 +62,8 @@
                         sans: ['Pretendard', 'Noto Sans KR', 'Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#00C79F',
-                        'primary-dark': '#009E7E',
+                        'primary': '#FF6B00',
+                        'primary-dark': '#E55A00',
                         'dark': '#1a1a1a',
                         'light': '#fafafa',
                         'accent': '#6366f1',
@@ -96,7 +96,7 @@
             transform: translateY(0);
         }
         .gradient-text {
-            color: #00C79F;
+            color: #FF6B00;
         }
         
         /* Slide Panel Styles */
@@ -198,7 +198,7 @@
                     <span class="gradient-text">Epispace</span> 소식
                 </h1>
                 <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    최신 업데이트와 소식을 확인하세요
+                    선정, 현장 행사, 보도를 전합니다.
                 </p>
             </div>
         </div>
@@ -228,142 +228,107 @@
 
             <!-- News Grid -->
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="newsGrid">
-                <!-- News Item 1 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="update" data-news-id="news-1">
-                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-next">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">업데이트</span>
-                            <span class="text-gray-500 text-sm">2025.10.28</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">이벤트</span>
+                            <span class="text-gray-500 text-sm">2025.11.21</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            Web-AR 성능 개선 업데이트
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            최신 Web-AR 엔진 업데이트를 통해 로딩 속도가 40% 향상되었으며, 더욱 안정적인 트래킹을 제공합니다.
-                        </p>
-                        <button onclick="openNewsDetail('news-1')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            자세히 보기
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">2025 The Next Step 참여</h3>
+                        <p class="text-gray-600 mb-4">2025년 11월 21일, 에피스페이스가 2025 The Next Step에 참여했습니다.</p>
+                        <button onclick="openNewsDetail('news-next')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
                 </article>
-
-                <!-- News Item 2 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="event" data-news-id="news-2">
-                    <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                        </svg>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-launch">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">이벤트</span>
+                            <span class="text-gray-500 text-sm">2025.11</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">서귀포 이중섭거리, 오프라인 AR 런칭</h3>
+                        <p class="text-gray-600 mb-4">2025년 6월부터 12월까지 Web AR 파일럿을 운영했고, 11월에 오프라인 AR을 런칭해 유료 체험을 판매했습니다.</p>
+                        <button onclick="openNewsDetail('news-launch')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-youth">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">이벤트</span>
                             <span class="text-gray-500 text-sm">2025.10.25</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            제주 AR 체험 이벤트 개최
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            11월 한 달간 제주 주요 관광지에서 특별 AR 체험 이벤트를 진행합니다. 참여하시는 모든 분들께 특별 리워드를 제공합니다.
-                        </p>
-                        <button onclick="openNewsDetail('news-2')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            자세히 보기
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">서귀포시 청년이음캠프 AR 체험부스</h3>
+                        <p class="text-gray-600 mb-4">2025년 10월 25일, ‘청년과 로컬을 잇다’에서 AR 관광체험 부스를 운영했습니다.</p>
+                        <button onclick="openNewsDetail('news-youth')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
                 </article>
-
-                <!-- News Item 3 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="update" data-news-id="news-5">
-                    <div class="h-48 bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="partnership" data-news-id="news-mou">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-sm font-medium">업데이트</span>
-                            <span class="text-gray-500 text-sm">2025.10.10</span>
+                            <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">파트너십</span>
+                            <span class="text-gray-500 text-sm">2025.09.24</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            방문자 데이터 대시보드 고도화
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            실시간 방문자 분석 기능이 강화되어 더욱 정교한 인사이트를 제공합니다. 새로운 데이터 시각화 기능을 확인해보세요.
-                        </p>
-                        <button onclick="openNewsDetail('news-5')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            자세히 보기
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">삼월항과 업무협약</h3>
+                        <p class="text-gray-600 mb-4">2025년 9월 24일, 삼월항과 에피스페이스가 업무협약을 맺었습니다.</p>
+                        <button onclick="openNewsDetail('news-mou')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
                 </article>
-
-                <!-- News Item 5 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="event" data-news-id="news-6">
-                    <div class="h-48 bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-ieum">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="px-3 py-1 bg-pink-100 text-pink-600 rounded-full text-sm font-medium">이벤트</span>
-                            <span class="text-gray-500 text-sm">2025.10.05</span>
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">이벤트</span>
+                            <span class="text-gray-500 text-sm">2025.09.23</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            AR 포토존 인생샷 콘테스트
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            제주 AR 포토존에서 촬영한 최고의 순간을 공유하고 푸짐한 경품을 받아가세요. SNS 해시태그 참여 이벤트 진행 중!
-                        </p>
-                        <button onclick="openNewsDetail('news-6')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            자세히 보기
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">한국관광공사 이음주간 데모데이</h3>
+                        <p class="text-gray-600 mb-4">2025년 9월 23일부터 24일까지 AR 관광콘텐츠를 전시했습니다.</p>
+                        <button onclick="openNewsDetail('news-ieum')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
                 </article>
-
-                <!-- News Item 6 - 한라일보 -->
-                <article class="news-item scroll-fade bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden" data-category="press" data-news-id="news-7">
-                    <div class="h-48 bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center">
-                        <svg class="w-20 h-20 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                        </svg>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="update" data-news-id="news-patent">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">업데이트</span>
+                            <span class="text-gray-500 text-sm">2025.09.02</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">NFC 기반 AR 제공 방법, 특허 출원</h3>
+                        <p class="text-gray-600 mb-4">2025년 9월 2일, NFC 태그 기반의 AR 콘텐츠 제공 방법을 특허 출원했습니다.</p>
+                        <button onclick="openNewsDetail('news-patent')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="press" data-news-id="news-halla">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="px-3 py-1 bg-teal-100 text-teal-600 rounded-full text-sm font-medium">보도자료</span>
                             <span class="text-gray-500 text-sm">2025.07.15</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                            한라일보 - 제주 이야기 콘텐츠로 창업
-                        </h3>
-                        <p class="text-gray-600 mb-4 line-clamp-3">
-                            "이야기와 기술 결합 서귀포시 이중섭거리에 활력을" - 예비관광벤처기업 선정
-                        </p>
-                        <button onclick="openNewsDetail('news-7')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
-                            자세히 보기
-                            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">한라일보, 제주 이야기 콘텐츠로 창업</h3>
+                        <p class="text-gray-600 mb-4">윤수련 대표의 제주 창업 이야기가 한라일보에 실렸습니다.</p>
+                        <button onclick="openNewsDetail('news-halla')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
+                    </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-market">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">이벤트</span>
+                            <span class="text-gray-500 text-sm">2025.06.06</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">제주특별자치도 플리마켓 XR 체험부스</h3>
+                        <p class="text-gray-600 mb-4">2025년 6월 6일부터 7일까지 플리마켓에서 XR 체험부스를 운영했습니다.</p>
+                        <button onclick="openNewsDetail('news-market')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
+                    </div>
+                </article>
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="press" data-news-id="news-venture">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-teal-100 text-teal-600 rounded-full text-sm font-medium">보도자료</span>
+                            <span class="text-gray-500 text-sm">2025.04</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">제16회 예비관광벤처 선정</h3>
+                        <p class="text-gray-600 mb-4">한국관광공사 제16회 예비관광벤처, 실감형 관광콘텐츠 부문에 선정되었습니다.</p>
+                        <button onclick="openNewsDetail('news-venture')" class="text-primary font-semibold hover:text-primary-dark">자세히 보기</button>
                     </div>
                 </article>
             </div>
+
         </div>
     </section>
 
@@ -481,225 +446,68 @@
 
         // 뉴스 상세 데이터
         const newsData = {
-            'news-1': {
-                title: 'Web-AR 성능 개선 업데이트',
-                category: '업데이트',
-                date: '2025.10.28',
-                image: 'from-blue-400 to-blue-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">Epispace의 Web-AR 엔진이 대폭 개선되어 더욱 빠르고 안정적인 AR 체험을 제공합니다.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">주요 개선 사항</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span><strong>로딩 속도 40% 향상:</strong> 3D 모델 로딩 시간이 대폭 단축되어 더 빠른 AR 체험이 가능합니다.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span><strong>트래킹 안정성 개선:</strong> 최신 SLAM 알고리즘 적용으로 더욱 안정적인 오브젝트 배치가 가능합니다.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span><strong>배터리 효율 개선:</strong> 최적화된 렌더링으로 배터리 소모가 25% 감소했습니다.</span>
-                            </li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">기술 세부 사항</h3>
-                        <p class="text-gray-700 mb-4">WebXR Device API 최신 버전을 채택하여 다양한 디바이스에서 일관된 성능을 제공합니다. 특히 중급 사양의 스마트폰에서도 부드러운 60fps AR 체험이 가능하도록 최적화했습니다.</p>
-                        
-                        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 my-8">
-                            <p class="text-blue-900 font-semibold">💡 업데이트는 자동으로 적용되며, 별도의 업데이트가 필요하지 않습니다.</p>
-                        </div>
-                        
-                        <p class="text-gray-700">이번 업데이트로 제주 관광지에서 더욱 쾌적한 AR 체험을 즐기실 수 있습니다.</p>
-                    </div>
-                `
+            'news-next': {
+                title: '2025 The Next Step 참여',
+                category: '이벤트',
+                date: '2025.11.21',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">2025년 11월 21일, 에피스페이스가 2025 The Next Step에 참여했습니다.</p><p class="text-gray-700">이 일정은 제16회 예비관광벤처 최종성과평가 발표자료에 적혀 있습니다.</p></div>`
             },
-            'news-2': {
-                title: '제주 AR 체험 이벤트 개최',
+            'news-launch': {
+                title: '서귀포 이중섭거리, 오프라인 AR 런칭',
+                category: '이벤트',
+                date: '2025.11',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">서귀포 이중섭거리에서 2025년 6월부터 12월까지 Web AR 관광콘텐츠 파일럿을 운영했습니다. 11월에는 오프라인 AR을 런칭하고 유료 체험을 판매했습니다.</p><p class="text-gray-700">파일럿 기간은 제16회 예비관광벤처 최종성과평가 자료에 ‘이중섭거리 Web AR 관광콘텐츠 파일럿 운영, 2025.06~2025.12’로 적혀 있습니다.</p></div>`
+            },
+            'news-youth': {
+                title: '서귀포시 청년이음캠프 AR 체험부스',
                 category: '이벤트',
                 date: '2025.10.25',
-                image: 'from-purple-400 to-purple-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">11월 한 달간 제주 주요 관광지에서 특별 AR 체험 이벤트를 개최합니다!</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">이벤트 개요</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li><strong>기간:</strong> 2025년 11월 1일 ~ 11월 30일</li>
-                            <li><strong>장소:</strong> 제주 주요 관광지 (성산일출봉, 만장굴, 중문관광단지 등)</li>
-                            <li><strong>참여 방법:</strong> NFC 태그를 통해 AR 체험 후 미션 완료</li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">특별 리워드</h3>
-                        <div class="grid md:grid-cols-2 gap-4 my-6">
-                            <div class="bg-purple-50 p-6 rounded-xl">
-                                <h4 class="font-bold text-purple-900 mb-2">🎁 미션 완료 시</h4>
-                                <p class="text-purple-800">제주 로컬 카페 음료 쿠폰</p>
-                            </div>
-                            <div class="bg-purple-50 p-6 rounded-xl">
-                                <h4 class="font-bold text-purple-900 mb-2">🏆 전체 완료 시</h4>
-                                <p class="text-purple-800">디지털 굿즈 제공</p>
-                            </div>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">참여 방법</h3>
-                        <ol class="list-decimal list-inside space-y-3 text-gray-700 mb-8">
-                            <li>제주 관광지에 설치된 NFC 태그 스캔</li>
-                            <li>AR 콘텐츠 체험 및 사진 촬영</li>
-                            <li>미션 완료 후 자동으로 리워드 발급</li>
-                            <li>SNS에 #EpispaceAR 해시태그와 함께 공유 (선택)</li>
-                        </ol>
-                        
-                        <div class="bg-purple-50 border-l-4 border-purple-500 p-6 my-8">
-                            <p class="text-purple-900 font-semibold">🎉 지금 바로 참여하고 특별한 제주 여행을 만들어보세요!</p>
-                        </div>
-                    </div>
-                `
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">2025년 10월 25일, 서귀포시 청년이음캠프 ‘청년과 로컬을 잇다’에서 AR 관광체험 부스를 운영했습니다. 제16회 예비관광벤처 최종성과평가 자료에 완료된 일정으로 적혀 있습니다.</p></div>`
             },
-            'news-5': {
-                title: '방문자 데이터 대시보드 고도화',
-                category: '업데이트',
-                date: '2025.10.10',
-                image: 'from-indigo-400 to-indigo-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">관광지 운영자를 위한 방문자 데이터 대시보드가 대폭 개선되었습니다.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">새로운 기능</h3>
-                        <ul class="space-y-4 text-gray-700 mb-8">
-                            <li>
-                                <strong class="text-indigo-600">실시간 히트맵:</strong>
-                                <p class="mt-1">관광지 내 방문자 분포를 실시간으로 시각화하여 혼잡도를 한눈에 파악할 수 있습니다.</p>
-                            </li>
-                            <li>
-                                <strong class="text-indigo-600">체류 시간 분석:</strong>
-                                <p class="mt-1">각 AR 체험 지점별 평균 체류 시간과 인기도를 분석하여 콘텐츠 개선에 활용할 수 있습니다.</p>
-                            </li>
-                            <li>
-                                <strong class="text-indigo-600">미션 완료율 추적:</strong>
-                                <p class="mt-1">방문자들의 미션 완료 패턴을 분석하여 최적의 동선을 제안합니다.</p>
-                            </li>
-                            <li>
-                                <strong class="text-indigo-600">리워드 효과 분석:</strong>
-                                <p class="mt-1">리워드 쿠폰의 사용률과 재방문율을 추적하여 마케팅 전략을 수립할 수 있습니다.</p>
-                            </li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">데이터 시각화</h3>
-                        <p class="text-gray-700 mb-4">새로운 차트 라이브러리를 도입하여 더욱 직관적이고 아름다운 데이터 시각화를 제공합니다. 월간/주간/일간 단위로 데이터를 조회할 수 있으며, CSV 형식으로 다운로드도 가능합니다.</p>
-                        
-                        <div class="grid md:grid-cols-3 gap-4 my-8">
-                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                                <div class="text-3xl font-bold text-indigo-600">+150%</div>
-                                <div class="text-sm text-indigo-800 mt-2">데이터 조회 속도</div>
-                            </div>
-                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                                <div class="text-3xl font-bold text-indigo-600">12+</div>
-                                <div class="text-sm text-indigo-800 mt-2">새로운 차트 유형</div>
-                            </div>
-                            <div class="bg-indigo-50 p-4 rounded-lg text-center">
-                                <div class="text-3xl font-bold text-indigo-600">실시간</div>
-                                <div class="text-sm text-indigo-800 mt-2">데이터 업데이트</div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-6 my-8">
-                            <p class="text-indigo-900 font-semibold">💡 대시보드는 관광지 관리자 계정으로 로그인하여 이용하실 수 있습니다.</p>
-                        </div>
-                    </div>
-                `
+            'news-mou': {
+                title: '삼월항과 업무협약',
+                category: '파트너십',
+                date: '2025.09.24',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">2025년 9월 24일, 삼월항과 에피스페이스가 업무협약을 맺었습니다. 협약식은 제16회 예비관광벤처 최종성과평가 자료에 기록되어 있습니다.</p></div>`
             },
-            'news-6': {
-                title: 'AR 포토존 인생샷 콘테스트',
+            'news-ieum': {
+                title: '한국관광공사 이음주간 데모데이',
                 category: '이벤트',
-                date: '2025.10.05',
-                image: 'from-pink-400 to-pink-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">제주 AR 포토존에서 촬영한 최고의 순간을 공유하고 푸짐한 경품을 받아가세요!</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">콘테스트 개요</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li><strong>기간:</strong> 2025년 10월 15일 ~ 11월 15일</li>
-                            <li><strong>참여 대상:</strong> Epispace AR 포토존에서 사진을 촬영한 모든 분</li>
-                            <li><strong>심사 기준:</strong> 창의성, 완성도, SNS 좋아요 수 (각 33.3%)</li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">참여 방법</h3>
-                        <ol class="list-decimal list-inside space-y-3 text-gray-700 mb-8">
-                            <li>제주 AR 포토존에서 인생샷 촬영</li>
-                            <li>인스타그램에 <strong class="text-pink-600">#EpispaceAR</strong> <strong class="text-pink-600">#제주AR인생샷</strong> 해시태그와 함께 게시</li>
-                            <li>Epispace 공식 인스타그램 팔로우</li>
-                            <li>자동으로 응모 완료!</li>
-                        </ol>
-                        
-                        <div class="bg-pink-50 border-l-4 border-pink-500 p-6 my-8">
-                            <p class="text-pink-900 font-semibold">📸 지금 바로 참여하고 여러분의 창의적인 AR 인생샷을 공유해보세요!</p>
-                        </div>
-                        
-                        <p class="text-gray-700">여러분의 창의적인 AR 인생샷을 기대합니다! 많은 참여 부탁드립니다. 😊</p>
-                    </div>
-                `
+                date: '2025.09.23',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">2025년 9월 23일부터 24일까지 한국관광공사 ‘이음주간’ 데모데이에서 AR 관광콘텐츠를 전시했습니다.</p></div>`
             },
-            'news-7': {
-                title: '한라일보 - 제주 이야기 콘텐츠로 창업',
+            'news-patent': {
+                title: 'NFC 기반 AR 제공 방법, 특허 출원',
+                category: '업데이트',
+                date: '2025.09.02',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">2025년 9월 2일, ‘NFC 태그 기반의 AR 콘텐츠 제공 방법’을 특허 출원했습니다.</p><p class="text-gray-700">등록이 아니라 출원입니다. 제16회 예비관광벤처 최종성과평가 자료의 계량 성과에 출원 1건으로 적혀 있습니다.</p></div>`
+            },
+            'news-halla': {
+                title: '한라일보, 제주 이야기 콘텐츠로 창업',
                 category: '보도자료',
                 date: '2025.07.15',
-                image: 'from-teal-400 to-teal-600',
-                content: `
-                    <div class="prose max-w-none">
-                        <p class="text-lg text-gray-600 mb-6">Epispace 윤수련 대표의 제주 창업 이야기가 한라일보에 소개되었습니다.</p>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">주요 내용</h3>
-                        <div class="bg-teal-50 p-6 rounded-xl mb-6">
-                            <p class="text-teal-900 font-semibold mb-2">"이야기와 기술 결합 서귀포시 이중섭거리에 활력을"</p>
-                            <p class="text-teal-800">서울을 떠나 제주에서 창업한 윤수련 대표의 1년 차 제주살이 이야기</p>
-                        </div>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">주요 성과</h3>
-                        <ul class="space-y-3 text-gray-700 mb-8">
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-teal-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>한국관광공사 <strong>예비관광벤처기업</strong> 선정 (2025년 4월)</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-teal-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>서귀포시 스타트업베이 <strong>입주 기업</strong> 선정</span>
-                            </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-teal-600 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span>NFC와 증강현실(AR)을 활용한 <strong>이중섭거리 활성화</strong> 사업 추진</span>
-                            </li>
-                        </ul>
-                        
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4 mt-8">핵심 기술</h3>
-                        <p class="text-gray-700 mb-4">앱 설치 없이 웹사이트 기반으로 QR코드를 찍고 장소를 스캔하면 증강현실 체험이 가능한 혁신적인 기술을 개발했습니다. 이를 통해 이중섭거리에 새로운 콘텐츠를 제공하고 특성화 거리를 활성화하고 있습니다.</p>
-                        
-                        <div class="bg-gray-100 p-6 rounded-xl my-8">
-                            <p class="text-gray-800 italic">"주변에서 제주가 창업하기 좋은 곳이고 기회가 많다고 했다. 아이템을 고민하던 중 이중섭거리를 방문했다. 특성화 거리를 활성화하려면 즐길 거리가 필요한데 이중섭거리엔 콘텐츠가 부족해 보였다. 그게 시작이었다."</p>
-                            <p class="text-gray-600 mt-2">- 윤수련 Epispace 대표</p>
-                        </div>
-                        
-                        <a href="https://m.ihalla.com/article.php?aid=1752583120774242269&page=1#_PA" target="_blank" class="inline-block mt-6 px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors duration-300">
-                            원문 기사 보기 →
-                        </a>
-                    </div>
-                `
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">에피스페이스 윤수련 대표의 제주 창업 이야기가 2025년 7월 15일 한라일보에 소개되었습니다.</p><p class="font-semibold text-gray-900 mb-2">"이야기와 기술 결합 서귀포시 이중섭거리에 활력을"</p><p class="text-gray-700 mb-4">기사에는 2025년 4월 한국관광공사 예비관광벤처기업 선정, 서귀포시 스타트업베이 입주, 이중섭거리 활성화 사업이 함께 적혀 있습니다.</p><div class="bg-gray-100 p-6 rounded-xl my-6"><p class="text-gray-800 italic">"주변에서 제주가 창업하기 좋은 곳이고 기회가 많다고 했다. 아이템을 고민하던 중 이중섭거리를 방문했다. 특성화 거리를 활성화하려면 즐길 거리가 필요한데 이중섭거리엔 콘텐츠가 부족해 보였다. 그게 시작이었다."</p><p class="text-gray-600 mt-2">윤수련 에피스페이스 대표, 한라일보</p></div><a href="https://m.ihalla.com/article.php?aid=1752583120774242269&page=1#_PA" target="_blank" rel="noopener" class="inline-block mt-4 px-6 py-3 bg-gray-900 text-white rounded-lg">원문 기사 보기</a></div>`
+            },
+            'news-market': {
+                title: '제주특별자치도 플리마켓 XR 체험부스',
+                category: '이벤트',
+                date: '2025.06.06',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700">2025년 6월 6일부터 7일까지 제주특별자치도 플리마켓에서 XR 체험부스를 운영했습니다. 제16회 예비관광벤처 최종성과평가 자료에 완료된 일정으로 적혀 있습니다.</p></div>`
+            },
+            'news-venture': {
+                title: '제16회 예비관광벤처 선정',
+                category: '보도자료',
+                date: '2025.04',
+                image: 'from-gray-100 to-gray-100',
+                content: `<div class="prose max-w-none"><p class="text-lg text-gray-700 mb-4">2025년 4월, 한국관광공사 제16회 예비관광벤처에 선정되었습니다. 부문은 실감형 관광콘텐츠입니다.</p><p class="text-gray-700">사업명은 NFC와 증강현실(AR)을 활용한 ‘지역 특성화 거리’ 활성화 서비스입니다.</p></div>`
             }
         };
 
