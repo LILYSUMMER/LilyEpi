@@ -142,18 +142,47 @@
 </head>
 <body class="font-sans text-gray-800 antialiased bg-gray-50">
     <!-- Navigation -->
-    <nav id="mainNav" class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/50 transition-all duration-300">
+    <nav id="mainNav" class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
-                <div class="flex items-center">
-                    <a href="index.html" class="text-xl sm:text-2xl font-bold gradient-text">Epispace</a>
+                <a href="index.html" class="flex items-center shrink-0">
+                    <img src="assets/epispace-logo.png" alt="에피스페이스 로고" class="h-10 sm:h-12 w-auto">
+                </a>
+                <div class="hidden xl:flex items-center gap-5">
+                    <a href="index.html#about" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">회사소개</a>
+                    <a href="index.html#business" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">사업분야</a>
+                    <a href="index.html#technology" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">기술</a>
+                    <a href="index.html#track-record" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">실적</a>
+                    <a href="news.html" class="text-primary text-sm font-medium border-b-2 border-primary pb-1">소식</a>
+                    <a href="index.html#contact" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">문의</a>
+                    <a href="cherry-blossom-ar.html" class="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-3 py-2 rounded-full text-sm font-semibold">🌸 벚꽃 AR 체험</a>
+                    <span class="text-sm font-semibold">
+                        <a href="index.html" class="text-gray-900" hreflang="ko" lang="ko">KO</a>
+                        <span class="text-gray-300 mx-1">|</span>
+                        <a href="en/news.html" class="text-gray-400 hover:text-primary" hreflang="en" lang="en">EN</a>
+                    </span>
                 </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="index.html#features" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">기능</a>
-                    <a href="index.html#how-it-works" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">작동방식</a>
-                    <a href="news.html" class="text-primary transition-colors duration-300 font-medium border-b-2 border-primary pb-1">소식</a>
-                    <a href="index.html#contact" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">문의</a>
-                </div>
+                <button id="mobileMenuBtn" class="xl:hidden text-gray-600" aria-expanded="false" aria-controls="mobileMenu" aria-label="메뉴 열기">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu" class="hidden xl:hidden bg-white border-t border-gray-100">
+            <div class="px-4 py-4 space-y-1">
+                <a href="index.html#about" class="block text-gray-700 font-medium py-2">회사소개</a>
+                <a href="index.html#business" class="block text-gray-700 font-medium py-2">사업분야</a>
+                <a href="index.html#technology" class="block text-gray-700 font-medium py-2">기술</a>
+                <a href="index.html#track-record" class="block text-gray-700 font-medium py-2">실적</a>
+                <a href="news.html" class="block text-primary font-medium py-2">소식</a>
+                <a href="index.html#contact" class="block text-gray-700 font-medium py-2">문의</a>
+                <a href="cherry-blossom-ar.html" class="block bg-gradient-to-r from-pink-500 to-rose-400 text-white text-center px-4 py-3 rounded-full font-semibold mt-2">🌸 벚꽃 AR 체험</a>
+                <p class="pt-3 text-sm font-semibold">
+                    <a href="index.html" hreflang="ko" lang="ko">KO</a>
+                    <span class="text-gray-300 mx-1">|</span>
+                    <a href="en/news.html" class="text-gray-400" hreflang="en" lang="en">EN</a>
+                </p>
             </div>
         </div>
     </nav>
@@ -384,10 +413,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid md:grid-cols-4 gap-12">
                 <div class="md:col-span-2">
-                    <h3 class="text-3xl font-bold gradient-text mb-6">Epispace</h3>
+                    <img src="assets/epispace-logo.png" alt="에피스페이스 로고" class="h-10 w-auto mb-6">
                     <p class="text-gray-300 mb-8 text-lg leading-relaxed">
-                        제주 관광지를 인터랙티브 AR/NFC로 변환하는<br>
-                        혁신적인 Web-AR 솔루션을 제공합니다.
+                        지도에 없는 이야기를 증강현실로.<br>
+                        로컬 스토리 AR.
                     </p>
                     <div class="flex space-x-6">
                         <a href="https://www.instagram.com/epispace.official/" target="_blank" class="text-gray-400 hover:text-primary transition-colors duration-300">
@@ -399,31 +428,50 @@
                 </div>
                 
                 <div>
-                    <h4 class="text-xl font-semibold mb-6">Contact</h4>
-                    <div class="space-y-4 text-gray-300">
-                        <p class="text-lg">contact@epispace.kr</p>
+                    <h4 class="text-xl font-semibold mb-6">회사</h4>
+                    <div class="space-y-2 text-gray-300 text-base leading-7">
+                        <p>상호: 에피스페이스 (Epispace)</p>
+                        <p>대표자: [확인 필요]</p>
+                        <p>사업자등록번호: [확인 필요]</p>
                         <p>제주특별자치도 서귀포시</p>
+                        <p>contact@epispace.kr</p>
                     </div>
                 </div>
                 
                 <div>
                     <h4 class="text-xl font-semibold mb-6">바로가기</h4>
                     <div class="space-y-4">
-                        <a href="index.html#features" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">About</a>
-                        <a href="https://brunch.co.kr/@sooryeonyoun" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Blog</a>
-                        <a href="mailto:contact@epispace.kr?subject=Epispace 채용 문의" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Careers</a>
+                        <a href="index.html#about" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">회사소개</a>
+                        <a href="https://brunch.co.kr/@sooryeonyoun" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Brunch</a>
+                        <a href="index.html#contact" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">문의</a>
                         <a href="https://www.instagram.com/epispace.official/" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Instagram</a>
                     </div>
                 </div>
             </div>
             
             <div class="border-t border-gray-700 mt-16 pt-8 text-center text-gray-400">
-                <p>&copy; 2025 Epispace. All rights reserved.</p>
+                <p>&copy; 2026 Epispace</p>
             </div>
         </div>
     </footer>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (!mobileMenuBtn || !mobileMenu) return;
+            mobileMenuBtn.addEventListener('click', function() {
+                const open = mobileMenu.classList.toggle('hidden') === false;
+                mobileMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+            mobileMenu.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                });
+            });
+        });
+
         // Google Apps Script 웹 앱 URL
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydy8MPq6GdsxgtMkAZ7JkwGIk5T4U2qCUBgflJi05bTKVHdH0KqwFr9ab2w_KVj34qRQ/exec';
 

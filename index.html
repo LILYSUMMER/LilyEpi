@@ -200,488 +200,290 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        section[id] {
+            scroll-margin-top: 5.5rem;
+        }
     </style>
 </head>
 <body class="font-sans text-gray-800 antialiased">
     <!-- Navigation -->
-    <nav id="mainNav" class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/50 transition-all duration-300">
+    <nav id="mainNav" class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
-                <div class="flex items-center">
-                    <a href="/" class="flex items-center">
-                        <img src="assets/epispace-logo.png" alt="Epispace Logo" class="h-10 sm:h-12 w-auto">
-                    </a>
+                <a href="/" class="flex items-center shrink-0">
+                    <img src="assets/epispace-logo.png" alt="에피스페이스 로고" class="h-10 sm:h-12 w-auto">
+                </a>
+                <div class="hidden xl:flex items-center gap-5">
+                    <a href="#about" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">회사소개</a>
+                    <a href="#business" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">사업분야</a>
+                    <a href="#technology" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">기술</a>
+                    <a href="#track-record" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">실적</a>
+                    <a href="news.html" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">소식</a>
+                    <a href="#contact" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">문의</a>
+                    <a href="cherry-blossom-ar.html" class="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-3 py-2 rounded-full text-sm font-semibold">🌸 벚꽃 AR 체험</a>
+                    <span class="text-sm font-semibold tracking-wide">
+                        <a href="/" class="text-gray-900" hreflang="ko" lang="ko" aria-current="page">KO</a>
+                        <span class="text-gray-300 mx-1" aria-hidden="true">|</span>
+                        <a href="en/index.html" class="text-gray-400 hover:text-primary" hreflang="en" lang="en">EN</a>
+                    </span>
                 </div>
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex space-x-8 items-center">
-                    <a href="#features" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">기능</a>
-                    <a href="#how-it-works" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">작동방식</a>
-                    <a href="news.html" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">소식</a>
-                    <a href="#contact" class="text-gray-600 hover:text-primary transition-colors duration-300 font-medium">문의</a>
-                    <a href="cherry-blossom-ar.html" class="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-4 py-2 rounded-full text-sm font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-1">
-                        🌸 벚꽃 AR
-                    </a>
-                </div>
-                <!-- Mobile Menu Button -->
-                <button id="mobileMenuBtn" class="md:hidden text-gray-600 hover:text-primary transition-colors duration-300">
+                <button id="mobileMenuBtn" class="xl:hidden text-gray-600 hover:text-primary" aria-expanded="false" aria-controls="mobileMenu" aria-label="메뉴 열기">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
             </div>
         </div>
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-100">
-            <div class="px-4 py-4 space-y-3">
-                <a href="#features" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">기능</a>
-                <a href="#how-it-works" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">작동방식</a>
-                <a href="news.html" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">소식</a>
-                <a href="#contact" class="block text-gray-600 hover:text-primary transition-colors duration-300 font-medium py-2">문의</a>
-                <a href="cherry-blossom-ar.html" class="block bg-gradient-to-r from-pink-500 to-rose-400 text-white text-center px-4 py-3 rounded-full font-semibold mt-2">🌸 벚꽃 AR 체험하기</a>
+        <div id="mobileMenu" class="hidden xl:hidden bg-white border-t border-gray-100">
+            <div class="px-4 py-4 space-y-1">
+                <a href="#about" class="block text-gray-700 font-medium py-2">회사소개</a>
+                <a href="#business" class="block text-gray-700 font-medium py-2">사업분야</a>
+                <a href="#technology" class="block text-gray-700 font-medium py-2">기술</a>
+                <a href="#track-record" class="block text-gray-700 font-medium py-2">실적</a>
+                <a href="news.html" class="block text-gray-700 font-medium py-2">소식</a>
+                <a href="#contact" class="block text-gray-700 font-medium py-2">문의</a>
+                <a href="cherry-blossom-ar.html" class="block bg-gradient-to-r from-pink-500 to-rose-400 text-white text-center px-4 py-3 rounded-full font-semibold mt-2">🌸 벚꽃 AR 체험</a>
+                <p class="pt-3 text-sm font-semibold">
+                    <a href="/" class="text-gray-900" hreflang="ko" lang="ko">KO</a>
+                    <span class="text-gray-300 mx-1">|</span>
+                    <a href="en/index.html" class="text-gray-400" hreflang="en" lang="en">EN</a>
+                </p>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <!-- 배경 이미지 -->
-        <img src="assets/jeju-hero-bg.png" alt="제주 AR 배경" class="absolute inset-0 w-full h-full object-cover object-center opacity-20" loading="lazy" />
-        
-        <!-- Hero Content -->
+    <section class="relative min-h-screen flex items-center justify-center pt-28 pb-20 overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <img src="assets/jeju-hero-bg.png" alt="제주 골목과 바다가 겹친 배경" class="absolute inset-0 w-full h-full object-cover object-center opacity-20" />
         <div class="relative z-10 text-center max-w-4xl mx-auto px-4">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight mb-6 sm:mb-8 text-gray-900">
+            <p class="text-sm sm:text-base font-semibold tracking-wide text-gray-500 mb-4">에피스페이스 · 서귀포</p>
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gray-900">
                 지도에 없는 이야기를<br>
                 <span class="gradient-text">증강현실로</span>
             </h1>
-            <p class="text-lg sm:text-xl md:text-2xl text-gray-600 mb-8 sm:mb-12 font-medium max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
-                Epispace는 현실에서 즐기는 인터랙티브 AR 콘텐츠로<br class="hidden sm:block">
-                제주 관광을 완전히 새로운 경험으로 만듭니다.
+            <p class="text-lg sm:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+                지역에 숨어 있는 설화·신화·전설을 그 장소 위에 되살려,<br class="hidden sm:block">
+                사람들이 골목을 걷고 가게에 들르게 합니다.
             </p>
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-                <a href="javascript:void(0)" onclick="startARExperience()" class="inline-block bg-gradient-to-r from-primary to-orange-600 text-white px-6 py-3 sm:px-10 sm:py-5 rounded-full text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-                    🚀 AR 체험 시작하기
-                </a>
-                <a href="cherry-blossom-ar.html" class="inline-block bg-gradient-to-r from-pink-500 to-rose-400 text-white px-6 py-3 sm:px-10 sm:py-5 rounded-full text-base sm:text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-                    🌸 벚꽃 터널 AR
-                </a>
-                <a href="#how-it-works" class="inline-block border-2 border-gray-300 text-gray-700 px-6 py-3 sm:px-10 sm:py-5 rounded-full text-base sm:text-lg font-semibold hover:border-primary hover:text-primary transition-all duration-300">
-                    작동방식 보기
-                </a>
-            </div>
-        </div>
-        
-        <!-- Floating Elements -->
-        <div class="absolute top-1/4 left-1/4 w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-20 animate-float"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-full opacity-20 animate-float" style="animation-delay: 1s;"></div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-24 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 sm:mb-20 px-4">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">Epispace의 세 가지 플랫폼</h2>
-                <p class="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    앱 설치 없이 브라우저에서 바로 체험하는 혁신적인 Web-AR 기술로<br class="hidden sm:block">
-                    제주 관광을 완전히 새로운 경험으로 만듭니다.
-                </p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-12">
-                <!-- Feature 1: NFC ONE-TAP -->
-                <div class="group scroll-fade">
-                    <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
-                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">NFC ONE-TAP</h3>
-                        <p class="text-gray-600 leading-relaxed text-sm sm:text-base md:text-lg">
-                            앱 설치 없이 NFC 태그를 터치하면 브라우저가 자동으로 열려 Web-AR 콘텐츠를 바로 체험할 수 있습니다.
-                        </p>
-                        <div class="mt-6">
-                            <a href="#how-it-works" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors duration-300">
-                                자세히보기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature 2: WEB AR 스토리텔링 -->
-                <div class="group scroll-fade">
-                    <div class="bg-gradient-to-br from-purple-50 to-pink-100 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
-                        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">WEB AR 스토리텔링</h3>
-                        <p class="text-gray-600 leading-relaxed text-sm sm:text-base md:text-lg">
-                            현실 배경에 제주 신화, 멸종 위기 야생화, 역사적 인물들이 AR로 등장하여 몰입감 있는 스토리텔링을 제공합니다.
-                        </p>
-                        <div class="mt-6">
-                            <a href="#how-it-works" class="text-purple-600 font-semibold hover:text-purple-700 transition-colors duration-300">
-                                자세히보기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Feature 3: VISITOR DATA DASHBOARD -->
-                <div class="group scroll-fade">
-                    <div class="bg-gradient-to-br from-green-50 to-emerald-100 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
-                        <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-8 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">VISITOR DATA DASHBOARD</h3>
-                        <p class="text-gray-600 leading-relaxed text-sm sm:text-base md:text-lg">
-                            방문자 수, 체류 시간, 미션 완료율을 실시간으로 집계하여 관광지 운영에 필요한 인사이트를 제공합니다.
-                        </p>
-                        <div class="mt-6">
-                            <a href="#how-it-works" class="text-green-600 font-semibold hover:text-green-700 transition-colors duration-300">
-                                자세히보기 →
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <a href="#contact" class="inline-block bg-primary text-white px-8 py-4 rounded-full text-base font-semibold shadow-lg hover:bg-orange-600 transition-colors">협업 문의하기</a>
+                <a href="cherry-blossom-ar.html" class="inline-block bg-gradient-to-r from-pink-500 to-rose-400 text-white px-8 py-4 rounded-full text-base font-semibold shadow-lg">🌸 벚꽃 AR 체험</a>
             </div>
         </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="py-24 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 sm:mb-20 px-4">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">작동 방식</h2>
-                <p class="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    간단한 3단계로 제주 관광을 완전히 새로운 경험으로 만들어갑니다
-                </p>
-            </div>
-            
-            <!-- Timeline Steps -->
-            <div class="relative">
-                <!-- Connection Line -->
-                <div class="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 transform -translate-y-1/2 z-0"></div>
-                
-                <div class="grid md:grid-cols-3 gap-12 relative z-10">
-                    <!-- Step 1: NFC 태그 스캔 -->
-                    <div class="text-center scroll-fade group">
-                        <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
-                            <div class="relative mb-8">
-                                <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl transform group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </div>
-                                <div class="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-4">NFC 태그 스캔</h3>
-                            <p class="text-gray-600 text-lg leading-relaxed">
-                                관광객이 관광지에 설치된 NFC 태그를 스마트폰으로 터치하면 브라우저가 자동으로 열립니다.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: AR 미션·포토존 체험 -->
-                    <div class="text-center scroll-fade group">
-                        <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
-                            <div class="relative mb-8">
-                                <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl transform group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
-                                    </svg>
-                                </div>
-                                <div class="absolute -top-2 -right-2 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-4">AR 미션·포토존 체험</h3>
-                            <p class="text-gray-600 text-lg leading-relaxed">
-                                Web-AR을 통해 현실 세계에 가상 콘텐츠가 오버레이되어 인터랙티브한 미션과 포토존을 체험합니다.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: 리워드 쿠폰 자동 발급 -->
-                    <div class="text-center scroll-fade group">
-                        <div class="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
-                            <div class="relative mb-8">
-                                <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl transform group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-900 mb-4">리워드 쿠폰 자동 발급</h3>
-                            <p class="text-gray-600 text-lg leading-relaxed">
-                                미션 완료 시 자동으로 리워드 쿠폰이 발급되어 재방문을 유도하고 관광지 활성화에 기여합니다.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Call to Action -->
-            <div class="text-center mt-20 scroll-fade">
-                <div class="bg-gradient-to-br from-primary to-orange-600 rounded-3xl shadow-xl p-12 max-w-4xl mx-auto text-white">
-                    <h3 class="text-3xl font-bold mb-6">지금 바로 체험해보세요!</h3>
-                    <p class="text-xl mb-8 opacity-90">제주 관광의 새로운 경험을 Epispace와 함께 시작하세요.</p>
-                    <a href="webxr-world-tracker.html" class="inline-block bg-white text-primary px-10 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                        무료 체험 신청하기
-                    </a>
-                </div>
-            </div>
+    <section id="about" class="py-24 bg-white">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6">
+            <p class="text-sm font-semibold text-primary mb-3">회사소개</p>
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">로컬 스토리 AR 회사</h2>
+            <p class="text-lg text-gray-700 leading-relaxed mb-6">
+                에피스페이스(Epispace)는 지역에 숨어 있는 설화·신화·전설을 그 장소 위에 AR로 되살려, 사람들이 골목을 걷고 가게에 들르게 만드는 회사입니다. 제주특별자치도 서귀포시에 있습니다.
+            </p>
+            <p class="text-lg text-gray-700 leading-relaxed mb-8">
+                현장에서 확인한 사실은 단순합니다. 관광객은 Web-AR 기술 자체에는 관심이 없습니다. 사람들이 멈추는 이유는 이야기이고, 골목을 걷게 하는 것은 그 이야기이며, 상권이 원하는 것은 그 걸음이 매출로 이어지는 일입니다. NFC와 Web-AR은 그 경험을 앱 설치 없이 브라우저에서 열리게 하는 수단입니다.
+            </p>
+            <p class="text-base text-gray-600 leading-relaxed">
+                2025년 4월, 한국관광공사 예비관광벤처기업에 선정되었습니다.
+                <span class="text-sm text-gray-400">[확인 필요: 정식 사업명·주관 사업]</span>
+            </p>
         </div>
     </section>
 
-    <!-- Impact Section -->
-    <section class="py-20 bg-emerald-50">
+    <section id="business" class="py-24 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">실제 성과</h2>
-                <p class="text-xl text-gray-600">제주 관광지에서 검증된 Epispace의 효과</p>
+            <div class="max-w-3xl mb-14">
+                <p class="text-sm font-semibold text-primary mb-3">사업분야</p>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">이야기가 골목의 매출이 되게</h2>
+                <p class="text-lg text-gray-600 leading-relaxed">지자체, 상권, 관광지, 축제 기획자와 함께 장소에 이야기를 심습니다.</p>
             </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="text-center scroll-fade">
-                    <div class="text-5xl font-bold text-primary mb-4">2.3×</div>
-                    <p class="text-xl text-gray-700">평균 체류시간 증가</p>
-                </div>
-                <div class="text-center scroll-fade">
-                    <div class="text-5xl font-bold text-primary mb-4">+57%</div>
-                    <p class="text-xl text-gray-700">SNS UGC 발행</p>
-                </div>
-                <div class="text-center scroll-fade">
-                    <div class="text-5xl font-bold text-primary mb-4">97%</div>
-                    <p class="text-xl text-gray-700">사용 편의성 만족도</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="py-24 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-20">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">사용자들의 생생한 후기</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    이미 수많은 여행객들이 Jeju AR과 함께 특별한 제주 여행을 경험했습니다.
-                </p>
-            </div>
-            
             <div class="grid md:grid-cols-2 gap-8">
-                <!-- Testimonial 1 -->
-                <div class="bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 scroll-fade">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                            최
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-xl font-bold text-gray-900">최동민</h3>
-                                <span class="text-gray-500">· 42세</span>
-                            </div>
-                            <div class="flex text-yellow-400 mt-1">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <span class="ml-2 text-gray-600">5.0 / 5.0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 text-lg leading-relaxed mb-6">
-                        "브라우저에서 바로 실행되는 AR 기술이 정말 놀랍습니다. 중문관광단지에서 체험한 문화유산 AR 콘텐츠가 인상 깊었어요. 제주의 역사와 문화를 이렇게 생생하게 배울 수 있다니!"
-                    </p>
-                    <div class="flex gap-2">
-                        <span class="inline-block px-4 py-2 bg-orange-100 text-orange-600 rounded-full text-sm font-medium">#제주AR체험</span>
-                        <span class="inline-block px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">#브라우저AR</span>
-                        <span class="inline-block px-4 py-2 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">#추천여행</span>
-                    </div>
-                </div>
-
-                <!-- Testimonial 2 -->
-                <div class="bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 scroll-fade">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                            김
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-xl font-bold text-gray-900">김서연</h3>
-                                <span class="text-gray-500">· 28세</span>
-                            </div>
-                            <div class="flex text-yellow-400 mt-1">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <span class="ml-2 text-gray-600">5.0 / 5.0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 text-lg leading-relaxed mb-6">
-                        "SNS에서 화제가 된 AR 포토존이 너무 재미있었어요! 친구들과 함께 방문했는데, 다들 독특한 경험이라며 좋아했습니다. 특히 리워드 쿠폰으로 받은 카페 할인권도 유용했어요."
-                    </p>
-                    <div class="flex gap-2">
-                        <span class="inline-block px-4 py-2 bg-pink-100 text-pink-600 rounded-full text-sm font-medium">#AR포토존</span>
-                        <span class="inline-block px-4 py-2 bg-green-100 text-green-600 rounded-full text-sm font-medium">#친구와함께</span>
-                        <span class="inline-block px-4 py-2 bg-yellow-100 text-yellow-600 rounded-full text-sm font-medium">#제주여행</span>
-                    </div>
-                </div>
+                <article class="bg-white rounded-3xl p-8 shadow-sm">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">로컬 스토리 AR 트레일</h3>
+                    <p class="text-sm font-medium text-gray-500 mb-4">지역상권 활성화</p>
+                    <p class="text-gray-700 leading-relaxed mb-4">지역의 숨겨진 설화·신화·전설을 콘텐츠로 만들어 거리 곳곳에 놓습니다. NFC 태그를 터치하면 앱 설치 없이 브라우저에서 AR 미션이 열리고, 미션을 마치면 제휴 상점 쿠폰이 이어집니다.</p>
+                    <p class="text-gray-700 leading-relaxed">서귀포 이중섭거리에서 실행한 경험이 있고, 같은 방식은 제주 거의 전 지역에 적용할 수 있습니다. 고객은 지자체, 상권, 관광지입니다.</p>
+                </article>
+                <article class="bg-white rounded-3xl p-8 shadow-sm">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">AR 가상 옥외광고</h3>
+                    <p class="text-sm font-medium text-gray-500 mb-4">Virtual OOH</p>
+                    <p class="text-gray-700 leading-relaxed">물리적 간판이나 설치물 없이, 거리 위에 AR로 상권·브랜드 광고와 스토리를 띄웁니다. 고객은 상점가, 지역 브랜드, 지자체 홍보입니다.</p>
+                </article>
+                <article class="bg-white rounded-3xl p-8 shadow-sm">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">행사·축제 AR 체험</h3>
+                    <p class="text-sm font-medium text-gray-500 mb-4">포토존과 미션</p>
+                    <p class="text-gray-700 leading-relaxed mb-4">축제, 팝업, 오프라인 행사용 AR 포토존과 미션을 만듭니다. 벚꽃 터널 AR이 그 예입니다.</p>
+                    <a href="cherry-blossom-ar.html" class="text-primary font-semibold">🌸 벚꽃 AR 체험 보기</a>
+                </article>
+                <article class="bg-white rounded-3xl p-8 shadow-sm">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">R&D</h3>
+                    <p class="text-sm font-medium text-gray-500 mb-4">연구 단계</p>
+                    <p class="text-gray-700 leading-relaxed">AR 체험을 돕는 하드웨어를 연구하고 있습니다. 아직 연구 단계이며, 판매 제품이 아닙니다.</p>
+                </article>
             </div>
+            <!--
+            콘텐츠 제작·마케팅 (확인 후 활성화)
+            AI 기반 영상 제작(다국어 버전 포함), 로컬 브랜드 SNS·스토어 마케팅.
+            고객사명과 수치는 확인 전까지 넣지 않음.
+            -->
         </div>
     </section>
 
-    <!-- Partnership CTA Section -->
-    <section class="py-20 bg-gray-900 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-4xl font-bold mb-6 scroll-fade">제주 관광의 미래를 함께 만들어가요</h2>
-            <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto scroll-fade">
-                단체·관광지·지자체와 협력하여 제주 관광을 혁신적인 디지털 경험으로 만들어갑니다.<br>
-                지속가능한 관광 발전을 위한 파트너십을 기다립니다.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center scroll-fade">
-                <a href="mailto:contact@epispace.kr?subject=Epispace 협업 문의&body=안녕하세요, Epispace와의 협업을 문의드립니다.%0D%0A%0D%0A기관/회사명:%0D%0A담당자명:%0D%0A연락처:%0D%0A협업 희망 분야:%0D%0A%0D%0A협업 제안 내용:%0D%0A%0D%0A감사합니다." class="bg-epispace text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-orange-500 transition-colors inline-block text-center">
-                    협업 문의하기
-                </a>
-                <a href="proposal-download.html" class="border border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-gray-900 transition-colors inline-block text-center group">
-                    사업 제안서 PDF 다운로드
-                    <svg class="w-5 h-5 inline-block ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="contact" class="bg-gray-900 text-white py-20">
+    <section id="technology" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-12">
-                <div class="md:col-span-2">
-                    <img src="assets/epispace-logo.png" alt="Epispace Logo" class="h-12 w-auto mb-6">
-                    <p class="text-gray-300 mb-8 text-lg leading-relaxed">
-                        제주 관광지를 인터랙티브 AR/NFC로 변환하는<br>
-                        혁신적인 Web-AR 솔루션을 제공합니다.
-                    </p>
-                    <div class="flex space-x-6">
-                        <a href="https://www.instagram.com/epispace.official/" target="_blank" class="text-gray-400 hover:text-primary transition-colors duration-300">
-                            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-                
+            <div class="max-w-3xl mb-14">
+                <p class="text-sm font-semibold text-primary mb-3">기술</p>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">이야기를 현장에서 열리게 하는 세 가지</h2>
+                <p class="text-lg text-gray-600 leading-relaxed">방문객이 만나는 것은 설화와 미션과 쿠폰입니다. 아래 플랫폼은 그 흐름을 앱 없이 굴리는 장치입니다.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 mb-20">
+                <article class="bg-gray-50 rounded-3xl p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">NFC ONE-TAP</h3>
+                    <p class="text-gray-600 leading-relaxed">앱을 설치하지 않습니다. 거리에 있는 NFC 태그를 터치하면 브라우저가 열리고 Web-AR이 시작됩니다.</p>
+                </article>
+                <article class="bg-gray-50 rounded-3xl p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">WEB AR 스토리텔링</h3>
+                    <p class="text-gray-600 leading-relaxed">현실 배경 위에 제주 신화, 멸종 위기 야생화, 역사 속 인물이 등장합니다. 그 장소의 이야기가 눈앞에 이어집니다.</p>
+                </article>
+                <article class="bg-gray-50 rounded-3xl p-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">VISITOR DATA DASHBOARD</h3>
+                    <p class="text-gray-600 leading-relaxed">방문자 수, 체류 시간, 미션 완료를 모아 상권과 관광지 운영에 필요한 흐름을 보여 줍니다.</p>
+                </article>
+            </div>
+            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-10 text-center">현장에서 이어지는 세 단계</h3>
+            <ol class="grid md:grid-cols-3 gap-8">
+                <li class="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                    <p class="text-sm font-bold text-primary mb-3">01</p>
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">NFC 태그 스캔</h4>
+                    <p class="text-gray-600 leading-relaxed">관광객이 장소에 설치된 NFC 태그를 스마트폰으로 터치하면 브라우저가 열립니다.</p>
+                </li>
+                <li class="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                    <p class="text-sm font-bold text-primary mb-3">02</p>
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">AR 미션·포토존 체험</h4>
+                    <p class="text-gray-600 leading-relaxed">Web-AR이 현실 위에 이야기를 겹쳐, 미션과 포토존으로 그 자리에 머물게 합니다.</p>
+                </li>
+                <li class="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                    <p class="text-sm font-bold text-primary mb-3">03</p>
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">리워드 쿠폰</h4>
+                    <p class="text-gray-600 leading-relaxed">미션을 마치면 제휴 상점 쿠폰이 발급되어, 걸음이 가게 방문으로 이어집니다.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="track-record" class="py-24 bg-gray-50">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6">
+            <p class="text-sm font-semibold text-primary mb-3">실적</p>
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-10">확인된 경과</h2>
+            <ol class="space-y-8 border-l border-gray-200 pl-6">
+                <li>
+                    <p class="font-semibold text-gray-900">2025</p>
+                    <p class="text-gray-700 leading-relaxed mt-1">한국관광공사 예비관광벤처기업 선정 (2025년 4월). <span class="text-sm text-gray-400">[확인 필요: 정식 사업명]</span></p>
+                </li>
+                <li>
+                    <p class="font-semibold text-gray-900">서귀포 이중섭거리</p>
+                    <p class="text-gray-700 leading-relaxed mt-1">오프라인 AR 체험 행사를 운영하고 유료 체험을 판매했습니다. <span class="text-sm text-gray-400">[확인 필요: 연도·행사명]</span></p>
+                </li>
+                <li>
+                    <p class="font-semibold text-gray-900">2026</p>
+                    <p class="text-gray-700 leading-relaxed mt-1">캐나다 밴쿠버에서 새 WebAR 프로토타입을 개발하고 있습니다. 아래 해외 섹션을 참고해 주세요.</p>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <!--
+    근거 자료가 확인되지 않아 화면에서 숨긴 기존 블록. 삭제하지 않음.
+    실제 성과: 2.3× 평균 체류시간 증가 / +57% SNS UGC 발행 / 97% 사용 편의성 만족도
+    후기: 최동민, 42세 — "브라우저에서 바로 실행되는 AR 기술이 정말 놀랍습니다. 중문관광단지에서 체험한 문화유산 AR 콘텐츠가 인상 깊었어요."
+    후기: 김서연, 28세 — "SNS에서 화제가 된 AR 포토존이 너무 재미있었어요! 리워드 쿠폰으로 받은 카페 할인권도 유용했어요."
+    -->
+
+    <section id="global" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h4 class="text-xl font-semibold mb-6">Contact</h4>
-                    <div class="space-y-4 text-gray-300">
-                        <p class="text-lg">contact@epispace.kr</p>
-                        <p>제주특별자치도 서귀포시</p>
-                    </div>
+                    <p class="text-sm font-semibold text-primary mb-3">해외</p>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">밴쿠버에서 다음 이야기를 준비합니다</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-4">캐나다 브리티시컬럼비아 밴쿠버를 거점으로 해외 사업을 준비하고 있습니다.</p>
+                    <p class="text-gray-700 leading-relaxed mb-4">새 데모의 이름은 <strong>빗물에 비친 세계 (Reflections in the Rain)</strong>입니다. 밴쿠버 거리의 빗물 웅덩이가 다른 세계를 비추는 창이 되는 WebAR입니다. 현실과 어긋나지 않게 섞이는 것이 핵심입니다.</p>
+                    <p class="inline-block text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">개발 중 · Coming soon</p>
                 </div>
-                
+                <figure class="bg-slate-900 rounded-3xl overflow-hidden min-h-[240px] flex items-center justify-center text-center px-8 py-16">
+                    <figcaption class="text-slate-200">
+                        <p class="text-sm tracking-wide text-slate-400 mb-2">DEMO</p>
+                        <p class="text-xl font-semibold">빗물에 비친 세계</p>
+                        <p class="text-slate-400 mt-2">Reflections in the Rain</p>
+                        <p class="text-sm text-slate-500 mt-4">영상 자리 · 개발 중</p>
+                    </figcaption>
+                    <!--
+                    영상 파일이 준비되면 이 주석을 해제하고 src만 맞추면 됩니다.
+                    <video class="w-full h-full" controls playsinline poster="">
+                        <source src="assets/reflections-in-the-rain.mp4" type="video/mp4">
+                    </video>
+                    -->
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 bg-gray-900 text-white">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <p class="text-sm font-semibold text-orange-300 mb-3">문의</p>
+            <h2 class="text-3xl sm:text-4xl font-bold mb-4">골목의 이야기를 함께 놓을 파트너를 찾습니다</h2>
+            <p class="text-lg text-gray-300 leading-relaxed mb-8">지자체, 상권, 관광지, 축제와 해외 파트너의 협업 문의를 받습니다.</p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="mailto:contact@epispace.kr?subject=Epispace%20%ED%98%91%EC%97%85%20%EB%AC%B8%EC%9D%98&body=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94%2C%20Epispace%EC%99%80%EC%9D%98%20%ED%98%91%EC%97%85%EC%9D%84%20%EB%AC%B8%EC%9D%98%EB%93%9C%EB%A6%BD%EB%8B%88%EB%8B%A4.%0D%0A%0D%0A%EA%B8%B0%EA%B4%80%2F%ED%9A%8C%EC%82%AC%EB%AA%85%3A%0D%0A%EB%8B%B4%EB%8B%B9%EC%9E%90%EB%AA%85%3A%0D%0A%EC%97%B0%EB%9D%BD%EC%B2%98%3A%0D%0A%ED%98%91%EC%97%85%20%ED%9D%AC%EB%A7%9D%20%EB%B6%84%EC%95%BC%3A%0D%0A%0D%0A%ED%98%91%EC%97%85%20%EC%A0%9C%EC%95%88%20%EB%82%B4%EC%9A%A9%3A%0D%0A" class="bg-primary text-white px-8 py-4 rounded-full font-semibold hover:bg-orange-500 transition-colors">협업 문의하기</a>
+                <a href="proposal-download.html" class="border border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-gray-900 transition-colors">사업 제안서 다운로드</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-950 text-gray-300 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-10">
                 <div>
-                    <h4 class="text-xl font-semibold mb-6">바로가기</h4>
-                    <div class="space-y-4">
-                        <a href="#features" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">About</a>
-                        <a href="https://brunch.co.kr/@sooryeonyoun" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Blog</a>
-                        <a href="mailto:contact@epispace.kr?subject=Epispace 채용 문의" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Careers</a>
-                        <a href="https://www.instagram.com/epispace.official/" target="_blank" class="block text-gray-300 hover:text-primary transition-colors duration-300 text-lg">Instagram</a>
-                    </div>
+                    <img src="assets/epispace-logo.png" alt="에피스페이스 로고" class="h-10 w-auto mb-4">
+                    <p class="leading-relaxed">지도에 없는 이야기를 증강현실로. 로컬 스토리 AR.</p>
+                </div>
+                <div class="text-sm leading-7">
+                    <p>상호: 에피스페이스 (Epispace)</p>
+                    <p>대표자: [확인 필요]</p>
+                    <p>사업자등록번호: [확인 필요]</p>
+                    <p>주소: 제주특별자치도 서귀포시</p>
+                    <p>이메일: <a href="mailto:contact@epispace.kr" class="hover:text-white">contact@epispace.kr</a></p>
+                </div>
+                <div class="text-sm leading-7">
+                    <a href="https://www.instagram.com/epispace.official/" class="block hover:text-white" target="_blank" rel="noopener">Instagram</a>
+                    <a href="https://brunch.co.kr/@sooryeonyoun" class="block hover:text-white" target="_blank" rel="noopener">Brunch</a>
+                    <a href="news.html" class="block hover:text-white">소식</a>
+                    <a href="cherry-blossom-ar.html" class="block hover:text-white">벚꽃 AR 체험</a>
                 </div>
             </div>
-            
-            <div class="border-t border-gray-700 mt-16 pt-8 text-center text-gray-400">
-                <p>&copy; 2025 Epispace. All rights reserved.</p>
-            </div>
+            <p class="border-t border-gray-800 mt-12 pt-6 text-sm text-gray-500">© 2026 Epispace</p>
         </div>
     </footer>
 
     <script>
-        // Mobile Menu Toggle
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const mobileMenu = document.getElementById('mobileMenu');
-            
             mobileMenuBtn.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
+                const open = mobileMenu.classList.toggle('hidden') === false;
+                mobileMenuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
-            
-            // Close mobile menu when clicking a link
-            const mobileLinks = mobileMenu.querySelectorAll('a');
-            mobileLinks.forEach(link => {
+            mobileMenu.querySelectorAll('a').forEach(function(link) {
                 link.addEventListener('click', function() {
                     mobileMenu.classList.add('hidden');
+                    mobileMenuBtn.setAttribute('aria-expanded', 'false');
                 });
             });
         });
 
-        // Sticky Nav 색상 전환
-        window.addEventListener('scroll', function() {
-            const nav = document.getElementById('mainNav');
-            if(window.scrollY > 10) {
-                nav.classList.add('bg-white');
-                nav.classList.remove('bg-white/90');
-            } else {
-                nav.classList.remove('bg-white');
-                nav.classList.add('bg-white/90');
-            }
-        });
-
-        // Scroll fade animation
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
             });
-        }, observerOptions);
-
-        document.querySelectorAll('.scroll-fade').forEach(el => {
-            observer.observe(el);
-        });
-
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-        
-        // AR 체험 시작
-        function startARExperience() {
-            // 모든 브라우저에서 SLAM 기반 월드 트래킹으로 이동
-            window.location.href = 'https://epispacear.web.app/';
-        }
-        
-        // 페이지 로드 완료 후 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            // SLAM 기반 AR 시스템이 모든 브라우저를 지원합니다
-            console.log('Epispace AR 시스템 준비 완료');
-        });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        document.querySelectorAll('.scroll-fade').forEach(function(el) { observer.observe(el); });
     </script>
 </body>
-</html> 
+</html>

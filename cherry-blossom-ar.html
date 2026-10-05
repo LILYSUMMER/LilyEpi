@@ -112,6 +112,29 @@
             margin-bottom: 50px;
             text-align: center;
         }
+
+        .start-home {
+            position: absolute;
+            top: calc(18px + env(safe-area-inset-top));
+            left: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .start-lang {
+            position: absolute;
+            top: calc(18px + env(safe-area-inset-top));
+            right: 20px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .start-lang a {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+        }
         
         .mode-btn {
             width: 280px;
@@ -1093,6 +1116,8 @@
 <body>
     <!-- 시작 메뉴 -->
     <div id="start-menu">
+        <a href="index.html" class="start-home">에피스페이스 홈</a>
+        <p class="start-lang"><a href="index.html" hreflang="ko" lang="ko">KO</a> | <a href="en/cherry-blossom-ar.html" hreflang="en" lang="en">EN</a></p>
         <h1 class="start-title">🌸 벚꽃 터널 AR</h1>
         <p class="start-subtitle">체험 모드를 선택해주세요</p>
         
