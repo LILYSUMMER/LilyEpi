@@ -12,15 +12,18 @@
     <meta name="theme-color" content="#ffb6c1">
     
     <!-- SEO Meta Tags -->
-    <title>🌸 벚꽃 터널 AR 포토존 | Epispace</title>
-    <meta name="description" content="직접 색칠한 도안이 AR로 살아나는 벚꽃 터널 포토존을 체험하세요. 앱 설치 없이 브라우저에서 바로!">
-    <meta name="keywords" content="벚꽃AR, 포토존, AR체험, 에피스페이스, Epispace, 증강현실">
+    <title>벚꽃 터널 AR 체험 | 에피스페이스</title>
+    <meta name="description" content="에피스페이스의 벚꽃 터널 AR 포토존. 색칠한 도안을 스캔하거나, 카메라 앞에서 벚꽃과 함께 촬영합니다. 앱 설치 없이 브라우저에서 열립니다.">
+    <meta name="keywords" content="에피스페이스, 벚꽃 AR, Web-AR, 포토존, 축제">
+    <link rel="canonical" href="https://epispace.kr/cherry-blossom-ar.html">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="🌸 벚꽃 터널 AR 포토존 | Epispace">
-    <meta property="og:description" content="직접 색칠한 도안이 AR로 살아나는 특별한 체험!">
+    <meta property="og:title" content="벚꽃 터널 AR 체험 | 에피스페이스">
+    <meta property="og:description" content="색칠한 도안을 스캔하거나, 카메라 앞에서 벚꽃과 함께 촬영하는 Web-AR 포토존입니다.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://epispace.kr/cherry-blossom-ar.html">
+    <meta property="og:image" content="https://epispace.kr/assets/epispace-logo.png">
+    <meta property="og:locale" content="ko_KR">
     
     <!-- A-Frame & MindAR (독립적으로 로드) -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -115,11 +118,22 @@
 
         .start-home {
             position: absolute;
-            top: calc(18px + env(safe-area-inset-top));
-            left: 20px;
-            color: rgba(255, 255, 255, 0.8);
+            top: calc(16px + env(safe-area-inset-top));
+            left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 13px;
             text-decoration: none;
+        }
+
+        .start-home img {
+            height: 28px;
+            width: auto;
+            background: #fff;
+            border-radius: 6px;
+            padding: 2px 4px;
         }
 
         .start-lang {
@@ -1116,7 +1130,7 @@
 <body>
     <!-- 시작 메뉴 -->
     <div id="start-menu">
-        <a href="index.html" class="start-home">에피스페이스 홈</a>
+        <a href="index.html" class="start-home"><img src="assets/epispace-logo.png" alt="에피스페이스 로고">홈</a>
         <p class="start-lang"><a href="index.html" hreflang="ko" lang="ko">KO</a> | <a href="en/cherry-blossom-ar.html" hreflang="en" lang="en">EN</a></p>
         <h1 class="start-title">🌸 벚꽃 터널 AR</h1>
         <p class="start-subtitle">체험 모드를 선택해주세요</p>
@@ -1131,7 +1145,7 @@
             <span class="mode-desc">색칠한 도안을 스캔해서 AR로 보기</span>
         </button>
 
-        <p class="start-footer">Epispace AR Experience</p>
+        <p class="start-footer">에피스페이스 · 서귀포</p>
     </div>
     
     <!-- 에러 오버레이 -->
@@ -1203,7 +1217,7 @@
     </div>
     
     <div id="guide-ui">
-        <img id="guide-image" src="./assets/cherry-blossom-ar/guide.png" alt="가이드">
+        <img id="guide-image" src="./assets/cherry-blossom-ar/guide.png" alt="벚꽃 도안을 카메라 프레임에 맞추는 안내 그림">
         <p id="guide-text">도안을 프레임에 맞춰주세요 🌸</p>
     </div>
     
@@ -1289,10 +1303,10 @@
         <span class="message">도안이 성공적으로 스캔되었습니다!</span>
     </div>
     
-    <img id="texture-preview" alt="캡처된 텍스처">
+    <img id="texture-preview" alt="색칠한 도안에서 추출한 텍스처 미리보기">
     
     <div id="capture-preview-modal">
-        <img id="capture-preview-image" alt="촬영된 사진">
+        <img id="capture-preview-image" alt="벚꽃 AR로 촬영한 사진 미리보기">
         <p id="capture-preview-info">고화질 (0 x 0)</p>
         <button type="button" id="capture-preview-close">확인</button>
     </div>

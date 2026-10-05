@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사업 제안서 다운로드 | Epispace</title>
-    <meta name="description" content="Epispace 사업 제안서 다운로드를 위한 정보 입력 페이지">
+    <title>사업 제안서 | 에피스페이스</title>
+    <meta name="description" content="에피스페이스의 로컬 스토리 AR 사업 제안서를 받습니다. 지자체, 상권, 관광지, 축제 협업 문의.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://epispace.kr/proposal-download.html">
+    <meta property="og:title" content="사업 제안서 | 에피스페이스">
+    <meta property="og:description" content="에피스페이스의 로컬 스토리 AR 사업 제안서를 받습니다.">
+    <meta property="og:url" content="https://epispace.kr/proposal-download.html">
+    <meta property="og:image" content="https://epispace.kr/assets/epispace-logo.png">
+    <meta property="og:locale" content="ko_KR">
     
     <!-- TailwindCSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,8 +23,8 @@
                         sans: ['Pretendard', 'Noto Sans KR', 'Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#FF6B00',
-                        'secondary': '#00B894',
+                        'primary': '#00C79F',
+                        'primary-dark': '#009E7E',
                         'dark': '#1a1a1a',
                         'light': '#fafafa',
                         'accent': '#6366f1',
@@ -32,14 +39,11 @@
     
     <style>
         .gradient-text {
-            background: linear-gradient(135deg, #FF6B00 0%, #FF8E53 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #00C79F;
         }
         
         .form-container {
-            background: linear-gradient(135deg, rgba(255, 107, 0, 0.05) 0%, rgba(255, 142, 83, 0.05) 100%);
+            background: #ffffff;
             backdrop-filter: blur(10px);
         }
         
@@ -61,7 +65,7 @@
         }
     </style>
 </head>
-<body class="font-sans bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
+<body class="font-sans bg-[#f6fbf9] min-h-screen">
     <!-- Header -->
     <header class="bg-white/95 backdrop-blur-md border-b border-gray-100/50 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -89,7 +93,7 @@
             <div class="form-container rounded-3xl shadow-xl p-8 border border-white/20">
                 <!-- Header -->
                 <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                    <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -175,7 +179,7 @@
 
                     <!-- 제출 버튼 -->
                     <button type="submit" 
-                            class="w-full bg-gradient-to-r from-primary to-orange-600 text-white py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         <span class="submit-text">제안서 다운로드</span>
                         <div class="loading items-center justify-center">
                             <div class="spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
@@ -208,7 +212,7 @@
                 <h3 class="text-xl font-bold text-gray-900 mb-2">정보 전송 완료!</h3>
                 <p class="text-gray-600 mb-6">잠시 후 제안서 다운로드가 시작됩니다.</p>
                 <button onclick="closeModal()" 
-                        class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors">
+                        class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-dark transition-colors">
                     확인
                 </button>
             </div>

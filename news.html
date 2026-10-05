@@ -14,24 +14,26 @@
     </script>
     
     <!-- Primary Meta Tags -->
-    <title>소식 | Epispace</title>
-    <meta name="title" content="소식 | Epispace">
-    <meta name="description" content="Epispace의 최신 소식과 업데이트를 확인하세요.">
-    <meta name="keywords" content="Epispace, 에피스페이스, 뉴스, 소식, AR, 제주">
+    <title>소식 | 에피스페이스</title>
+    <meta name="title" content="소식 | 에피스페이스">
+    <meta name="description" content="에피스페이스의 선정, 현장 행사, 보도를 전합니다. 제주 서귀포의 로컬 스토리 AR 회사.">
+    <meta name="keywords" content="에피스페이스, Epispace, 소식, 예비관광벤처, 서귀포, 이중섭거리">
     <meta name="robots" content="index, follow">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://epispace.kr/news.html">
-    <meta property="og:title" content="소식 | Epispace">
-    <meta property="og:description" content="Epispace의 최신 소식과 업데이트를 확인하세요.">
-    <meta property="og:image" content="https://epispace.kr/assets/og-image.jpg">
+    <meta property="og:title" content="소식 | 에피스페이스">
+    <meta property="og:description" content="에피스페이스의 선정, 현장 행사, 보도를 전합니다.">
+    <meta property="og:image" content="https://epispace.kr/assets/epispace-logo.png">
+    <meta property="og:locale" content="ko_KR">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://epispace.kr/news.html">
-    <meta property="twitter:title" content="소식 | Epispace">
-    <meta property="twitter:description" content="Epispace의 최신 소식과 업데이트를 확인하세요.">
+    <meta property="twitter:title" content="소식 | 에피스페이스">
+    <meta property="twitter:description" content="에피스페이스의 선정, 현장 행사, 보도를 전합니다.">
+    <meta property="twitter:image" content="https://epispace.kr/assets/epispace-logo.png">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://epispace.kr/news.html">
@@ -56,8 +58,8 @@
                         sans: ['Pretendard', 'Noto Sans KR', 'Inter', 'sans-serif'],
                     },
                     colors: {
-                        'primary': '#FF6B00',
-                        'secondary': '#00B894',
+                        'primary': '#00C79F',
+                        'primary-dark': '#009E7E',
                         'dark': '#1a1a1a',
                         'light': '#fafafa',
                         'accent': '#6366f1',
@@ -90,10 +92,7 @@
             transform: translateY(0);
         }
         .gradient-text {
-            background: linear-gradient(135deg, #FF6B00 0%, #FF8E53 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #00C79F;
         }
         
         /* Slide Panel Styles */
@@ -155,7 +154,7 @@
                     <a href="index.html#track-record" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">실적</a>
                     <a href="news.html" class="text-primary text-sm font-medium border-b-2 border-primary pb-1">소식</a>
                     <a href="index.html#contact" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">문의</a>
-                    <a href="cherry-blossom-ar.html" class="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-3 py-2 rounded-full text-sm font-semibold">🌸 벚꽃 AR 체험</a>
+                    <a href="cherry-blossom-ar.html" class="border border-primary text-primary px-3 py-2 rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-colors">벚꽃 AR 체험</a>
                     <span class="text-sm font-semibold">
                         <a href="index.html" class="text-gray-900" hreflang="ko" lang="ko">KO</a>
                         <span class="text-gray-300 mx-1">|</span>
@@ -177,7 +176,7 @@
                 <a href="index.html#track-record" class="block text-gray-700 font-medium py-2">실적</a>
                 <a href="news.html" class="block text-primary font-medium py-2">소식</a>
                 <a href="index.html#contact" class="block text-gray-700 font-medium py-2">문의</a>
-                <a href="cherry-blossom-ar.html" class="block bg-gradient-to-r from-pink-500 to-rose-400 text-white text-center px-4 py-3 rounded-full font-semibold mt-2">🌸 벚꽃 AR 체험</a>
+                <a href="cherry-blossom-ar.html" class="block border border-primary text-primary text-center px-4 py-3 rounded-full font-semibold mt-2">벚꽃 AR 체험</a>
                 <p class="pt-3 text-sm font-semibold">
                     <a href="index.html" hreflang="ko" lang="ko">KO</a>
                     <span class="text-gray-300 mx-1">|</span>
@@ -243,7 +242,7 @@
                         <p class="text-gray-600 mb-4 line-clamp-3">
                             최신 Web-AR 엔진 업데이트를 통해 로딩 속도가 40% 향상되었으며, 더욱 안정적인 트래킹을 제공합니다.
                         </p>
-                        <button onclick="openNewsDetail('news-1')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                        <button onclick="openNewsDetail('news-1')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
                             자세히 보기
                             <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -270,7 +269,7 @@
                         <p class="text-gray-600 mb-4 line-clamp-3">
                             11월 한 달간 제주 주요 관광지에서 특별 AR 체험 이벤트를 진행합니다. 참여하시는 모든 분들께 특별 리워드를 제공합니다.
                         </p>
-                        <button onclick="openNewsDetail('news-2')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                        <button onclick="openNewsDetail('news-2')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
                             자세히 보기
                             <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -297,7 +296,7 @@
                         <p class="text-gray-600 mb-4 line-clamp-3">
                             실시간 방문자 분석 기능이 강화되어 더욱 정교한 인사이트를 제공합니다. 새로운 데이터 시각화 기능을 확인해보세요.
                         </p>
-                        <button onclick="openNewsDetail('news-5')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                        <button onclick="openNewsDetail('news-5')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
                             자세히 보기
                             <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -325,7 +324,7 @@
                         <p class="text-gray-600 mb-4 line-clamp-3">
                             제주 AR 포토존에서 촬영한 최고의 순간을 공유하고 푸짐한 경품을 받아가세요. SNS 해시태그 참여 이벤트 진행 중!
                         </p>
-                        <button onclick="openNewsDetail('news-6')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                        <button onclick="openNewsDetail('news-6')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
                             자세히 보기
                             <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -352,7 +351,7 @@
                         <p class="text-gray-600 mb-4 line-clamp-3">
                             "이야기와 기술 결합 서귀포시 이중섭거리에 활력을" - 예비관광벤처기업 선정
                         </p>
-                        <button onclick="openNewsDetail('news-7')" class="text-primary font-semibold hover:text-orange-600 transition-colors duration-300 inline-flex items-center">
+                        <button onclick="openNewsDetail('news-7')" class="text-primary font-semibold hover:text-primary-dark transition-colors duration-300 inline-flex items-center">
                             자세히 보기
                             <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -383,7 +382,7 @@
     </div>
 
     <!-- Newsletter Section -->
-    <section class="py-20 bg-gradient-to-br from-primary to-orange-600">
+    <section class="py-20 bg-gray-900">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
                 최신 소식을 이메일로 받아보세요
@@ -413,7 +412,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid md:grid-cols-4 gap-12">
                 <div class="md:col-span-2">
-                    <img src="assets/epispace-logo.png" alt="에피스페이스 로고" class="h-10 w-auto mb-6">
+                    <img src="assets/epispace-logo.png" alt="에피스페이스 로고" class="h-10 w-auto mb-6 bg-white rounded-md px-2 py-1">
                     <p class="text-gray-300 mb-8 text-lg leading-relaxed">
                         지도에 없는 이야기를 증강현실로.<br>
                         로컬 스토리 AR.

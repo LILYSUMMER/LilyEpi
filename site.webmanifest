@@ -1,46 +1,29 @@
 {
-    "name": "Epispace - NFC와 AR로 만나는 제주 특성화 거리",
-    "short_name": "Epispace",
-    "description": "제주 특성화 거리를 NFC와 AR 기술로 재탄생시키는 Epispace",
+    "name": "에피스페이스 | 로컬 스토리 AR",
+    "short_name": "에피스페이스",
+    "description": "지역에 숨어 있는 설화·신화·전설을 그 장소 위에 AR로 되살려, 사람들이 골목을 걷고 가게에 들르게 합니다.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#667eea",
-    "theme_color": "#667eea",
+    "background_color": "#f6fbf9",
+    "theme_color": "#00C79F",
     "orientation": "portrait-primary",
     "scope": "/",
     "lang": "ko",
-    "categories": ["entertainment", "travel", "education"],
+    "categories": ["business", "travel"],
     "icons": [
         {
-            "src": "/android-chrome-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable any"
-        },
-        {
-            "src": "/android-chrome-512x512.png",
+            "src": "/assets/epispace-logo.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "maskable any"
-        },
-        {
-            "src": "/apple-touch-icon.png",
-            "sizes": "180x180",
-            "type": "image/png"
+            "purpose": "any"
         }
     ],
     "shortcuts": [
         {
-            "name": "AR 체험하기",
-            "short_name": "AR 체험",
-            "description": "제주 이중섭 미술관 AR 체험",
-            "url": "/ar",
-            "icons": [
-                {
-                    "src": "/ar-icon.png",
-                    "sizes": "96x96"
-                }
-            ]
+            "name": "벚꽃 AR 체험",
+            "short_name": "벚꽃 AR",
+            "description": "에피스페이스 벚꽃 터널 AR 포토존",
+            "url": "/cherry-blossom-ar.html"
         }
     ]
-} 
+}
