@@ -157,49 +157,6 @@
             opacity: 0.9;
         }
         
-        #btn-mode-fifa {
-            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #FFD700 100%);
-            color: white;
-            box-shadow: 0 8px 30px rgba(220, 20, 60, 0.5),
-                        0 0 20px rgba(255, 215, 0, 0.3);
-            border: 2px solid rgba(255, 215, 0, 0.6);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        #btn-mode-fifa::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                45deg,
-                transparent 30%,
-                rgba(255, 215, 0, 0.2) 50%,
-                transparent 70%
-            );
-            animation: fifaShine 3s infinite;
-        }
-        
-        @keyframes fifaShine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-        
-        #btn-mode-fifa .mode-desc {
-            font-size: 12px;
-            font-weight: 400;
-            opacity: 0.9;
-        }
-        
-        #btn-mode-fifa:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(220, 20, 60, 0.6),
-                        0 0 30px rgba(255, 215, 0, 0.4);
-        }
-        
         .start-footer {
             position: absolute;
             bottom: 40px;
@@ -1148,11 +1105,6 @@
             🎨 색칠 키트 체험하기
             <span class="mode-desc">색칠한 도안을 스캔해서 AR로 보기</span>
         </button>
-
-        <a href="fifa-ar.html" id="btn-mode-fifa" class="mode-btn" style="text-decoration: none;">
-            ⚽ FIFA AR 체험하기
-            <span class="mode-desc">FIFA 월드컵 AR 체험</span>
-        </a>
 
         <p class="start-footer">Epispace AR Experience</p>
     </div>
