@@ -25,7 +25,9 @@
     <meta property="og:url" content="https://epispace.kr/news.html">
     <meta property="og:title" content="소식 | 에피스페이스">
     <meta property="og:description" content="에피스페이스의 선정, 현장 행사, 보도를 전합니다.">
-    <meta property="og:image" content="https://epispace.kr/assets/epispace-logo.png">
+    <meta property="og:image" content="https://epispace.kr/assets/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:locale" content="ko_KR">
     <meta property="og:locale:alternate" content="en_US">
     
@@ -34,7 +36,7 @@
     <meta property="twitter:url" content="https://epispace.kr/news.html">
     <meta property="twitter:title" content="소식 | 에피스페이스">
     <meta property="twitter:description" content="에피스페이스의 선정, 현장 행사, 보도를 전합니다.">
-    <meta property="twitter:image" content="https://epispace.kr/assets/epispace-logo.png">
+    <meta property="twitter:image" content="https://epispace.kr/assets/og-image.jpg">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://epispace.kr/news.html">
@@ -137,6 +139,7 @@
         }
         
         #panelContent img, .news-article img { width: 100%; height: auto; border-radius: 12px; }
+        .news-article { scroll-margin-top: 4rem; }
         #panelContent h3, .news-article h3 { font-size: 1.125rem; font-weight: 700; margin-top: 1.5rem; }
         #panelContent p, .news-article p { line-height: 1.75; }
         @media (max-width: 640px) {
@@ -167,7 +170,7 @@
     }
     </script>
 </head>
-<body class="font-sans text-gray-800 antialiased bg-gray-50">
+<body class="font-sans text-gray-800 antialiased bg-gray-50 break-keep">
     <!-- Navigation -->
     <nav id="mainNav" class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-100/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,13 +180,13 @@
                 </a>
                 <div class="hidden xl:flex items-center gap-5">
                     <a href="index.html#about" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">회사소개</a>
-                    <a href="index.html#business" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">사업분야</a>
                     <a href="index.html#technology" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">기술</a>
+                    <a href="index.html#business" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">사업분야</a>
                     <a href="index.html#track-record" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">실적</a>
                     <a href="news.html" class="text-primary text-sm font-medium border-b-2 border-primary pb-1">소식</a>
                     <a href="index.html#contact" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">문의</a>
-                    <a href="https://epispacear.web.app/" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">이중섭거리 AR</a>
-                    <a href="cherry-blossom-ar.html" class="border border-primary text-primary px-3 py-2 rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-colors">벚꽃 AR 체험</a>
+                    <a href="cherry-blossom-ar.html" class="text-gray-600 hover:text-primary transition-colors text-sm font-medium">벚꽃 AR 체험</a>
+                    <a href="https://epispacear.web.app/" class="border border-primary text-primary px-3 py-2 rounded-full text-sm font-semibold hover:bg-primary hover:text-white transition-colors">이중섭거리 AR</a>
                     <span class="text-sm font-semibold">
                         <a href="index.html" class="text-gray-900" hreflang="ko" lang="ko">KO</a>
                         <span class="text-gray-300 mx-1">|</span>
@@ -200,13 +203,13 @@
         <div id="mobileMenu" class="hidden xl:hidden bg-white border-t border-gray-100">
             <div class="px-4 py-4 space-y-1">
                 <a href="index.html#about" class="block text-gray-700 font-medium py-2">회사소개</a>
-                <a href="index.html#business" class="block text-gray-700 font-medium py-2">사업분야</a>
                 <a href="index.html#technology" class="block text-gray-700 font-medium py-2">기술</a>
+                <a href="index.html#business" class="block text-gray-700 font-medium py-2">사업분야</a>
                 <a href="index.html#track-record" class="block text-gray-700 font-medium py-2">실적</a>
                 <a href="news.html" class="block text-primary font-medium py-2">소식</a>
                 <a href="index.html#contact" class="block text-gray-700 font-medium py-2">문의</a>
-                <a href="https://epispacear.web.app/" class="block text-gray-700 font-medium py-2">이중섭거리 AR</a>
-                <a href="cherry-blossom-ar.html" class="block border border-primary text-primary text-center px-4 py-3 rounded-full font-semibold mt-2">벚꽃 AR 체험</a>
+                <a href="cherry-blossom-ar.html" class="block text-gray-700 font-medium py-2">벚꽃 AR 체험</a>
+                <a href="https://epispacear.web.app/" class="block border border-primary text-primary text-center px-4 py-3 rounded-full font-semibold mt-2">이중섭거리 AR</a>
                 <p class="pt-3 text-sm font-semibold">
                     <a href="index.html" hreflang="ko" lang="ko">KO</a>
                     <span class="text-gray-300 mx-1">|</span>
