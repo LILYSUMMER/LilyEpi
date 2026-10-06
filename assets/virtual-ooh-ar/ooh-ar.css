@@ -37,6 +37,7 @@ html.is-phone .station-only { display: none !important; }
 .btn-line:hover { border-color: #d1d5db; }
 
 .fine { margin-top: 16px; color: var(--muted); font-size: 13px; }
+.fine.credit { margin-top: 6px; font-size: 11px; }
 
 /* 거리 미리 보기 */
 .stage-frame,

@@ -314,7 +314,8 @@ function drawScreen(g, W, H, t, lang, open, distance, led) {
 /* ---------- 광고판 ---------- */
 
 // grow를 켜면 멀리 있을수록 광고판을 키워서, 거리가 멀어도 글씨가 읽힐 만한 크기로 보이게 합니다.
-function buildAd({ grow }) {
+// ghost를 켜면 건물이나 나무에 가려진 부분에 희미한 윤곽을 남깁니다.
+function buildAd({ grow, ghost = false }) {
   const W = BOARD.width;
   const H = BOARD.height;
   const top = BOARD.lift + H / 2;
@@ -366,6 +367,27 @@ function buildAd({ grow }) {
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.35, H * 1.9), glowMat);
   glow.position.z = -0.45;
   board.add(glow);
+
+  // 광고판보다 앞에 다른 물체의 깊이가 남아 있는 곳(GreaterDepth)에만 그려집니다. 광고판 앞면보다 살짝 앞에 두어야
+  // 가리는 것이 없을 때 광고판 자신의 깊이에 막혀 그려지지 않습니다.
+  const behind = { transparent: true, opacity: 0, depthWrite: false, depthFunc: THREE.GreaterDepth, toneMapped: false };
+  const ghostFaceMat = new THREE.MeshBasicMaterial({ map: screenTex, ...behind });
+  const ghostLineMat = new THREE.MeshBasicMaterial({ color: 0xff6b00, ...behind });
+  if (ghost) {
+    const ghostFace = new THREE.Mesh(new THREE.PlaneGeometry(W, H), ghostFaceMat);
+    ghostFace.position.z = 0.05;
+    const corners = (w, h) => [
+      new THREE.Vector2(-w / 2, -h / 2), new THREE.Vector2(w / 2, -h / 2),
+      new THREE.Vector2(w / 2, h / 2), new THREE.Vector2(-w / 2, h / 2),
+    ];
+    const outline = new THREE.Shape(corners(W + 0.3, H + 0.3));
+    outline.holes.push(new THREE.Path(corners(W - 0.06, H - 0.06)));
+    const ghostLine = new THREE.Mesh(new THREE.ShapeGeometry(outline), ghostLineMat);
+    ghostLine.position.z = 0.06;
+    ghostFace.renderOrder = 10;
+    ghostLine.renderOrder = 10;
+    board.add(ghostFace, ghostLine);
+  }
 
   const sparkTex = glowTexture('255,236,210');
   const sparks = [];
@@ -419,6 +441,8 @@ function buildAd({ grow }) {
 
     const on = k - 1.15;
     screenMat.opacity = on < 0 ? 0 : on < 0.45 ? FLICKER[Math.floor(on / 0.075)] : 1;
+    ghostFaceMat.opacity = 0.25 * screenMat.opacity;
+    ghostLineMat.opacity = 0.7 * screenMat.opacity;
     const lit = easeOut(clamp01((k - 1.3) / 0.6));
     glowMat.opacity = 0.28 * lit * (0.9 + 0.1 * Math.sin(t * 3));
 
@@ -660,6 +684,157 @@ function visibleFov(video, w, h) {
   return THREE.MathUtils.radToDeg(2 * Math.atan(tanV * shown));
 }
 
+/* ---------- 휴대폰: 광고판을 가리는 건물과 나무 ---------- */
+
+// 실제 건물과 나무 자리에 보이지 않는 모형을 세워 깊이만 남기면, 모형 뒤에 있는 광고판 부분이 지워집니다.
+// 데이터는 tools/build-occluders.mjs로 만듭니다. ?occluders=show로 열면 모형이 보입니다.
+const OCCLUDERS_URL = new URL('occluders.json', import.meta.url);
+const SHOW_OCCLUDERS = new URLSearchParams(location.search).get('occluders') === 'show';
+
+const OCCLUDER_VERTEX = /* glsl */ `
+varying vec3 vWorld;
+#ifdef LEAFY
+varying vec3 vNormal;
+#endif
+void main() {
+  vec4 local = vec4(position, 1.0);
+  #ifdef USE_INSTANCING
+    local = instanceMatrix * local;
+  #endif
+  vec4 world = modelMatrix * local;
+  vWorld = world.xyz;
+  #ifdef LEAFY
+    // 나무는 구를 늘려 만든 타원체라서, 법선은 늘린 비율로 나눠야 맞습니다.
+    vec3 stretch = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
+    vNormal = normalize(mat3(modelMatrix) * (normal / stretch));
+  #endif
+  gl_Position = projectionMatrix * viewMatrix * world;
+}`;
+
+const OCCLUDER_FRAGMENT = /* glsl */ `
+uniform float uNear;
+varying vec3 vWorld;
+#ifdef LEAFY
+varying vec3 vNormal;
+float hash(vec3 p) {
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float noise(vec3 x) {
+  vec3 i = floor(x);
+  vec3 f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(hash(i), hash(i + vec3(1, 0, 0)), f.x), mix(hash(i + vec3(0, 1, 0)), hash(i + vec3(1, 1, 0)), f.x), f.y),
+    mix(mix(hash(i + vec3(0, 0, 1)), hash(i + vec3(1, 0, 1)), f.x), mix(hash(i + vec3(0, 1, 1)), hash(i + vec3(1, 1, 1)), f.x), f.y),
+    f.z);
+}
+#endif
+void main() {
+  if (distance(vWorld.xz, cameraPosition.xz) < uNear) discard;
+  #ifdef LEAFY
+    // 잎 사이로 뒤가 비치도록, 정면에서는 거의 막고 가장자리로 갈수록 성기게 뚫습니다.
+    float facing = abs(dot(normalize(vNormal), normalize(cameraPosition - vWorld)));
+    if (noise(vWorld * 1.3) > 0.2 + 0.7 * smoothstep(0.0, 0.8, facing)) discard;
+  #endif
+  gl_FragColor = TINT;
+}`;
+
+function occluderMaterial(near, leafy) {
+  const tint = leafy ? 'vec4(0.3, 0.9, 0.4, 0.45)' : 'vec4(0.2, 0.7, 1.0, 0.4)';
+  return new THREE.ShaderMaterial({
+    vertexShader: OCCLUDER_VERTEX,
+    fragmentShader: OCCLUDER_FRAGMENT,
+    defines: leafy ? { LEAFY: '', TINT: tint } : { TINT: tint },
+    uniforms: { uNear: near },
+    side: THREE.DoubleSide,
+    colorWrite: SHOW_OCCLUDERS,
+    // 보여 줄 때도 불투명 차례에 그려야 광고판보다 먼저 깊이가 남습니다.
+    blending: SHOW_OCCLUDERS ? THREE.CustomBlending : THREE.NormalBlending,
+  });
+}
+
+// buildings: [높이, 바닥 높이, x0, z0, x1, z1, ...] 벽과 지붕만 세웁니다.
+function footprintGeometry(buildings) {
+  const positions = [];
+  for (const b of buildings) {
+    const [top, base] = b;
+    const ring = [];
+    for (let i = 2; i < b.length; i += 2) ring.push(new THREE.Vector2(b[i], b[i + 1]));
+    ring.forEach((a, i) => {
+      const c = ring[(i + 1) % ring.length];
+      positions.push(a.x, base, a.y, c.x, base, c.y, c.x, top, c.y, a.x, base, a.y, c.x, top, c.y, a.x, top, a.y);
+    });
+    for (const tri of THREE.ShapeUtils.triangulateShape(ring, [])) {
+      for (const i of tri) positions.push(ring[i].x, top, ring[i].y);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+// trees: 나무마다 [x, z, 꼭대기, 수관 아래 끝, 수관 반지름]
+function treeMesh(trees, material) {
+  const count = trees.length / 5;
+  const mesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 6), material, count);
+  const m = new THREE.Matrix4();
+  for (let i = 0; i < count; i++) {
+    const [x, z, top, bottom, r] = trees.slice(i * 5, i * 5 + 5);
+    mesh.setMatrixAt(i, m.makeScale(r, (top - bottom) / 2, r).setPosition(x, (top + bottom) / 2, z));
+  }
+  mesh.computeBoundingSphere();
+  return mesh;
+}
+
+function insideRing(x, z, b) {
+  let hit = false;
+  for (let i = 2, j = b.length - 2; i < b.length; j = i, i += 2) {
+    const xi = b[i];
+    const zi = b[i + 1];
+    const xj = b[j];
+    const zj = b[j + 1];
+    if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) hit = !hit;
+  }
+  return hit;
+}
+
+async function loadOccluders() {
+  const response = await fetch(OCCLUDERS_URL);
+  if (!response.ok) throw new Error(`occluders.json ${response.status}`);
+  const data = await response.json();
+  // 광고판 자리를 옮기고 데이터를 다시 만들지 않았다면, 엉뚱한 건물이 광고판을 가리게 되므로 쓰지 않습니다.
+  if (data.spot.lat !== SPOT.lat || data.spot.lng !== SPOT.lng) return null;
+
+  const near = { value: 12 };
+  const group = new THREE.Group();
+  const buildings = new THREE.Mesh(footprintGeometry(data.buildings), occluderMaterial(near, false));
+  const trees = treeMesh(data.trees, occluderMaterial(near, true));
+  buildings.renderOrder = -1;
+  trees.renderOrder = -1;
+  group.add(buildings, trees);
+  group.visible = false;
+
+  const ground = data.buildings.filter((b) => b[1] < 1).map((b) => {
+    const xs = b.filter((_, i) => i >= 2 && i % 2 === 0);
+    const zs = b.filter((_, i) => i >= 2 && i % 2 === 1);
+    return { b, minX: Math.min(...xs), maxX: Math.max(...xs), minZ: Math.min(...zs), maxZ: Math.max(...zs) };
+  });
+
+  return {
+    group,
+    // 위치 오차만큼 모형도 실제보다 밀려 있는데, 가까운 모형일수록 그 오차가 화면에서 크게 벌어집니다.
+    // 그래서 오차에 비례한 거리 안쪽의 모형은 무시합니다.
+    setAccuracy(accuracy) { near.value = THREE.MathUtils.clamp(accuracy * 1.2, 8, 30); },
+    // 위치가 건물 안으로 잡히면 사방이 벽이라 광고판이 통째로 가려지므로, 그동안은 가리지 않습니다.
+    indoors(x, z) {
+      return ground.some((g) => x >= g.minX && x <= g.maxX && z >= g.minZ && z <= g.maxZ && insideRing(x, z, g.b));
+    },
+  };
+}
+
 /* ---------- 휴대폰: AR ---------- */
 
 async function startAR() {
@@ -709,9 +884,17 @@ async function startAR() {
   addLights(scene);
   const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 5000);
   camera.position.set(0, EYE, 0);
-  const ad = buildAd({ grow: true });
+  const ad = buildAd({ grow: true, ghost: true });
   liveAds.add(ad);
   scene.add(ad.root);
+
+  let occluders = null;
+  let indoors = false;
+  loadOccluders().then((found) => {
+    if (!found) return;
+    occluders = found;
+    scene.add(found.group);
+  }).catch((error) => console.error(error));
 
   const resize = () => {
     const w = window.innerWidth;
@@ -780,6 +963,7 @@ async function startAR() {
     accuracy = coords.accuracy;
     const p = metersFromSpot(coords.latitude, coords.longitude);
     eyeTarget.set(p.x, EYE, p.z);
+    if (occluders) indoors = occluders.indoors(p.x, p.z);
     if (mode === 'onsite' && performance.now() > quietUntil) say(accuracy > 25 ? 'weak' : null, { a: Math.round(accuracy) }, true);
   };
   watchPlace(onFix, (error) => {
@@ -877,6 +1061,11 @@ async function startAR() {
     }
     ad.setDistance(distance);
     ad.update(t, camera.position);
+    // 다른 곳에서 앞쪽에 띄울 때는 주변에 무엇이 있는지 모르므로 가리지 않습니다.
+    if (occluders) {
+      occluders.group.visible = mode === 'onsite' && !indoors;
+      occluders.setAccuracy(accuracy);
+    }
     renderer.render(scene, camera);
 
     if (mode !== 'locating') {
