@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>AR 가상 옥외광고 체험 | 에피스페이스</title>
-    <meta name="description" content="간판을 세우지 않고 건물 위에 AR로 광고판을 띄워 보는 체험 예시입니다. 앱 설치 없이 휴대폰 브라우저에서 열립니다.">
+    <meta name="description" content="간판을 세우지 않고 거리 위에 AR로 광고판을 띄워 보는 체험 예시입니다. 앱 설치 없이 휴대폰 브라우저에서 열립니다.">
     <link rel="canonical" href="https://epispace.kr/virtual-ooh-ar.html">
     <link rel="alternate" hreflang="ko" href="https://epispace.kr/virtual-ooh-ar.html">
     <link rel="alternate" hreflang="en" href="https://epispace.kr/en/virtual-ooh-ar.html">
     <link rel="alternate" hreflang="x-default" href="https://epispace.kr/virtual-ooh-ar.html">
     <meta property="og:title" content="AR 가상 옥외광고 체험 | 에피스페이스">
-    <meta property="og:description" content="건물을 비추면, 간판을 세우지 않아도 그 위에 광고판이 올라옵니다.">
+    <meta property="og:description" content="간판을 세우지 않아도, 거리 위에 광고판이 떠 있습니다.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://epispace.kr/virtual-ooh-ar.html">
     <meta property="og:image" content="https://epispace.kr/assets/og-image.jpg">
@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="assets/virtual-ooh-ar/ooh-ar.css">
 
     <script>
-        // 휴대폰·태블릿은 AR 화면, 컴퓨터는 사진을 띄워 두는 화면으로 엽니다. ?view=ar 또는 ?view=desk로 바꿀 수 있습니다.
+        // 휴대폰·태블릿은 AR 화면, 컴퓨터는 거리 미리 보기 화면으로 엽니다. ?view=ar 또는 ?view=desk로 바꿀 수 있습니다.
         (function () {
             var view = new URLSearchParams(location.search).get('view');
             var phone = view ? view === 'ar' : matchMedia('(pointer: coarse)').matches;
@@ -40,9 +40,7 @@
     <script type="importmap">
     {
         "imports": {
-            "three": "./assets/vendor/three-0.160.0/three.module.js",
-            "three/addons/": "./assets/vendor/three-0.160.0/addons/",
-            "mindar-image-three": "./assets/vendor/mind-ar-1.2.5/mindar-image-three.prod.js"
+            "three": "./assets/vendor/three-0.160.0/three.module.js"
         }
     }
     </script>
@@ -54,14 +52,11 @@
             <nav class="langs" aria-label="언어"><a href="virtual-ooh-ar.html" aria-current="page" hreflang="ko">KO</a> | <a href="en/virtual-ooh-ar.html" hreflang="en" lang="en">EN</a></nav>
         </header>
         <main class="station">
-            <section class="stage" aria-label="비출 건물 사진">
-                <div class="stage-frame" id="stage">
-                    <img src="assets/virtual-ooh-ar/target.jpg" alt="광고판이 올라올 건물 사진">
-                </div>
+            <section class="stage" aria-label="광고판 미리 보기">
+                <div class="stage-frame" id="stage"></div>
                 <div class="stage-caption">
-                    <span>이 사진을 휴대폰으로 비춰 주세요</span>
-                    <button class="link-btn" id="btn-preview" type="button" data-on="3D로 미리 보기" data-off="사진으로 돌아가기">3D로 미리 보기</button>
-                    <div class="stage-langs" id="stage-langs" role="group" aria-label="광고 언어" hidden>
+                    <span>휴대폰으로 열면 실제 거리 위에 이렇게 떠 있습니다</span>
+                    <div class="stage-langs" role="group" aria-label="광고 언어">
                         <button type="button" data-ad-lang="ko" lang="ko">한국어</button>
                         <button type="button" data-ad-lang="en" lang="en">English</button>
                         <button type="button" data-ad-lang="zh" lang="zh">中文</button>
@@ -71,12 +66,12 @@
             </section>
             <section class="info">
                 <span class="badge">AR 가상 옥외광고 · 체험 예시</span>
-                <h1>간판 없이, 건물 위에 광고를 띄웁니다</h1>
-                <p class="lead">예시로 만든 가게 ‘귤빛 카페’의 광고판을 이 건물 위에 올려 두었습니다. 휴대폰으로 왼쪽 사진을 비춰 보세요.</p>
+                <h1>간판 없이, 거리 위에 광고를 띄웁니다</h1>
+                <p class="lead">예시로 만든 가게 ‘귤빛 카페’의 광고판을 밴쿠버 랍슨 스트리트 위에 띄워 두었습니다. 그 거리에서 휴대폰을 들면 그 자리에 떠 있는 광고판이 보이고, 다른 곳에서는 지금 계신 곳 앞쪽에 띄워 볼 수 있습니다.</p>
                 <ol class="steps">
                     <li>휴대폰 카메라로 아래 QR 코드를 찍습니다.</li>
-                    <li>[체험 시작]을 누르고 카메라를 허용합니다.</li>
-                    <li>왼쪽 사진이 화면에 다 들어오게 비추면 광고판이 올라옵니다.</li>
+                    <li>[체험 시작]을 누르고 카메라와 위치 접근을 허용합니다.</li>
+                    <li>화면의 화살표를 따라 휴대폰을 돌리면 광고판이 보입니다.</li>
                 </ol>
                 <div class="qr">
                     <img src="assets/virtual-ooh-ar/qr.svg" alt="휴대폰으로 이 체험을 여는 QR 코드" width="132" height="132">
@@ -102,14 +97,19 @@
         <div class="start-body">
             <span class="badge">체험 예시</span>
             <h1>AR 가상 옥외광고</h1>
-            <p class="lead">건물을 비추면, 간판을 세우지 않아도 그 위에 광고판이 올라옵니다.</p>
-            <figure class="target-card">
-                <img src="assets/virtual-ooh-ar/target.jpg" alt="비춰야 할 건물 사진">
-                <figcaption><strong>이 건물을 비춰 주세요</strong>현장에 있지 않다면 컴퓨터에서 epispace.kr/virtual-ooh-ar.html을 열고, 화면에 뜬 사진을 비추면 됩니다.</figcaption>
-            </figure>
+            <p class="lead">간판을 세우지 않아도, 거리 위에 광고판이 떠 있습니다.</p>
+            <div class="start-preview" id="start-stage"></div>
+            <div class="place-card">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                <div>
+                    <strong>밴쿠버 랍슨 스트리트</strong>
+                    <p>뷰트 스트리트와 만나는 곳의 광장 위에 떠 있습니다. 다른 곳에서는 지금 계신 곳 앞쪽에 띄워 드립니다.</p>
+                    <a id="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">지도에서 보기</a>
+                </div>
+            </div>
         </div>
         <button class="btn btn-primary" id="btn-start" type="button" data-loading="준비하는 중...">체험 시작</button>
-        <p class="fine">귤빛 카페와 혜택은 예시입니다.</p>
+        <p class="fine">카메라와 위치 접근을 묻습니다. 아이폰은 동작 접근도 묻습니다. 귤빛 카페와 혜택은 예시입니다.</p>
     </div>
 
     <div id="ar" class="ar-only"></div>
@@ -118,9 +118,15 @@
             <span class="chip chip-sample">예시 광고</span>
             <button class="chip" id="btn-close" type="button">닫기</button>
         </div>
-        <div class="scan" id="scan">
-            <div class="frame"><img src="assets/virtual-ooh-ar/target.jpg" alt=""></div>
-            <p>건물 정면이 화면에 다 들어오게 비춰 주세요</p>
+        <p class="status is-off" id="status" role="status"
+           data-locating="위치를 확인하는 중..."
+           data-far="랍슨 스트리트까지 {d}. 대신 지금 계신 곳 앞쪽에 띄웠어요."
+           data-nogps="위치를 알 수 없어 앞쪽에 띄웠어요."
+           data-nocompass="나침반을 쓸 수 없어 앞쪽에 띄웠어요."
+           data-weak="위치 오차가 ±{a}m라 광고판이 조금 어긋날 수 있어요."></p>
+        <div class="pointer" id="pointer" data-label="광고판" hidden>
+            <span class="arrow"></span>
+            <span id="pointer-label">광고판</span>
         </div>
         <p class="hint" id="hint">광고판을 눌러 보세요</p>
         <div class="ad-langs" id="ad-langs" role="group" aria-label="광고 언어">
@@ -135,9 +141,9 @@
         <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
             <span class="badge">예시 가게</span>
             <h2 id="sheet-title">귤빛 카페</h2>
-            <p class="meta">이 건물 1층 · 오전 10시 ~ 오후 8시</p>
+            <p class="meta">매일 오전 10시 ~ 오후 8시</p>
             <p class="offer">AR 광고를 보고 오셨다고 말씀하시면 귤차 사이즈를 올려 드립니다.</p>
-            <p class="about">에피스페이스가 만든 AR 가상 옥외광고 예시입니다. 실제 간판은 없고, 이 건물을 휴대폰으로 비춘 사람에게만 보입니다. 문구와 언어, 영업시간 안내는 언제든 바꿀 수 있습니다.</p>
+            <p class="about">에피스페이스가 만든 AR 가상 옥외광고 예시입니다. 실제 간판은 없고, 그 자리에서 휴대폰을 든 사람에게만 보입니다. 위치와 문구, 언어는 언제든 바꿀 수 있습니다.</p>
             <div class="row">
                 <a class="btn btn-primary" href="index.html#contact">우리 거리에도 띄우기</a>
                 <button class="btn btn-line" id="btn-sheet-close" type="button">닫기</button>
@@ -147,7 +153,8 @@
 
     <div class="err" id="err" hidden
          data-camera="카메라를 켜지 못했습니다.<br>브라우저 설정에서 카메라를 허용한 뒤 다시 열어 주세요."
-         data-load="체험에 필요한 파일을 불러오지 못했습니다.<br>잠시 뒤 다시 열어 주세요. 아이폰은 iOS 16.4 이상에서 열립니다."
+         data-motion="휴대폰 방향을 읽지 못했습니다.<br>Safari를 완전히 닫았다가 이 페이지를 다시 열고, 동작 및 방향 접근을 허용해 주세요."
+         data-sensor="이 기기에서는 방향 센서를 쓸 수 없습니다.<br>휴대폰으로 열어 주세요."
          data-file="이 페이지는 파일로 직접 열면 동작하지 않습니다.<br>https 주소나 localhost에서 열어 주세요.">
         <div><p></p><small></small></div>
     </div>
