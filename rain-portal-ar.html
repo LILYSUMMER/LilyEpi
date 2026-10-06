@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1420">
+<title>Beneath the Rain — Epispace WebAR</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#0b1420;
+    font-family:-apple-system,"Inter","Noto Sans KR",sans-serif;color:#eaf2f7}
+  #ar-container{position:fixed;inset:0}
+  #ar-container video{object-fit:cover}
+
+  /* ---------- start screen ---------- */
+  #start{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center;
+    background:radial-gradient(120% 90% at 50% 10%,#14263a 0%,#0b1420 60%,#070d15 100%);
+    padding:32px;transition:opacity .5s}
+  #start.hide{opacity:0;pointer-events:none}
+  #start .brand{font-size:11px;letter-spacing:.3em;color:#7fa8c9;text-transform:uppercase}
+  #start h1{font-size:30px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
+  #start p{font-size:14px;line-height:1.7;color:#9db4c6;max-width:300px}
+  #start .ver{font-size:10px;color:#4d6478;letter-spacing:.15em;margin-top:6px}
+  #btn-start{margin-top:10px;padding:15px 44px;border:none;border-radius:999px;
+    background:linear-gradient(135deg,#2e6f8f,#1c4258);color:#eaf7ff;font-size:16px;
+    font-weight:600;letter-spacing:.02em;box-shadow:0 6px 24px rgba(46,111,143,.45)}
+  #btn-start:active{transform:scale(.97)}
+  .drop{width:10px;height:10px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+    background:#6fb3d8;opacity:.8;animation:drip 2.4s ease-in-out infinite}
+  @keyframes drip{0%,100%{transform:rotate(-45deg) translateY(0)}50%{transform:rotate(-45deg) translateY(6px)}}
+
+  /* ---------- HUD ---------- */
+  #hud{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;transition:opacity .6s}
+  #hud.show{opacity:1}
+  #logo{position:fixed;top:calc(14px + env(safe-area-inset-top));left:18px;
+    font-size:10px;letter-spacing:.28em;color:rgba(234,242,247,.85);text-transform:uppercase;
+    text-shadow:0 1px 6px rgba(0,0,0,.5)}
+  #stamps{position:fixed;top:calc(12px + env(safe-area-inset-top));right:16px;display:flex;gap:8px}
+  .stamp{width:22px;height:22px;border-radius:50%;border:1.5px solid rgba(234,242,247,.55);
+    background:rgba(10,20,30,.35);backdrop-filter:blur(4px);transition:all .4s;position:relative}
+  .stamp.on{background:radial-gradient(circle at 35% 30%,#ffd9a8,#d98a3d 70%);
+    border-color:#ffcf9c;box-shadow:0 0 12px rgba(217,138,61,.8)}
+  #hint{position:fixed;left:50%;bottom:calc(34px + env(safe-area-inset-bottom));
+    transform:translateX(-50%);font-size:14px;color:#eaf2f7;white-space:nowrap;
+    text-shadow:0 1px 8px rgba(0,0,0,.7);opacity:0;transition:opacity .5s;letter-spacing:.02em}
+  #hint.show{opacity:.95}
+
+  /* scanning guide */
+  #scan{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:16px;opacity:0;transition:opacity .5s;pointer-events:none}
+  #scan.show{opacity:1}
+  #scan .frame{width:min(62vw,260px);aspect-ratio:1;border-radius:24px;
+    border:1.5px dashed rgba(155,196,222,.8);animation:pulse 2s ease-in-out infinite}
+  #scan span{font-size:13px;color:#c8dcea;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.04);opacity:1}}
+
+  /* collected fragment fly */
+  #shard{position:fixed;z-index:45;width:26px;height:26px;pointer-events:none;display:none;
+    filter:drop-shadow(0 0 10px rgba(255,196,120,.9))}
+
+  /* demo skip */
+  #btn-skip{position:fixed;bottom:calc(30px + env(safe-area-inset-bottom));right:16px;z-index:44;
+    padding:8px 14px;font-size:11px;color:rgba(234,242,247,.5);background:rgba(10,20,30,.3);
+    border:1px solid rgba(234,242,247,.18);border-radius:999px;backdrop-filter:blur(4px);
+    display:none;pointer-events:auto}
+
+  /* ---------- coupon ---------- */
+  #coupon{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;
+    background:rgba(5,10,16,.55);backdrop-filter:blur(6px)}
+  #coupon.show{display:flex}
+  .card{width:min(82vw,320px);border-radius:20px;overflow:hidden;
+    background:linear-gradient(160deg,#16334a,#0d1d2c);border:1px solid rgba(155,196,222,.25);
+    box-shadow:0 20px 60px rgba(0,0,0,.6);animation:rise .6s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes rise{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .card .top{padding:24px 24px 18px;border-bottom:1px dashed rgba(155,196,222,.3)}
+  .card .top .t1{font-size:11px;letter-spacing:.24em;color:#7fa8c9;text-transform:uppercase;margin-bottom:8px}
+  .card .top h2{font-size:21px;line-height:1.35;font-weight:700}
+  .card .bottom{padding:18px 24px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .card .bottom p{font-size:12.5px;line-height:1.6;color:#9db4c6}
+  .card .code{font-size:15px;font-weight:700;color:#ffd9a8;letter-spacing:.1em;white-space:nowrap}
+  #btn-close{margin:0 24px 22px;width:calc(100% - 48px);padding:12px;border:none;border-radius:12px;
+    background:rgba(155,196,222,.15);color:#c8dcea;font-size:13px}
+
+  #err{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;
+    padding:40px;text-align:center;font-size:14px;line-height:1.8;color:#c8dcea;background:#0b1420}
+</style>
+</head>
+<body>
+
+<div id="ar-container"></div>
+
+<div id="start">
+  <div class="drop"></div>
+  <div class="brand">Epispace · Web AR</div>
+  <h1>Beneath the Rain</h1>
+  <p>After the rain, some puddles are more than puddles.<br>Find the marked one, and look closer.</p>
+  <button id="btn-start">Open the puddle</button>
+  <div class="ver">PROTOTYPE v0.1 · NO APP · JUST A LINK</div>
+</div>
+
+<div id="hud">
+  <div id="logo">Epispace</div>
+  <div id="stamps">
+    <div class="stamp" id="st1"></div>
+    <div class="stamp" id="st2"></div>
+    <div class="stamp" id="st3"></div>
+  </div>
+</div>
+
+<div id="scan"><div class="frame"></div><span>Point at the marked puddle</span></div>
+<div id="hint"></div>
+
+<svg id="shard" viewBox="0 0 24 24"><polygon points="12,1 20,9 12,23 4,9" fill="#ffd9a8" stroke="#fff3e0" stroke-width="1"/></svg>
+<button id="btn-skip">simulate stations »</button>
+
+<div id="coupon">
+  <div>
+    <div class="card">
+      <div class="top">
+        <div class="t1">Story complete · 3/3</div>
+        <h2>You've seen what sleeps<br>beneath this street.</h2>
+      </div>
+      <div class="bottom">
+        <p>Show this at any participating shop for a small thank-you.</p>
+        <div class="code">RAIN-2026</div>
+      </div>
+      <button id="btn-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="err"><div></div></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./assets/vendor/three-0.160.0/three.module.js",
+    "three/addons/": "./assets/vendor/three-0.160.0/addons/",
+    "mindar-image-three": "./assets/vendor/mind-ar-1.2.5/mindar-image-three.prod.js"
+  }
+}
+</script>
+
+<script>
+/* ---- diagnostics (runs even if the module below fails to load) ---- */
+(function(){
+  function fail(msg){
+    var box=document.getElementById('err'); box.style.display='flex';
+    box.firstElementChild.innerHTML=msg;
+  }
+  window.addEventListener('error', function(e){
+    if(!window.__EPI_READY && e.message){ fail('Script error:<br><span style="font-size:11px;color:#4d6478">'+e.message+'</span>'); }
+  });
+  if(location.protocol==='file:'){
+    fail('이 페이지는 파일로 직접 열면 동작하지 않아요.<br><br>'+
+      'epispace.kr에 올려서 열거나,<br>터미널에서 <b>python3 -m http.server</b> 로<br>로컬 서버를 띄운 뒤 localhost로 접속해 주세요.');
+    return;
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    document.getElementById('btn-start').addEventListener('click', function(){
+      setTimeout(function(){
+        if(!window.__EPI_READY){
+          fail('스크립트가 로드되지 않았어요.<br><br>'+
+            'assets/vendor/ 폴더가 함께 업로드됐는지,<br>주소가 https(또는 localhost)인지 확인해 주세요.');
+        }
+      }, 600);
+    });
+  });
+})();
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { MindARThree } from 'mindar-image-three';
+window.__EPI_READY = true;
+
+/* ================= config ================= */
+const TARGET_SRC = new URLSearchParams(location.search).get('target')
+  || './assets/cherry-blossom-ar/target.mind';   // v0.1: reuse existing compiled target
+const MAX_RIPPLES = 6;
+
+/* ================= state ================= */
+const S = { phase:'idle', open:0, clarity:0, stamps:0, creatureUp:0, shardOut:false };
+const $ = id => document.getElementById(id);
+const hint = (t)=>{ const h=$('hint'); if(!t){h.classList.remove('show');return;}
+  h.textContent=t; h.classList.add('show'); };
+
+/* ================= boot ================= */
+$('btn-start').addEventListener('click', async ()=>{
+  $('btn-start').disabled = true;
+  try { await boot(); $('start').classList.add('hide'); }
+  catch(e){ showErr(e); }
+});
+function showErr(e){
+  console.error(e);
+  const box=$('err'); box.style.display='flex';
+  box.firstElementChild.innerHTML =
+    'Camera could not start.<br>Please allow camera access in Safari and reload.<br><br>' +
+    '<span style="font-size:11px;color:#4d6478">'+(e && e.message ? e.message : e)+'</span>';
+}
+
+async function boot(){
+  const mindar = new MindARThree({
+    container: $('ar-container'),
+    imageTargetSrc: TARGET_SRC,
+    filterMinCF: 0.0001,      // heavy one-euro smoothing → underwater slowness is diegetic
+    filterBeta: 0.001,
+    missTolerance: 8,
+    warmupTolerance: 2,
+    uiScanning: 'no', uiLoading: 'no', uiError: 'no'
+  });
+  const { renderer, scene, camera } = mindar;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const anchor = mindar.addAnchor(0);
+
+  /* ---------- camera feed as texture (the street itself becomes the water) ---------- */
+  let videoTex = null;
+  const coverScale = new THREE.Vector2(1,1);
+  function updateCover(){
+    const v = mindar.video; if(!v || !v.videoWidth) return;
+    const va = v.videoWidth / v.videoHeight;
+    const sa = window.innerWidth / window.innerHeight;
+    if (sa >= va) coverScale.set(1, va/sa); else coverScale.set(sa/va, 1);
+  }
+  window.addEventListener('resize', updateCover);
+
+  /* ---------- shared water shader chunks ---------- */
+  const blobFn = `
+    float blob(vec2 p, out float rr, out float ww){
+      float ang = atan(p.y, p.x); float r = length(p);
+      float w = 0.74 + 0.10*sin(ang*3.0+1.7) + 0.06*sin(ang*5.0-0.6) + 0.035*sin(ang*8.0+3.1);
+      rr = r; ww = w; return w;
+    }`;
+  const rippleFn = `
+    uniform vec4 uRipples[${MAX_RIPPLES}]; // xy: local pos, z: birth time, w: strength
+    vec2 rippleNormal(vec2 p, float t){
+      vec2 n = vec2(0.0);
+      for(int i=0;i<${MAX_RIPPLES};i++){
+        vec4 rp = uRipples[i]; if(rp.w < 0.001) continue;
+        vec2 d = p - rp.xy; float dist = length(d) + 1e-4;
+        float age = t - rp.z;
+        float wave = sin(dist*34.0 - age*7.0) * exp(-dist*4.5) * exp(-age*1.4) * rp.w;
+        n += normalize(d) * wave;
+      }
+      return n;
+    }`;
+
+  const waterUniforms = {
+    uTime:{value:0}, uOpen:{value:0}, uClarity:{value:0},
+    uVideo:{value:null}, uHasVideo:{value:0},
+    uResolution:{value:new THREE.Vector2(1,1)},
+    uCover:{value:coverScale},
+    uLight:{value:new THREE.Color(0.55,0.62,0.7)},
+    uRipples:{value:Array.from({length:MAX_RIPPLES},()=>new THREE.Vector4(0,0,0,0))}
+  };
+
+  const waterVert = `
+    varying vec2 vUv; varying vec2 vLocal;
+    void main(){
+      vUv = uv; vLocal = (uv*2.0-1.0);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }`;
+
+  /* ---------- 1) portal mask (stencil only) ---------- */
+  const maskMat = new THREE.ShaderMaterial({
+    uniforms: waterUniforms, vertexShader: waterVert,
+    fragmentShader: `
+      precision highp float; varying vec2 vLocal;
+      uniform float uOpen;
+      ${blobFn}
+      void main(){
+        float r,w; blob(vLocal,r,w);
+        if(r > w*uOpen) discard;
+        gl_FragColor = vec4(0.0);
+      }`,
+    colorWrite:false, depthWrite:false, transparent:true,
+    stencilWrite:true, stencilRef:1,
+    stencilFunc:THREE.AlwaysStencilFunc,
+    stencilZPass:THREE.ReplaceStencilOp
+  });
+  const maskMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.6), maskMat);
+  maskMesh.renderOrder = 1;
+
+  /* ---------- 2) the deep (visible only through the portal) ---------- */
+  const deep = new THREE.Group();
+  const stencilIn = m => { m.stencilWrite=true; m.stencilRef=1;
+    m.stencilFunc=THREE.EqualStencilFunc; m.stencilZPass=THREE.KeepStencilOp; return m; };
+
+  function glowSprite(color, size){
+    const c=document.createElement('canvas'); c.width=c.height=128;
+    const g=c.getContext('2d'), grd=g.createRadialGradient(64,64,4,64,64,64);
+    grd.addColorStop(0,'rgba(255,255,255,0.95)');
+    grd.addColorStop(0.25,color); grd.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=grd; g.fillRect(0,0,128,128);
+    const mat = stencilIn(new THREE.SpriteMaterial({
+      map:new THREE.CanvasTexture(c), transparent:true, depthWrite:false,
+      blending:THREE.AdditiveBlending, opacity:0.9 }));
+    const s=new THREE.Sprite(mat); s.scale.setScalar(size); return s;
+  }
+
+  // placeholder creature: a slow light that lives under the street (art TBD with Lily)
+  const creature = new THREE.Group();
+  creature.add(glowSprite('rgba(120,205,220,0.85)', 0.42));
+  const halo = glowSprite('rgba(70,140,190,0.5)', 0.8); halo.position.z = -0.05; creature.add(halo);
+  const ringGeo = new THREE.TorusGeometry(0.16, 0.004, 8, 48);
+  for(let i=0;i<2;i++){
+    const ring = new THREE.Mesh(ringGeo, stencilIn(new THREE.MeshBasicMaterial({
+      color:0x9fdbe8, transparent:true, opacity:0.35, depthWrite:false,
+      blending:THREE.AdditiveBlending })));
+    ring.rotation.x = 0.4+i*0.9; creature.add(ring);
+  }
+  creature.position.z = -0.85;
+  deep.add(creature);
+
+  // drifting motes
+  const N=42, pGeo=new THREE.BufferGeometry(), pPos=new Float32Array(N*3), pSeed=[];
+  for(let i=0;i<N;i++){ pPos[i*3]=(Math.random()-0.5)*1.1; pPos[i*3+1]=(Math.random()-0.5)*1.1;
+    pPos[i*3+2]=-Math.random()*0.9-0.05; pSeed.push(Math.random()*Math.PI*2); }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos,3));
+  const motes = new THREE.Points(pGeo, stencilIn(new THREE.PointsMaterial({
+    size:0.02, color:0x8fc9dd, transparent:true, opacity:0.55,
+    depthWrite:false, blending:THREE.AdditiveBlending })));
+  deep.add(motes);
+
+  // the story shard (amber — the one thing allowed to cross the surface)
+  const shard3d = glowSprite('rgba(255,190,110,0.95)', 0.16);
+  shard3d.material.stencilWrite = false;   // may rise above the surface
+  shard3d.visible = false; deep.add(shard3d);
+
+  deep.traverse(o=>{ o.renderOrder = 2; });
+  shard3d.renderOrder = 4;
+
+  /* ---------- 3) water surface (the street, refracted) ---------- */
+  const surfMat = new THREE.ShaderMaterial({
+    uniforms: waterUniforms, vertexShader: waterVert,
+    fragmentShader: `
+      precision highp float;
+      varying vec2 vLocal;
+      uniform float uTime, uOpen, uClarity, uHasVideo;
+      uniform sampler2D uVideo;
+      uniform vec2 uResolution, uCover;
+      uniform vec3 uLight;
+      ${blobFn}
+      ${rippleFn}
+      void main(){
+        float r,w; blob(vLocal,r,w);
+        float inR = w*uOpen;
+        if(r > inR) discard;
+
+        // ambient waves + interactive ripples
+        vec2 n = rippleNormal(vLocal, uTime);
+        n += 0.012*vec2( sin(vLocal.y*9.0+uTime*0.9)+sin((vLocal.x+vLocal.y)*13.0-uTime*0.6),
+                         sin(vLocal.x*8.0-uTime*0.8)+cos((vLocal.x-vLocal.y)*11.0+uTime*0.5) );
+
+        // the real street, bent by the water
+        vec2 suv = gl_FragCoord.xy / uResolution;
+        vec2 vuv = (suv - 0.5)*uCover + 0.5 + n*0.9;
+        vec3 street = uHasVideo > 0.5 ? texture2D(uVideo, vuv).rgb : vec3(0.16,0.2,0.24);
+
+        // depth: darker, bluer toward the middle — the deep breathes with real light
+        float df = smoothstep(inR, inR*0.18, r);
+        vec3 deepCol = mix(vec3(0.04,0.10,0.15), vec3(0.05,0.16,0.20), 0.5+0.5*sin(uTime*0.3)) * (uLight*1.6);
+        vec3 col = mix(street*0.82, deepCol, df*(0.75 - uClarity*0.45));
+
+        // sparkle where ripples bend light
+        float spec = pow(clamp(length(n)*22.0, 0.0, 1.0), 3.0);
+        col += spec * uLight * 0.5;
+
+        // dark wet rim
+        float rim = smoothstep(inR, inR*0.93, r);
+        col *= mix(1.0, 0.55, rim*(1.0-df));
+
+        float alpha = mix(0.93, 0.55, df*uClarity);   // water clears as the deep wakes
+        gl_FragColor = vec4(col, alpha);
+      }`,
+    transparent:true, depthWrite:false
+  });
+  const surfMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.6), surfMat);
+  surfMesh.renderOrder = 3;
+
+  anchor.group.add(maskMesh, deep, surfMesh);
+
+  /* ---------- light stealing: tint the deep with the street's real light ---------- */
+  const lc=document.createElement('canvas'); lc.width=lc.height=8;
+  const lg=lc.getContext('2d', { willReadFrequently:true });
+  setInterval(()=>{
+    const v=mindar.video; if(!v || !v.videoWidth) return;
+    try{
+      lg.drawImage(v,0,0,8,8);
+      const d=lg.getImageData(0,0,8,8).data; let r=0,g=0,b=0;
+      for(let i=0;i<d.length;i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; }
+      const k=1/(64*255);
+      waterUniforms.uLight.value.lerp(new THREE.Color(0.25+r*k*0.9, 0.3+g*k*0.9, 0.35+b*k*0.9), 0.3);
+    }catch(e){/* canvas tainted or not ready — keep default light */}
+  }, 600);
+
+  /* ---------- interaction ---------- */
+  const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
+  let rippleIdx = 0, taps = 0;
+  renderer.domElement.parentElement.addEventListener('pointerdown', (ev)=>{
+    if(S.phase!=='idle' && S.phase!=='waking' && S.phase!=='shard') return;
+    ndc.set((ev.clientX/window.innerWidth)*2-1, -(ev.clientY/window.innerHeight)*2+1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObject(surfMesh, false)[0];
+    if(!hit) return;
+    const p = hit.uv ? new THREE.Vector2(hit.uv.x*2-1, hit.uv.y*2-1) : new THREE.Vector2(0,0);
+    const rp = waterUniforms.uRipples.value[rippleIdx++ % MAX_RIPPLES];
+    rp.set(p.x, p.y, clock.getElapsedTime(), 0.9);
+
+    if(S.phase==='idle'){
+      taps++;
+      if(taps>=2){ S.phase='waking'; hint('Something is rising…'); }
+    } else if (S.phase==='shard'){
+      collectShard(ev.clientX, ev.clientY);
+    }
+  });
+
+  /* ---------- story beats ---------- */
+  anchor.onTargetFound = ()=>{
+    if(S.phase==='idle' && S.open<0.05){
+      $('scan').classList.remove('show');
+      S.phase='filling';
+      setTimeout(()=>{ S.phase='idle'; hint('Tap the water'); $('btn-skip').style.display='block'; }, 1800);
+    }
+  };
+  anchor.onTargetLost = ()=>{ /* keep state; MindAR hides the group */ };
+
+  function collectShard(x, y){
+    if(S.shardOut) return; S.shardOut = true;
+    S.phase='collected'; hint('');
+    shard3d.visible=false;
+    const el=$('shard'); el.style.display='block';
+    el.style.left=(x-13)+'px'; el.style.top=(y-13)+'px';
+    const st=$('st'+(S.stamps+1)).getBoundingClientRect();
+    el.animate([
+      { transform:'translate(0,0) scale(1.6)', opacity:1 },
+      { transform:`translate(${st.x+st.width/2-x}px, ${st.y+st.height/2-y}px) scale(0.5)`, opacity:0.9 }
+    ], { duration:900, easing:'cubic-bezier(.3,.7,.3,1)' }).onfinish = ()=>{
+      el.style.display='none';
+      S.stamps++; $('st'+S.stamps).classList.add('on');
+      if(S.stamps>=3){ setTimeout(()=>$('coupon').classList.add('show'), 700); }
+      else {
+        hint('Fragment 1 of 3 — the next puddle is waiting');
+        S.phase='done-one';
+      }
+    };
+  }
+
+  $('btn-skip').addEventListener('click', ()=>{
+    if(S.stamps>=3) return;
+    S.stamps++; $('st'+S.stamps).classList.add('on');
+    if(S.stamps>=3){ $('btn-skip').style.display='none';
+      setTimeout(()=>$('coupon').classList.add('show'), 500); }
+  });
+  $('btn-close').addEventListener('click', ()=>$('coupon').classList.remove('show'));
+
+  /* ---------- loop ---------- */
+  const clock = new THREE.Clock();
+  await mindar.start();
+  updateCover();
+  if(mindar.video){
+    videoTex = new THREE.VideoTexture(mindar.video);
+    videoTex.colorSpace = THREE.SRGBColorSpace;
+    waterUniforms.uVideo.value = videoTex; waterUniforms.uHasVideo.value = 1;
+  }
+  $('hud').classList.add('show');
+  $('scan').classList.add('show');
+
+  renderer.setAnimationLoop(()=>{
+    const t = clock.getElapsedTime();
+    waterUniforms.uTime.value = t;
+    waterUniforms.uResolution.value.set(renderer.domElement.width, renderer.domElement.height);
+
+    // water fills the dry mark
+    const openTarget = (S.phase==='filling'||S.open>0) ? 1 : 0;
+    S.open += (openTarget - S.open) * 0.03; waterUniforms.uOpen.value = S.open;
+
+    // creature breathes, rises when woken
+    const upTarget = (S.phase==='waking'||S.phase==='shard') ? 1 : (S.phase==='collected'||S.phase==='done-one' ? 0.35 : 0);
+    S.creatureUp += (upTarget - S.creatureUp) * 0.012;   // very slow — water resistance
+    creature.position.z = -0.85 + S.creatureUp*0.62;
+    creature.position.x = Math.sin(t*0.4)*0.06; creature.position.y = Math.cos(t*0.31)*0.06;
+    creature.children.forEach((c,i)=>{ if(c.rotation) c.rotation.z += 0.002+(i*0.001); });
+    S.clarity += ((S.creatureUp>0.25?1:0) - S.clarity)*0.02;
+    waterUniforms.uClarity.value = S.clarity;
+
+    // when the creature is near the surface, it offers the shard
+    if(S.phase==='waking' && S.creatureUp>0.8){
+      S.phase='shard'; shard3d.visible=true; hint('Take the story fragment');
+    }
+    if(shard3d.visible){
+      shard3d.position.z = -0.2 + S.creatureUp*0.45 + Math.sin(t*1.2)*0.02;
+      shard3d.position.x = creature.position.x; shard3d.position.y = creature.position.y;
+    }
+
+    // motes drift upward
+    const pos = pGeo.attributes.position;
+    for(let i=0;i<N;i++){
+      let z = pos.getZ(i) + 0.0006;
+      if(z>-0.03) z = -0.95;
+      pos.setZ(i, z);
+      pos.setX(i, pos.getX(i)+Math.sin(t*0.6+pSeed[i])*0.0004);
+    }
+    pos.needsUpdate = true;
+
+    renderer.render(scene, camera);
+  });
+}
+</script>
+</body>
+</html>
