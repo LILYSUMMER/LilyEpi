@@ -700,6 +700,7 @@ async function startAR() {
   let wanted = null;
   let nearSince = 0;
   let accuracy = 0;
+  let quietUntil = 0;
   const eyeTarget = new THREE.Vector3(0, EYE, 0);
   const clock = new THREE.Clock();
   say('locating', {}, true);
@@ -707,26 +708,29 @@ async function startAR() {
   const request = (next, why, values) => {
     if (mode === 'locating' && !wanted) wanted = { next, why, values };
   };
-  const giveUp = setTimeout(() => { if (!nearSince) request('ahead', 'nogps'); }, 12000);
+  // 위치가 늦게 잡혀도 앞쪽에 띄운 채로 계속 기다렸다가, 반경 안으로 잡히면 제자리로 옮깁니다.
+  const giveUp = setTimeout(() => { if (!nearSince) request('ahead', 'searching'); }, 12000);
 
   watchPlace((coords) => {
-    if (mode === 'ahead' || wanted) return;
     const away = distanceToSpot(coords.latitude, coords.longitude);
-    if (mode === 'locating' && !nearSince) {
+    if (!nearSince) {
       if (away > SPOT.radius) {
-        request('ahead', 'far', { d: formatDistance(away, PAGE_LANG) });
+        // 오차 범위가 반경 안쪽까지 걸치면 멀다고 단정하지 않고 더 정확한 위치를 기다립니다.
+        if (away - coords.accuracy > SPOT.radius) request('ahead', 'far', { d: formatDistance(away, PAGE_LANG) });
         return;
       }
+      if (mode === 'ahead' && coords.accuracy > 60) return;
       nearSince = performance.now();
+      motion.frozen = false;
     }
     // 오차가 너무 큰 위치는 광고판을 크게 흔들기만 하므로 버립니다.
     if (coords.accuracy > 60 && mode === 'onsite') return;
     accuracy = coords.accuracy;
     const p = metersFromSpot(coords.latitude, coords.longitude);
     eyeTarget.set(p.x, EYE, p.z);
-    if (mode === 'onsite') say(accuracy > 25 ? 'weak' : null, { a: Math.round(accuracy) }, true);
-  }, () => {
-    if (!nearSince) request('ahead', 'nogps');
+    if (mode === 'onsite' && performance.now() > quietUntil) say(accuracy > 25 ? 'weak' : null, { a: Math.round(accuracy) }, true);
+  }, (error) => {
+    if (!nearSince && (!error || error.code === error.PERMISSION_DENIED)) request('ahead', 'denied');
   });
 
   function place(next, why, values) {
@@ -735,7 +739,8 @@ async function startAR() {
     if (next === 'onsite') {
       camera.position.copy(eyeTarget);
       ad.root.position.set(0, 0, 0);
-      say(accuracy > 25 ? 'weak' : null, { a: Math.round(accuracy) }, true);
+      if (why) quietUntil = performance.now() + 6000;
+      say(why || (accuracy > 25 ? 'weak' : null), { a: Math.round(accuracy) }, !why);
     } else {
       motion.frozen = true;
       camera.position.set(0, EYE, 0);
@@ -749,7 +754,7 @@ async function startAR() {
     }
     ad.show(clock.getElapsedTime());
     $('ad-langs').classList.add('is-on');
-    track('ooh_ar_shown', { mode: next });
+    track('ooh_ar_shown', { mode: next, reason: why });
   }
 
   const pointer = $('pointer');
@@ -804,6 +809,8 @@ async function startAR() {
       if (wanted) place(wanted.next, wanted.why, wanted.values);
       else if (nearSince && motion.compass) place('onsite');
       else if (nearSince && performance.now() - nearSince > 3000) place('ahead', 'nocompass');
+    } else if (mode === 'ahead' && nearSince && motion.compass) {
+      place('onsite', 'found');
     }
 
     let distance = null;
