@@ -29,6 +29,14 @@ const AD = {
     here: '바로 여기',
     offer: 'AR 광고를 보고 오셨다고 말씀하시면 귤차 사이즈를 올려 드려요',
     sample: '예시',
+    card: {
+      badge: '예시 가게',
+      hours: '매일 오전 10시 ~ 오후 8시',
+      offer: 'AR 광고를 보고 오셨다고 말씀하시면 귤차 사이즈를 올려 드립니다.',
+      about: '에피스페이스가 만든 AR 가상 옥외광고 예시입니다. 실제 간판은 없고, 그 자리에서 휴대폰을 든 사람에게만 보입니다. 위치와 문구, 언어는 언제든 바꿀 수 있습니다.',
+      cta: '우리 거리에도 띄우기',
+      close: '닫기',
+    },
   },
   en: {
     name: 'Gyulbit Café',
@@ -38,6 +46,14 @@ const AD = {
     here: 'Right here',
     offer: 'Mention this AR sign and we’ll size up your tangerine tea',
     sample: 'SAMPLE',
+    card: {
+      badge: 'Sample shop',
+      hours: 'Open daily, 10 am to 8 pm',
+      offer: 'Mention the AR sign and we’ll size up your tangerine tea.',
+      about: 'A sample of virtual out-of-home made by Epispace. There is no real sign. Only people holding up a phone on the spot can see it, and the place, the words and the language can change at any time.',
+      cta: 'Put one on our street',
+      close: 'Close',
+    },
   },
   zh: {
     name: '橘光咖啡',
@@ -47,6 +63,14 @@ const AD = {
     here: '就在这里',
     offer: '出示这则AR广告，橘子茶免费升杯',
     sample: '示例',
+    card: {
+      badge: '示例店铺',
+      hours: '每天上午10点至晚上8点营业',
+      offer: '出示这则AR广告，橘子茶即可免费升杯。',
+      about: '这是Epispace制作的AR虚拟户外广告示例。现场并没有真的广告牌，只有在那里举起手机的人才能看到。位置、文字和语言随时都可以更换。',
+      cta: '咨询合作',
+      close: '关闭',
+    },
   },
   ja: {
     name: 'みかん色カフェ',
@@ -56,6 +80,14 @@ const AD = {
     here: 'すぐそこ',
     offer: 'このAR広告を見せると、みかん茶をサイズアップ',
     sample: 'サンプル',
+    card: {
+      badge: 'サンプル店舗',
+      hours: '毎日10時〜20時営業',
+      offer: 'このAR広告をお見せいただくと、みかん茶を無料でサイズアップします。',
+      about: 'Epispaceが制作したARバーチャル屋外広告のサンプルです。実際の看板はなく、その場でスマートフォンをかざした人にだけ見えます。場所や文言、言語はいつでも変えられます。',
+      cta: '導入のご相談',
+      close: '閉じる',
+    },
   },
 };
 
@@ -63,6 +95,7 @@ const FONT = 'Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Ne
 const PAGE_LANG = document.documentElement.lang === 'en' ? 'en' : 'ko';
 const $ = (id) => document.getElementById(id);
 const track = (name, params) => window.gtag && window.gtag('event', name, params);
+const sheet = $('sheet');
 
 const mapLink = $('map-link');
 if (mapLink) mapLink.href = `https://www.google.com/maps/search/?api=1&query=${SPOT.lat}%2C${SPOT.lng}`;
@@ -78,6 +111,7 @@ function setAdLang(lang) {
     button.setAttribute('aria-pressed', String(button.dataset.adLang === lang));
   });
   liveAds.forEach((ad) => ad.setLang(lang));
+  fillCard(lang);
 }
 
 document.querySelectorAll('[data-ad-lang]').forEach((button) => {
@@ -440,7 +474,16 @@ function hitAd(event, canvas, camera, ad) {
 
 /* ---------- 가게 안내 ---------- */
 
-const sheet = $('sheet');
+function fillCard(lang) {
+  const copy = { name: AD[lang].name, ...AD[lang].card };
+  sheet.lang = lang;
+  sheet.querySelectorAll('[data-card]').forEach((el) => {
+    el.textContent = copy[el.dataset.card];
+  });
+  // 중국어·일본어 홈페이지는 없어서, 한국어가 아니면 영어 홈페이지의 문의로 보냅니다.
+  sheet.querySelector('[data-card="cta"]').href = lang === 'ko' ? '/index.html#contact' : '/en/index.html#contact';
+}
+
 function openSheet() {
   sheet.hidden = false;
   $('hint')?.classList.remove('is-on');

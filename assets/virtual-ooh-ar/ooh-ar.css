@@ -123,6 +123,8 @@ html.is-running .ar-ui { display: block; }
 .sheet .about { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); color: #4b5563; font-size: 14px; }
 .sheet .row { display: flex; gap: 10px; margin-top: 18px; }
 .sheet .row .btn { flex: 1; padding: 14px 12px; font-size: 15px; }
+.sheet:lang(zh) { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif; word-break: normal; }
+.sheet:lang(ja) { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif; word-break: normal; }
 @keyframes sheet-up { from { transform: translateY(40px); opacity: 0; } }
 @media (min-width: 700px) {
   .sheet-wrap { align-items: center; }
