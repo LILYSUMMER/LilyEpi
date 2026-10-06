@@ -122,7 +122,6 @@
            data-locating="위치를 확인하는 중..."
            data-far="랍슨 스트리트까지 {d}. 대신 지금 계신 곳 앞쪽에 띄웠어요."
            data-searching="아직 위치를 찾는 중이라 우선 앞쪽에 띄웠어요."
-           data-denied="위치 접근이 꺼져 있어 앞쪽에 띄웠어요. 설정에서 위치를 허용하고 다시 시작해 주세요."
            data-found="위치를 찾아서 광고판을 제자리로 옮겼어요."
            data-nocompass="나침반을 쓸 수 없어 앞쪽에 띄웠어요."
            data-weak="위치 오차가 ±{a}m라 광고판이 조금 어긋날 수 있어요."></p>
@@ -136,6 +135,21 @@
             <button class="chip" type="button" data-ad-lang="en" lang="en">English</button>
             <button class="chip" type="button" data-ad-lang="zh" lang="zh">中文</button>
             <button class="chip" type="button" data-ad-lang="ja" lang="ja">日本語</button>
+        </div>
+        <div class="loc-help" id="loc-help" aria-live="polite" hidden>
+            <strong>위치 접근이 꺼져 있어 광고판을 앞쪽에 띄웠어요.</strong>
+            <p data-how="chrome">아래 버튼으로 위치를 허용하면 광고판이 제자리로 옮겨 가요.</p>
+            <p data-how="inapp">앱 안에서 열린 화면이라 위치를 쓸 수 없어요. 메뉴에서 Safari나 Chrome으로 열어 주세요.</p>
+            <ol data-how="ios">
+                <li>설정 → 개인정보 보호 및 보안 → 위치 서비스 → <span data-ios-app>Safari 웹 사이트</span> → ‘앱을 사용하는 동안’</li>
+                <li data-safari-only>설정 → 앱 → Safari → 위치 → ‘묻기’</li>
+            </ol>
+            <p data-how="other">주소창 옆 사이트 설정에서 위치를 허용하고, 휴대폰의 위치 기능을 켠 뒤 다시 시작해 주세요.</p>
+            <div class="row">
+                <span data-how="chrome" data-slot="geolocation"></span>
+                <button class="btn btn-primary" type="button" data-how="ios other" data-action="restart">다시 시작</button>
+                <button class="btn btn-ghost" type="button" data-action="close">닫기</button>
+            </div>
         </div>
     </div>
 

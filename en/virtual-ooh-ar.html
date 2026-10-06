@@ -122,7 +122,6 @@
            data-locating="Finding your location..."
            data-far="You’re {d} from Robson Street, so the sign is right in front of you."
            data-searching="Still finding your location, so the sign is in front of you for now."
-           data-denied="Location access is off, so the sign is in front of you. Allow location in your settings and start again."
            data-found="Got your location, so the sign has moved to its real spot."
            data-nocompass="This phone has no compass, so the sign is in front of you."
            data-weak="Your location is off by about {a} m, so the sign may sit a little off."></p>
@@ -136,6 +135,21 @@
             <button class="chip" type="button" data-ad-lang="en" lang="en">English</button>
             <button class="chip" type="button" data-ad-lang="zh" lang="zh">中文</button>
             <button class="chip" type="button" data-ad-lang="ja" lang="ja">日本語</button>
+        </div>
+        <div class="loc-help" id="loc-help" aria-live="polite" hidden>
+            <strong>Location access is off, so the sign is in front of you.</strong>
+            <p data-how="chrome">Allow location with the button below and the sign will move to its real spot.</p>
+            <p data-how="inapp">This page is open inside another app, which can’t share your location. Open it in Safari or Chrome from the app’s menu.</p>
+            <ol data-how="ios">
+                <li>Settings → Privacy &amp; Security → Location Services → <span data-ios-app>Safari Websites</span> → While Using the App</li>
+                <li data-safari-only>Settings → Apps → Safari → Location → Ask</li>
+            </ol>
+            <p data-how="other">Allow location in the site settings next to the address bar, turn on your phone’s location, then start again.</p>
+            <div class="row">
+                <span data-how="chrome" data-slot="geolocation"></span>
+                <button class="btn btn-primary" type="button" data-how="ios other" data-action="restart">Start again</button>
+                <button class="btn btn-ghost" type="button" data-action="close">Close</button>
+            </div>
         </div>
     </div>
 

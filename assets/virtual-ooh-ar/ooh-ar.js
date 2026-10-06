@@ -505,6 +505,50 @@ function showError(kind, error) {
   box.hidden = false;
 }
 
+/* ---------- 위치 접근이 막혔을 때 ---------- */
+
+const UA = navigator.userAgent;
+const IN_APP = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|BAND\//i.test(UA);
+const IOS = /iP(hone|ad|od)/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
+
+const locHelp = $('loc-help');
+locHelp.querySelector('[data-action="restart"]').addEventListener('click', () => location.reload());
+locHelp.querySelector('[data-action="close"]').addEventListener('click', () => { locHelp.hidden = true; });
+
+// 웹페이지는 브라우저 설정을 바꿀 수 없습니다. Chrome은 페이지 안의 <geolocation> 버튼을 누르면 막아 둔 위치도
+// 다시 허용할 수 있고, 아이폰에는 그런 방법이 없어 설정 경로를 안내합니다.
+function showLocationHelp(onFix) {
+  let how = 'other';
+  if (IN_APP) how = 'inapp';
+  else if ('HTMLGeolocationElement' in window) how = 'chrome';
+  else if (IOS) how = 'ios';
+  locHelp.querySelectorAll('[data-how]').forEach((el) => {
+    el.hidden = !el.dataset.how.split(' ').includes(how);
+  });
+  const app = /CriOS/.test(UA) ? 'Chrome' : /FxiOS/.test(UA) ? 'Firefox' : /EdgiOS/.test(UA) ? 'Edge' : '';
+  if (how === 'ios' && app) {
+    locHelp.querySelector('[data-ios-app]').textContent = app;
+    locHelp.querySelector('[data-safari-only]').hidden = true;
+  }
+  if (how === 'chrome') {
+    const button = document.createElement('geolocation');
+    button.setAttribute('watch', '');
+    button.setAttribute('accuracymode', 'precise');
+    // 버튼으로 허용받은 뒤에는 보통의 위치 추적으로 넘깁니다. 숨긴 버튼이 계속 위치를 보내 준다는 보장이 없습니다.
+    button.addEventListener('location', () => {
+      if (!button.position) return;
+      const { coords } = button.position;
+      locHelp.hidden = true;
+      button.remove();
+      onFix(coords);
+      watchPlace(onFix, () => {});
+    });
+    locHelp.querySelector('[data-slot="geolocation"]').replaceWith(button);
+  }
+  locHelp.hidden = false;
+  track('ooh_ar_location_help', { how });
+}
+
 /* ---------- 휴대폰: 방향과 위치 ---------- */
 
 const deg = THREE.MathUtils.degToRad;
@@ -701,6 +745,7 @@ async function startAR() {
   let nearSince = 0;
   let accuracy = 0;
   let quietUntil = 0;
+  let aheadWhy = null;
   const eyeTarget = new THREE.Vector3(0, EYE, 0);
   const clock = new THREE.Clock();
   say('locating', {}, true);
@@ -711,12 +756,19 @@ async function startAR() {
   // 위치가 늦게 잡혀도 앞쪽에 띄운 채로 계속 기다렸다가, 반경 안으로 잡히면 제자리로 옮깁니다.
   const giveUp = setTimeout(() => { if (!nearSince) request('ahead', 'searching'); }, 12000);
 
-  watchPlace((coords) => {
+  const onFix = (coords) => {
     const away = distanceToSpot(coords.latitude, coords.longitude);
     if (!nearSince) {
       if (away > SPOT.radius) {
         // 오차 범위가 반경 안쪽까지 걸치면 멀다고 단정하지 않고 더 정확한 위치를 기다립니다.
-        if (away - coords.accuracy > SPOT.radius) request('ahead', 'far', { d: formatDistance(away, PAGE_LANG) });
+        if (away - coords.accuracy > SPOT.radius) {
+          const values = { d: formatDistance(away, PAGE_LANG) };
+          if (mode === 'locating') request('ahead', 'far', values);
+          else if (mode === 'ahead' && aheadWhy !== 'far') {
+            aheadWhy = 'far';
+            say('far', values);
+          }
+        }
         return;
       }
       if (mode === 'ahead' && coords.accuracy > 60) return;
@@ -729,7 +781,8 @@ async function startAR() {
     const p = metersFromSpot(coords.latitude, coords.longitude);
     eyeTarget.set(p.x, EYE, p.z);
     if (mode === 'onsite' && performance.now() > quietUntil) say(accuracy > 25 ? 'weak' : null, { a: Math.round(accuracy) }, true);
-  }, (error) => {
+  };
+  watchPlace(onFix, (error) => {
     if (!nearSince && (!error || error.code === error.PERMISSION_DENIED)) request('ahead', 'denied');
   });
 
@@ -750,7 +803,11 @@ async function startAR() {
       if (ahead.lengthSq() < 1e-6) ahead.set(0, 0, -1);
       ahead.normalize().multiplyScalar(AHEAD);
       ad.root.position.set(ahead.x, 0, ahead.z);
-      say(why, values);
+      aheadWhy = why;
+      if (why === 'denied') {
+        say(null);
+        showLocationHelp(onFix);
+      } else say(why, values);
     }
     ad.show(clock.getElapsedTime());
     $('ad-langs').classList.add('is-on');
