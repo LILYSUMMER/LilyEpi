@@ -1,10 +1,10 @@
 {
     "name": "에피스페이스 | 로컬 스토리 AR",
     "short_name": "에피스페이스",
-    "description": "지역에 숨어 있는 설화·신화·전설을 그 장소 위에 AR로 되살려, 사람들이 골목을 걷고 가게에 들르게 합니다.",
+    "description": "그 장소의 이야기를 AR로 되살려, 사람들이 골목을 걷고 가게에 들르게 합니다.",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#f6fbf9",
+    "background_color": "#ffffff",
     "theme_color": "#FF6B00",
     "orientation": "portrait-primary",
     "scope": "/",
@@ -12,10 +12,20 @@
     "categories": ["business", "travel"],
     "icons": [
         {
-            "src": "/assets/epispace-logo.png",
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any"
+            "purpose": "maskable"
         }
     ],
     "shortcuts": [
