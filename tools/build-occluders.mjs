@@ -6,6 +6,10 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 // SPOT.radius(500m) 경계에 걸친 건물까지 담습니다.
 const RADIUS = 520;
+// 그 바깥은 광고판보다 늘 뒤에 있으므로, 화면에서 광고판 뒤로 보일 만한 고층 건물만 담습니다.
+// 페이지는 카메라에 하늘이 아닌 것이 찍혔을 때 이 건물들이 있으면 광고판 뒤 배경으로 봅니다.
+const FAR_RADIUS = 2500;
+const FAR_MIN_HEIGHT = 20;
 const LEVEL = 3.2;
 const LOBBY = 1.3;
 // 이보다 낮은 나무는 광고판(지상 7m 위)을 가릴 일이 거의 없습니다.
@@ -89,6 +93,36 @@ function toLocalRing(points) {
   return ring;
 }
 
+function offLine([x, z], [ax, az], [bx, bz]) {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const length = Math.hypot(dx, dz);
+  return length ? Math.abs(dx * (az - z) - dz * (ax - x)) / length : Math.hypot(x - ax, z - az);
+}
+
+// 멀리 있는 건물은 작게 보이므로 테두리를 tolerance(m) 안쪽으로 줄여 데이터를 가볍게 합니다.
+function simplify(ring, tolerance) {
+  const keep = new Set([0]);
+  const split = (from, to) => {
+    let far = -1;
+    let worst = tolerance;
+    for (let i = from + 1; i < to; i++) {
+      const d = offLine(ring[i], ring[from], ring[to % ring.length]);
+      if (d > worst) {
+        worst = d;
+        far = i;
+      }
+    }
+    if (far < 0) return;
+    keep.add(far);
+    split(from, far);
+    split(far, to);
+  };
+  split(0, ring.length);
+  const out = [...keep].sort((a, b) => a - b).map((i) => ring[i]);
+  return out.length >= 3 ? out : ring;
+}
+
 const area = (ring) => Math.abs(ring.reduce((sum, [x, z], i) => {
   const [nx, nz] = ring[(i + 1) % ring.length];
   return sum + x * nz - nx * z;
@@ -133,19 +167,20 @@ async function overpass(query) {
   throw new Error(`Overpass에서 건물을 받지 못했습니다: ${failures.join(', ')}`);
 }
 
-async function fetchBuildings() {
-  const around = `around:${RADIUS},${spot.lat},${spot.lng}`;
-  // 지붕만 있는 차양(roof)과 차고 지붕(carport)은 아래가 뚫려 있어서 뺍니다.
-  const query = `[out:json][timeout:120];
+// 지붕만 있는 차양(roof)과 차고 지붕(carport)은 아래가 뚫려 있어서 뺍니다. filter는 Overpass의 (if: ...) 조건입니다.
+function buildingQuery(radius, filter = '') {
+  const around = `around:${radius},${spot.lat},${spot.lng}`;
+  return `[out:json][timeout:180];
 (
-  way(${around})[building][building!~"^(roof|carport)$"];
-  way(${around})["building:part"]["building:part"!="roof"];
-  relation(${around})[building][type=multipolygon];
-  relation(${around})["building:part"][type=multipolygon];
+  way(${around})[building][building!~"^(roof|carport)$"]${filter};
+  way(${around})["building:part"]["building:part"!="roof"]${filter};
+  relation(${around})[building][type=multipolygon]${filter};
+  relation(${around})["building:part"][type=multipolygon]${filter};
 );
 out tags geom;`;
-  const { elements } = await overpass(query);
+}
 
+function shapesOf(elements) {
   const shapes = [];
   for (const element of elements) {
     const tags = element.tags || {};
@@ -165,14 +200,27 @@ out tags geom;`;
   const centre = (ring) => ring.reduce((c, [x, z]) => [c[0] + x / ring.length, c[1] + z / ring.length], [0, 0]);
   const partCentres = parts.map((p) => centre(p.ring));
   const kept = shapes.filter((s) => s.part || !partCentres.some(([x, z]) => inside(x, z, s.ring)));
+  return { kept: kept.filter((s) => s.height > s.base + 0.5), parts: parts.length, outlines: shapes.length - parts.length };
+}
 
+async function fetchBuildings() {
+  const { elements } = await overpass(buildingQuery(RADIUS));
+  const { kept, parts, outlines } = shapesOf(elements);
   return {
-    list: kept
-      .filter((s) => s.height > s.base + 0.5)
-      .map((s) => [tenth(s.height), tenth(s.base), ...s.ring.flat().map(tenth)]),
-    parts: parts.length,
-    outlines: shapes.length - parts.length,
+    list: kept.map((s) => [tenth(s.height), tenth(s.base), ...s.ring.flat().map(tenth)]),
+    ids: new Set(elements.map((e) => `${e.type}/${e.id}`)),
+    parts,
+    outlines,
   };
+}
+
+async function fetchFarBuildings(nearIds) {
+  const tall = `(if: number(t["building:levels"]) >= ${Math.ceil((FAR_MIN_HEIGHT - LOBBY) / LEVEL)} || number(t["height"]) >= ${FAR_MIN_HEIGHT})`;
+  const { elements } = await overpass(buildingQuery(FAR_RADIUS, tall));
+  const { kept } = shapesOf(elements.filter((e) => !nearIds.has(`${e.type}/${e.id}`)));
+  return kept
+    .filter((s) => s.height >= FAR_MIN_HEIGHT)
+    .map((s) => [Math.round(s.height), Math.round(s.base), ...simplify(s.ring, 1).flat().map(Math.round)]);
 }
 
 /* ---------- 나무 ---------- */
@@ -210,19 +258,23 @@ async function fetchTrees() {
 }
 
 const [buildings, trees] = await Promise.all([fetchBuildings(), fetchTrees()]);
+const far = await fetchFarBuildings(buildings.ids);
 
 const data = {
   spot,
   radius: RADIUS,
+  farRadius: FAR_RADIUS,
   made: new Date().toISOString().slice(0, 10),
   credit: {
     buildings: '© OpenStreetMap contributors. Available under the Open Database License (ODbL) 1.0: https://www.openstreetmap.org/copyright',
     trees: 'Contains information licensed under the Open Government Licence – Vancouver: https://opendata.vancouver.ca/pages/licence/',
   },
   // buildings: [높이, 바닥 높이, x0, z0, x1, z1, ...] (m)
+  // far: radius 바깥 farRadius 안의 고층 건물로, 형식은 buildings와 같고 1m 단위입니다.
   // trees: [x, z, 꼭대기, 수관 아래 끝, 수관 반지름]을 나무마다 이어 붙였습니다 (m)
-  format: { buildings: 'height, base, x0, z0, x1, z1, ...', trees: 'x, z, top, bottom, radius per tree' },
+  format: { buildings: 'height, base, x0, z0, x1, z1, ...', far: 'same as buildings, whole metres', trees: 'x, z, top, bottom, radius per tree' },
   buildings: buildings.list,
+  far,
   trees: trees.flat,
 };
 
@@ -230,5 +282,6 @@ const out = new URL('assets/virtual-ooh-ar/occluders.json', root);
 const text = JSON.stringify(data);
 await writeFile(out, `${text}\n`);
 console.log(`buildings ${buildings.list.length} (outlines ${buildings.outlines}, parts ${buildings.parts})`);
+console.log(`far buildings ${far.length} (${FAR_MIN_HEIGHT} m or taller, up to ${FAR_RADIUS} m)`);
 console.log(`trees ${trees.count} of ${trees.all} (shorter than ${MIN_TREE} m left out)`);
 console.log(`${out.pathname} ${(text.length / 1024).toFixed(1)} KB`);
