@@ -315,7 +315,8 @@ function drawScreen(g, W, H, t, lang, open, distance, led) {
 
 // grow를 켜면 멀리 있을수록 광고판을 키워서, 거리가 멀어도 글씨가 읽힐 만한 크기로 보이게 합니다.
 // ghost를 켜면 건물이나 나무에 가려진 부분에 희미한 윤곽을 남깁니다.
-function buildAd({ grow, ghost = false }) {
+// sky를 주면 카메라에 하늘이 찍혔는지에 따라서도 가립니다(skyUniforms).
+function buildAd({ grow, ghost = false, sky = null }) {
   const W = BOARD.width;
   const H = BOARD.height;
   const top = BOARD.lift + H / 2;
@@ -408,6 +409,15 @@ function buildAd({ grow, ghost = false }) {
     sparks.push(spark);
   }
 
+  if (sky) {
+    for (const material of [beamMat, poolMat, ringMat, screenMat, glowMat, ...sparks.map((s) => s.material)]) {
+      skyPatch(material, sky, 'fade');
+    }
+    skyPatch(metal, sky, 'cut');
+    skyPatch(ghostFaceMat, sky, 'ghost');
+    skyPatch(ghostLineMat, sky, 'ghost');
+  }
+
   let lang = adLang;
   let open = isOpenNow();
   let distance = null;
@@ -477,6 +487,12 @@ function buildAd({ grow, ghost = false }) {
     update,
     setLang(next) { lang = next; drawnAt = -1; },
     setDistance(d) { distance = d; },
+    // 하늘로 가릴 때는 모형 깊이가 없으므로, 윤곽은 쉐이더가 가렸다고 정한 곳에 그립니다.
+    setSky(on) {
+      const test = on ? THREE.LessEqualDepth : THREE.GreaterDepth;
+      ghostFaceMat.depthFunc = test;
+      ghostLineMat.depthFunc = test;
+    },
   };
 }
 
@@ -741,17 +757,24 @@ void main() {
   gl_FragColor = TINT;
 }`;
 
-function occluderMaterial(near, leafy) {
-  const tint = leafy ? 'vec4(0.3, 0.9, 0.4, 0.45)' : 'vec4(0.2, 0.7, 1.0, 0.4)';
+// ?occluders=show로 볼 때의 색입니다. 파랑은 건물, 보라는 반경 밖 고층 건물, 초록은 나무입니다.
+const OCCLUDER_TINT = {
+  building: 'vec4(0.2, 0.7, 1.0, 0.4)',
+  far: 'vec4(0.75, 0.45, 1.0, 0.35)',
+  tree: 'vec4(0.3, 0.9, 0.4, 0.45)',
+};
+
+function occluderMaterial(near, kind) {
+  const defines = { TINT: OCCLUDER_TINT[kind] };
+  if (kind === 'tree') defines.LEAFY = '';
   return new THREE.ShaderMaterial({
     vertexShader: OCCLUDER_VERTEX,
     fragmentShader: OCCLUDER_FRAGMENT,
-    defines: leafy ? { LEAFY: '', TINT: tint } : { TINT: tint },
+    defines,
     uniforms: { uNear: near },
     side: THREE.DoubleSide,
     colorWrite: SHOW_OCCLUDERS,
-    // 보여 줄 때도 불투명 차례에 그려야 광고판보다 먼저 깊이가 남습니다.
-    blending: SHOW_OCCLUDERS ? THREE.CustomBlending : THREE.NormalBlending,
+    transparent: SHOW_OCCLUDERS,
   });
 }
 
@@ -808,14 +831,20 @@ async function loadOccluders() {
   // 광고판 자리를 옮기고 데이터를 다시 만들지 않았다면, 엉뚱한 건물이 광고판을 가리게 되므로 쓰지 않습니다.
   if (data.spot.lat !== SPOT.lat || data.spot.lng !== SPOT.lng) return null;
 
+  // 광고판보다 먼저 그려 깊이를 남겨야 하므로 광고판과 다른 장면에 둡니다.
   const near = { value: 12 };
-  const group = new THREE.Group();
-  const buildings = new THREE.Mesh(footprintGeometry(data.buildings), occluderMaterial(near, false));
-  const trees = treeMesh(data.trees, occluderMaterial(near, true));
-  buildings.renderOrder = -1;
-  trees.renderOrder = -1;
-  group.add(buildings, trees);
-  group.visible = false;
+  const scene = new THREE.Scene();
+  scene.add(new THREE.Mesh(footprintGeometry(data.buildings), occluderMaterial(near, 'building')));
+  scene.add(treeMesh(data.trees, occluderMaterial(near, 'tree')));
+  // 반경 밖의 고층 건물은 늘 광고판보다 뒤에 있어서 광고판을 가리지 않습니다.
+  // 하늘로 가릴 때, 카메라에 찍힌 건물이 광고판 뒤 배경인지 가리는 데만 씁니다.
+  const far = data.far && data.far.length ? new THREE.Mesh(footprintGeometry(data.far), occluderMaterial(near, 'far')) : null;
+  if (far) {
+    far.visible = SHOW_OCCLUDERS;
+    scene.add(far);
+  }
+  // 하늘로 가릴 때 앞뒤를 가리는 깊이에는 가까운 모형도, 나뭇잎 틈도 빼지 않고 모형을 통째로 씁니다.
+  const solid = new THREE.MeshBasicMaterial({ colorWrite: false, side: THREE.DoubleSide });
 
   const ground = data.buildings.filter((b) => b[1] < 1).map((b) => {
     const xs = b.filter((_, i) => i >= 2 && i % 2 === 0);
@@ -824,7 +853,11 @@ async function loadOccluders() {
   });
 
   return {
-    group,
+    scene,
+    useSolid(on) {
+      scene.overrideMaterial = on ? solid : null;
+      if (far) far.visible = on || SHOW_OCCLUDERS;
+    },
     // 위치 오차만큼 모형도 실제보다 밀려 있는데, 가까운 모형일수록 그 오차가 화면에서 크게 벌어집니다.
     // 그래서 오차에 비례한 거리 안쪽의 모형은 무시합니다.
     setAccuracy(accuracy) { near.value = THREE.MathUtils.clamp(accuracy * 1.2, 8, 30); },
@@ -832,6 +865,224 @@ async function loadOccluders() {
     indoors(x, z) {
       return ground.some((g) => x >= g.minX && x <= g.maxX && z >= g.minZ && z <= g.maxZ && insideRing(x, z, g.b));
     },
+  };
+}
+
+/* ---------- 휴대폰: 카메라에 찍힌 하늘 ---------- */
+
+// 광고판은 하늘에 떠 있으므로, 카메라에 하늘이 찍힌 곳에는 광고판 앞을 가리는 것이 없다고 봅니다.
+// 하늘이 아닌 것이 찍힌 곳은 모형으로 앞뒤를 가립니다. 모형이 광고판 뒤에 있으면 뒤 배경이니 보여 주고,
+// 모형이 앞에 있거나 아무 모형도 없으면, 데이터에 없는 나무나 기둥이 앞에 있다고 보고 가립니다.
+// 그래서 위치가 조금 틀려도 화면에 찍힌 모양대로 잘립니다. 밤이나 하늘이 거의 안 보일 때는 모형으로만 가립니다.
+
+// 하늘은 파랗거나, 구름이나 흐린 하늘처럼 밝고 색이 거의 없습니다(값은 sRGB 0~1).
+// 구름 밝기 기준(cloudMin)은 노출에 따라 달라지므로 화면에서 가장 밝은 무채색에 맞춰 바꿉니다.
+function isSky(r, g, b, cloudMin) {
+  const hi = Math.max(r, g, b);
+  const lo = Math.min(r, g, b);
+  return (b - r > 0.1 && b - g > 0.02 && b > 0.42) || (lo > cloudMin - 0.03 && hi - lo < 0.24 && b - r > -0.03);
+}
+
+// isSky와 같은 기준을, 경계만 부드럽게 해서 쉐이더에서 씁니다.
+const SKY_GLSL = /* glsl */ `
+uniform sampler2D uVideo;
+uniform vec2 uVideoScale;
+uniform vec2 uVideoTexel;
+uniform vec2 uScreen;
+uniform float uCloudMin;
+// 영상은 화면을 채우도록 가운데만 보이므로 그만큼 줄여서 찾고, 잡티에 흔들리지 않게 주변 네 점을 평균합니다.
+vec3 cameraColor(vec2 screenUv) {
+  vec2 uv = (screenUv - 0.5) * uVideoScale + 0.5;
+  vec2 d = uVideoTexel * 1.5;
+  return 0.25 * (texture2D(uVideo, uv + d).rgb + texture2D(uVideo, uv - d).rgb
+    + texture2D(uVideo, uv + vec2(d.x, -d.y)).rgb + texture2D(uVideo, uv + vec2(-d.x, d.y)).rgb);
+}
+float skyLike(vec3 c) {
+  float hi = max(c.r, max(c.g, c.b));
+  float lo = min(c.r, min(c.g, c.b));
+  float blue = smoothstep(0.07, 0.13, c.b - c.r) * smoothstep(0.0, 0.04, c.b - c.g) * smoothstep(0.38, 0.46, c.b);
+  float cloud = smoothstep(uCloudMin - 0.06, uCloudMin, lo) * (1.0 - smoothstep(0.2, 0.28, hi - lo))
+    * smoothstep(-0.05, -0.01, c.b - c.r);
+  return max(blue, cloud);
+}`;
+
+// 광고판의 각 점을 보여 줄지 정합니다. uSkyMode 0: 하늘을 안 봄(모형 깊이로만 가림), 1: 바깥, 2: 건물 안.
+const SKY_DECIDE = /* glsl */ `
+uniform float uSkyMode;
+uniform sampler2D uModelDepth;
+uniform vec2 uNearFar;
+varying vec3 vSkyView;
+float skyShown() {
+  if (uSkyMode < 0.5) return 1.0;
+  vec2 screenUv = gl_FragCoord.xy / uScreen;
+  float sky = skyLike(cameraColor(screenUv));
+  // 눈높이보다 아래로는 땅이 찍히므로, 하늘이 아니어도 광고판 뒤에 있는 땅으로 봅니다.
+  float above = step(0.0, dot(vSkyView, (viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz));
+  // 건물 안에서는 방의 벽과 창틀이 데이터에 없으므로, 창밖으로 하늘이 보이는 곳에만 보여 줍니다.
+  if (uSkyMode > 1.5) return sky * above;
+  float depth = texture2D(uModelDepth, screenUv).r;
+  float front = above;
+  if (depth < 1.0) {
+    float model = uNearFar.x * uNearFar.y / (uNearFar.y - depth * (uNearFar.y - uNearFar.x));
+    front = step(model, 0.5 - vSkyView.z);
+  }
+  return max(sky, 1.0 - front);
+}
+float skyHidden() { return uSkyMode < 0.5 ? 1.0 : 1.0 - skyShown(); }`;
+
+const SKY_APPLY = {
+  // 불투명한 틀은 반쯤 섞어 그릴 수 없어서 잘라 냅니다.
+  cut: 'if (skyShown() < 0.5) discard;',
+  fade: 'gl_FragColor.a *= skyShown();\n\tif (gl_FragColor.a < 0.004) discard;',
+  ghost: 'gl_FragColor.a *= skyHidden();',
+};
+
+// three.js의 Basic·Standard·Sprite 재질은 모두 opaque_fragment에서 색과 투명도가 정해지므로, 그 바로 뒤에 판단을 넣습니다.
+function skyPatch(material, uniforms, kind) {
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader = `varying vec3 vSkyView;\n${shader.vertexShader}`
+      .replace('#include <fog_vertex>', '#include <fog_vertex>\n\tvSkyView = mvPosition.xyz;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('void main() {', `${SKY_GLSL}\n${SKY_DECIDE}\nvoid main() {`)
+      .replace('#include <opaque_fragment>', `#include <opaque_fragment>\n\t${SKY_APPLY[kind]}`);
+  };
+  material.customProgramCacheKey = () => `sky-${kind}`;
+}
+
+function skyUniforms() {
+  return {
+    uSkyMode: { value: 0 },
+    uVideo: { value: null },
+    uVideoScale: { value: new THREE.Vector2(1, 1) },
+    uVideoTexel: { value: new THREE.Vector2(1 / 720, 1 / 1280) },
+    uScreen: { value: new THREE.Vector2(1, 1) },
+    uCloudMin: { value: 0.65 },
+    uModelDepth: { value: null },
+    uNearFar: { value: new THREE.Vector2(0.1, 5000) },
+  };
+}
+
+// 카메라 영상을 작게 줄여 0.2초마다 읽고, 수평선 위에 하늘이 얼마나 보이는지와 구름 밝기 기준을 잡습니다.
+function watchSky(video, camera) {
+  const canvas = document.createElement('canvas');
+  const g = canvas.getContext('2d', { willReadFrequently: true });
+  const state = { on: false, share: 0, cloudMin: 0.65 };
+  const greys = new Uint32Array(64);
+  const up = new THREE.Vector3();
+  const back = new THREE.Quaternion();
+  let readAt = -1;
+  let streak = 0;
+
+  function read() {
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (!vw || !vh || video.readyState < 2) return;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const cover = Math.max(w / vw, h / vh);
+    const cw = 48;
+    const ch = Math.max(1, Math.round((cw * h) / w));
+    if (canvas.width !== cw || canvas.height !== ch) {
+      canvas.width = cw;
+      canvas.height = ch;
+    }
+    g.drawImage(video, (vw - w / cover) / 2, (vh - h / cover) / 2, w / cover, h / cover, 0, 0, cw, ch);
+    const px = g.getImageData(0, 0, cw, ch).data;
+
+    // 카메라에서 본 위쪽 방향과 각 점의 시선을 견주어, 수평선 위에 찍힌 점만 셉니다.
+    up.set(0, 1, 0).applyQuaternion(back.copy(camera.quaternion).invert());
+    const ty = Math.tan(deg(camera.fov / 2));
+    const tx = ty * camera.aspect;
+    greys.fill(0);
+    let above = 0;
+    let skies = 0;
+    let greyCount = 0;
+    for (let j = 0; j < ch; j++) {
+      const ny = 1 - ((j + 0.5) / ch) * 2;
+      for (let i = 0; i < cw; i++) {
+        const nx = ((i + 0.5) / cw) * 2 - 1;
+        if (nx * tx * up.x + ny * ty * up.y - up.z <= 0) continue;
+        above++;
+        const k = (j * cw + i) * 4;
+        const r = px[k] / 255;
+        const gr = px[k + 1] / 255;
+        const b = px[k + 2] / 255;
+        const lo = Math.min(r, gr, b);
+        if (Math.max(r, gr, b) - lo < 0.24 && b - r > -0.03) {
+          greys[Math.min(63, Math.floor(lo * 64))]++;
+          greyCount++;
+        }
+        if (isSky(r, gr, b, state.cloudMin)) skies++;
+      }
+    }
+    // 땅을 보고 있어서 수평선 위가 거의 안 찍히면 판단을 그대로 둡니다.
+    if (above < cw * ch * 0.08) return;
+    if (greyCount > 20) {
+      let left = greyCount * 0.05;
+      let bin = 63;
+      while (bin > 0 && (left -= greys[bin]) > 0) bin--;
+      const target = THREE.MathUtils.clamp(0.82 * ((bin + 0.5) / 64), 0.45, 0.8);
+      state.cloudMin += (target - state.cloudMin) * 0.5;
+    }
+    state.share = skies / above;
+    // 켤 때보다 끌 때 기준을 낮게 잡아, 하늘이 조금 보일 때 켜졌다 꺼졌다 하지 않게 합니다.
+    const want = state.share >= (state.on ? 0.03 : 0.06);
+    streak = want === state.on ? 0 : streak + 1;
+    if (streak >= (state.on ? 3 : 2)) {
+      state.on = want;
+      streak = 0;
+    }
+  }
+
+  return {
+    state,
+    update(t) {
+      if (t - readAt < 0.2) return;
+      readAt = t;
+      read();
+    },
+  };
+}
+
+const DEBUG_WORDS = {
+  ko: {
+    sky: '하늘 인식', on: '켬', off: '꺼짐', share: '하늘', cloud: '구름 기준', error: '위치 오차',
+    inside: '건물 안', outside: '건물 밖', locating: '위치 찾는 중', ahead: '앞쪽에 띄움', sign: '광고판까지',
+  },
+  en: {
+    sky: 'Sky detection', on: 'on', off: 'off', share: 'sky', cloud: 'cloud level', error: 'location error',
+    inside: 'indoors', outside: 'outdoors', locating: 'locating', ahead: 'placed ahead', sign: 'to sign',
+  },
+};
+
+// ?occluders=show에서, 수평선 위인데 하늘이 아니라고 본 곳을 붉게 칠합니다.
+function skyOverlay(uniforms) {
+  const material = new THREE.ShaderMaterial({
+    uniforms: { ...uniforms, uUp: { value: new THREE.Vector3() }, uTan: { value: new THREE.Vector2(1, 1) } },
+    vertexShader: 'void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: `${SKY_GLSL}
+uniform vec3 uUp;
+uniform vec2 uTan;
+void main() {
+  vec2 screenUv = gl_FragCoord.xy / uScreen;
+  float above = step(0.0, dot(vec3((screenUv * 2.0 - 1.0) * uTan, -1.0), uUp));
+  gl_FragColor = vec4(1.0, 0.15, 0.1, 0.4 * above * (1.0 - skyLike(cameraColor(screenUv))));
+}`,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+  mesh.frustumCulled = false;
+  const scene = new THREE.Scene();
+  scene.add(mesh);
+  const back = new THREE.Quaternion();
+  return (renderer, camera) => {
+    material.uniforms.uUp.value.set(0, 1, 0).applyQuaternion(back.copy(camera.quaternion).invert());
+    const ty = Math.tan(deg(camera.fov / 2));
+    material.uniforms.uTan.value.set(ty * camera.aspect, ty);
+    renderer.render(scene, camera);
   };
 }
 
@@ -879,21 +1130,30 @@ async function startAR() {
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // 모형, 광고판, 하늘 표시를 한 화면에 차례로 겹쳐 그리므로 화면은 직접 지웁니다.
+  renderer.autoClear = false;
   ar.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
   addLights(scene);
   const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 5000);
   camera.position.set(0, EYE, 0);
-  const ad = buildAd({ grow: true, ghost: true });
+  const sky = skyUniforms();
+  sky.uNearFar.value.set(camera.near, camera.far);
+  const ad = buildAd({ grow: true, ghost: true, sky });
   liveAds.add(ad);
   scene.add(ad.root);
+
+  // 하늘로 가릴 때 모형의 깊이를 담아 두는 화면 밖 버퍼입니다. 모형 테두리는 어차피 위치 오차만큼 어긋나므로 절반 해상도로 그립니다.
+  const modelDepth = new THREE.WebGLRenderTarget(1, 1, { depthTexture: new THREE.DepthTexture(1, 1) });
+  sky.uModelDepth.value = modelDepth.depthTexture;
+  const videoTexture = new THREE.VideoTexture(video);
+  const skyWatch = watchSky(video, camera);
+  const drawSkyOverlay = SHOW_OCCLUDERS ? skyOverlay(sky) : null;
 
   let occluders = null;
   let indoors = false;
   loadOccluders().then((found) => {
-    if (!found) return;
     occluders = found;
-    scene.add(found.group);
   }).catch((error) => console.error(error));
 
   const resize = () => {
@@ -903,6 +1163,13 @@ async function startAR() {
     camera.aspect = w / h;
     camera.fov = visibleFov(video, w, h);
     camera.updateProjectionMatrix();
+    const vw = video.videoWidth || 720;
+    const vh = video.videoHeight || 1280;
+    const cover = Math.max(w / vw, h / vh);
+    sky.uVideoScale.value.set(w / (vw * cover), h / (vh * cover));
+    sky.uVideoTexel.value.set(1 / vw, 1 / vh);
+    renderer.getDrawingBufferSize(sky.uScreen.value);
+    modelDepth.setSize(Math.ceil(sky.uScreen.value.x / 2), Math.ceil(sky.uScreen.value.y / 2));
   };
   window.addEventListener('resize', resize);
   video.addEventListener('loadedmetadata', resize);
@@ -1033,6 +1300,58 @@ async function startAR() {
     if (mode !== 'locating' && hitAd(event, renderer.domElement, camera, ad)) openSheet();
   });
 
+  // 다른 곳에서 앞쪽에 띄울 때는 주변에 무엇이 있는지 모르므로 가리지 않습니다.
+  function draw() {
+    const onsite = mode === 'onsite';
+    const skyMode = onsite && skyWatch.state.on ? (indoors ? 2 : 1) : 0;
+    const models = Boolean(occluders) && onsite && !indoors;
+    sky.uSkyMode.value = skyMode;
+    sky.uCloudMin.value = skyWatch.state.cloudMin;
+    // 영상을 쓰지 않을 때는 그래픽 메모리로 올리지 않습니다.
+    sky.uVideo.value = skyMode || drawSkyOverlay ? videoTexture : null;
+    ad.setSky(skyMode > 0);
+
+    if (skyMode === 1) {
+      renderer.setRenderTarget(modelDepth);
+      renderer.clear(false, true, false);
+      if (models) {
+        occluders.useSolid(true);
+        renderer.render(occluders.scene, camera);
+        occluders.useSolid(false);
+      }
+      renderer.setRenderTarget(null);
+    }
+    renderer.clear();
+    if (models && (skyMode === 0 || SHOW_OCCLUDERS)) {
+      occluders.setAccuracy(accuracy);
+      renderer.render(occluders.scene, camera);
+      // 하늘로 가릴 때 모형은 보여 주기만 하고, 가리는 일은 광고판 쉐이더가 합니다.
+      if (skyMode) renderer.clearDepth();
+    }
+    renderer.render(scene, camera);
+    if (drawSkyOverlay) drawSkyOverlay(renderer, camera);
+  }
+
+  // ?occluders=show에서 하늘 인식과 위치 상태를 한 줄로 보여 줍니다. 현장에서 찍은 화면만 보고도 원인을 알 수 있게 합니다.
+  const debugLine = SHOW_OCCLUDERS ? document.createElement('p') : null;
+  if (debugLine) {
+    debugLine.className = 'ar-debug';
+    document.querySelector('.ar-ui').appendChild(debugLine);
+  }
+  let debugAt = -1;
+  function showDebug(t, distance) {
+    if (!debugLine || t - debugAt < 0.5) return;
+    debugAt = t;
+    const words = DEBUG_WORDS[PAGE_LANG];
+    const { on, share, cloudMin } = skyWatch.state;
+    debugLine.textContent = [
+      `${words.sky} ${on ? words.on : words.off} (${words.share} ${Math.round(share * 100)}%, ${words.cloud} ${cloudMin.toFixed(2)})`,
+      mode === 'onsite' ? `${words.error} ±${Math.round(accuracy)}m` : words[mode],
+      mode === 'onsite' ? (indoors ? words.inside : words.outside) : '',
+      distance === null ? '' : `${words.sign} ${Math.round(distance)}m`,
+    ].filter(Boolean).join(' · ');
+  }
+
   const deviceQ = new THREE.Quaternion();
   let hinted = false;
   let last = 0;
@@ -1061,12 +1380,9 @@ async function startAR() {
     }
     ad.setDistance(distance);
     ad.update(t, camera.position);
-    // 다른 곳에서 앞쪽에 띄울 때는 주변에 무엇이 있는지 모르므로 가리지 않습니다.
-    if (occluders) {
-      occluders.group.visible = mode === 'onsite' && !indoors;
-      occluders.setAccuracy(accuracy);
-    }
-    renderer.render(scene, camera);
+    skyWatch.update(t);
+    draw();
+    showDebug(t, distance);
 
     if (mode !== 'locating') {
       const onScreen = updatePointer(distance);
