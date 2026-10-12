@@ -1,0 +1,30 @@
+{
+  "_readme": "0단계 「비춤」의 모든 글입니다. 기기 언어로 하나만 고릅니다(한·영·중). Yuni 대사는 두 문장 이하, 설명·재촉·광고 문구 금지.",
+  "ko": {
+    "start": "비 오는 밤엔, 바닥을 보세요.",
+    "button": "바닥 비추기",
+    "look": "바닥을 비춰 보세요",
+    "line": "오늘은 다 떠올라요. 무서운 거 아니에요, 바쁜 거예요.",
+    "again": "다시 비추기",
+    "nocam": "카메라를 쓸 수 없어 밤 거리 위에 띄웠어요. Safari나 Chrome에서 열면 진짜 바닥에 고여요.",
+    "nosensor": "화면을 끌어서 바닥을 보세요"
+  },
+  "en": {
+    "start": "On a rainy night, look down.",
+    "button": "Look down",
+    "look": "Point your phone at the ground",
+    "line": "Tonight, everything comes up. It's not scary. It's just busy.",
+    "again": "Look again",
+    "nocam": "No camera here, so it's a night street instead. Open in Safari or Chrome to see it on real ground.",
+    "nosensor": "Drag the screen to look down"
+  },
+  "zh": {
+    "start": "下雨的夜晚，请往下看。",
+    "button": "照一照地面",
+    "look": "把手机对准地面",
+    "line": "今晚大家都浮上来了。不吓人，只是有点忙。",
+    "again": "再照一次",
+    "nocam": "这里用不了相机，所以先放在夜晚的街道上。用 Safari 或 Chrome 打开，就会积在真正的地面上。",
+    "nosensor": "拖动画面往下看"
+  }
+}
