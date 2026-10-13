@@ -17,7 +17,7 @@ const YUNI_R = 0.055;         // Yuni 머리 반지름 → 지름 11cm (브리�
 const YUNI_UP = 0.045;        // 다 떠올랐을 때 머리 중심이 수면 위로 올라온 높이
 const CAMERA_FOV = 67;        // 휴대폰 기본 카메라 세로 화각
 const LOOK_DOWN = -0.42;      // 카메라 앞 방향의 y가 이보다 낮으면 '바닥을 비추는 중'
-const T = { pool: 1.6, light: 0.9, rise: 2.4, speak: 0.8, hold: 6.0 };  // 고임 → 빛 → 떠오름 → 한마디 → 자막 유지
+const T = { pool: 1.6, light: 0.9, rise: 2.4, speak: 0.8, hold: 6.0, linger: 10, bye: 3.2, sink: 3.0 };  // 고임 → 빛 → 떠오름 → 한마디 → 자막 유지 → 머묾 → 인사 → 가라앉음
 const MAX_RIPPLES = 8;
 const GOLD = new THREE.Color('#F2B45A');
 const GLOW = 0.62;             // Yuni 몸의 기본 발광. 반짝임 펄스는 여기의 1.27배까지만 (과노출 금지)
@@ -65,7 +65,7 @@ if (location.protocol === 'file:') fail('이 페이지는 파일로 직접 열�
 /* ---------- 상태 ---------- */
 
 const S = {
-  phase: 'idle',        // idle → pooling → rising → speaking → done
+  phase: 'idle',        // idle → pooling → rising → speaking → done → leaving → gone
   t0: 0,                // 단계가 바뀐 시각
   clickAt: 0,           // 버튼을 누른 시각(performance.now). 3초 안 Yuni 지표
   open: 0,              // 웅덩이 고인 정도 0~1
@@ -74,6 +74,9 @@ const S = {
   clarity: 0,           // 물이 맑아진 정도
   pulse: -10,           // 반짝임 펄스 시작 시각
   ears: 0,              // 귀 각도: 0 쉼, 1 쫑긋
+  startle: -10,         // 수면을 두드린 시각. 귀가 옆으로 누웠다 돌아옵니다
+  back: 0,              // 귀 뒤로(안심). 인사하고 돌아갈 때
+  night: 1,             // 카메라 화면의 어두움 0~1. 어두울수록 Yuni가 또렷합니다
   placed: false,
 };
 
@@ -397,7 +400,7 @@ function build() {
   function bodyMaterial(below) {
     const m = new THREE.MeshStandardMaterial({
       color: 0xd9a35c, emissive: GOLD, emissiveIntensity: below ? GLOW * 0.8 : GLOW, roughness: 1, metalness: 0,
-      clippingPlanes: below ? BELOW : ABOVE, transparent: below, opacity: below ? 0.9 : 1,
+      clippingPlanes: below ? BELOW : ABOVE, transparent: true, opacity: below ? 0.9 : 1,
     });
     if (below) stencilIn(m);
     return m;
@@ -542,18 +545,29 @@ async function run() {
     const t = clock.getElapsedTime();
     if (S.placed) {
       const hit = ray.intersectObject(surfMesh, false)[0];
-      if (hit && hit.uv) { ripple(new THREE.Vector2(hit.uv.x * 2 - 1, hit.uv.y * 2 - 1), 0.9, t); track('lookdown_tap_water'); return; }
+      if (hit && hit.uv) {
+        ripple(new THREE.Vector2(hit.uv.x * 2 - 1, hit.uv.y * 2 - 1), 0.9, t);
+        // A. 물 두드리기: 귀가 옆으로 누웠다 돌아오고, 연달아 두드리면 짧게 웅얼거립니다. 머무는 동안이면 떠날 시각을 미룹니다.
+        if (S.up > 0.5 && S.phase !== 'leaving' && S.phase !== 'gone') {
+          if (t - S.startle < 2.5 && t - lastMumble > 3) { mumble(); lastMumble = t; }
+          S.startle = t;
+          if (S.phase === 'done') S.t0 = t;
+        }
+        track('lookdown_tap_water');
+        return;
+      }
     }
     // 웅덩이 밖 바닥을 탭하면 그 자리에(다시) 고입니다.
     const p = floorPoint(ray.ray.direction, new THREE.Vector3());
-    if (p && (S.phase === 'idle' || S.phase === 'done')) placePuddle(p);
+    if (p && (S.phase === 'idle' || S.phase === 'done' || S.phase === 'gone')) placePuddle(p);
   }
+  let lastMumble = -10;
 
   function placePuddle(p) {
     puddle.position.copy(p);
     puddle.visible = true;
     S.placed = true;
-    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0;
+    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.back = 0; S.startle = -10;
     S.phase = 'pooling';
     S.t0 = clock.getElapsedTime();
     U.uRipples.value.forEach((r) => r.set(0, 0, 0, 0));
@@ -568,6 +582,24 @@ async function run() {
     const p = floorPoint(forward, floorHit) || puddle.position;
     placePuddle(p);
   });
+
+  // C. 카메라 화면의 평균 밝기를 0.6초마다 재서 S.night(어두움)로 씁니다. 카메라가 없으면 밤으로 둡니다.
+  if (hasCamera) {
+    const lc = document.createElement('canvas'); lc.width = lc.height = 8;
+    const lg = lc.getContext('2d', { willReadFrequently: true });
+    setInterval(() => {
+      if (!video || !video.videoWidth) return;
+      try {
+        lg.drawImage(video, 0, 0, 8, 8);
+        const d = lg.getImageData(0, 0, 8, 8).data;
+        let lum = 0;
+        for (let i = 0; i < d.length; i += 4) lum += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+        lum /= 64 * 255;
+        const night = 1 - smooth((lum - 0.18) / 0.45);   // 0.18 이하 = 밤, 0.63 이상 = 낮
+        S.night += (night - S.night) * 0.35;
+      } catch { /* 아직 준비 안 됨 */ }
+    }, 600);
+  }
 
   /* 매 프레임 */
   const clock = new THREE.Clock();
@@ -612,17 +644,37 @@ async function run() {
       }
     } else if (S.phase === 'speaking') {
       S.up = 1;
-      if (k > T.hold) { S.phase = 'done'; S.t0 = t; caption(''); $('btn-again').hidden = false; track('lookdown_done'); }
+      if (k > T.hold) { S.phase = 'done'; S.t0 = t; caption(''); track('lookdown_done'); }
     } else if (S.phase === 'done') {
       S.up = 1;
+      // D. 떠나기: 한마디 뒤 10초쯤 더 보고 있으면 인사하고 천천히 가라앉습니다. 두드리면 그만큼 더 머뭅니다.
+      if (k > T.linger) {
+        S.phase = 'leaving'; S.t0 = t;
+        caption(text('bye'));
+        mumble();
+        track('lookdown_bye');
+      }
+    } else if (S.phase === 'leaving') {
+      S.back = smooth(k / 0.8);
+      if (k > T.bye) {
+        S.up = 1 - smooth((k - T.bye) / T.sink);
+        S.light = 1 - smooth((k - T.bye) / (T.sink + 1.5));
+        if (k > T.bye + 0.6) caption('');
+      }
+      if (k > T.bye + T.sink + 0.5) { S.phase = 'gone'; S.t0 = t; S.up = 0; S.light = 0; $('btn-again').hidden = false; }
+    } else if (S.phase === 'gone') {
+      S.up = 0; S.light = 0;
     }
     S.clarity += ((S.up > 0.2 ? 1 : 0) - S.clarity) * dt * 1.5;
     U.uOpen.value = S.open;
     U.uClarity.value = S.clarity;
     U.uLight.value = S.light * (0.6 + 0.4 * Math.sin(t * 1.3) * 0.5 + 0.2);
 
+    const sk = t - S.startle;
+    const startle = sk >= 0 && sk < 1.4 ? Math.sin(Math.PI * Math.min(1, sk / 1.4)) : 0;
+
     // Yuni 자세: 수면 아래 -0.16m에서 YUNI_UP까지 떠오르고, 둘둘 흔들리며, 보는 사람 쪽을 향합니다.
-    const bob = Math.sin(t * 1.1) * 0.004 + Math.sin(t * 0.63) * 0.003;
+    const bob = Math.sin(t * 1.1) * 0.004 + Math.sin(t * 0.63) * 0.003 - 0.012 * startle;
     const yLocal = -0.16 + (YUNI_UP + 0.16) * S.up + bob * S.up;
     const sway = new THREE.Vector2(Math.sin(t * 0.37) * 0.012, Math.cos(t * 0.29) * 0.012).multiplyScalar(S.up);
     yuniLocal.set(sway.x, yLocal, -sway.y);
@@ -639,21 +691,26 @@ async function run() {
     yuniBelow.group.visible = S.placed && S.light > 0.05;
     U.uYuni.value.set(yuniLocal.x / (PUDDLE / 2), -yuniLocal.z / (PUDDLE / 2));
 
-    // 귀: 쉴 땐 살짝 벌어지고, 관심이 생기면 쫑긋 섭니다.
-    const earAngle = THREE.MathUtils.lerp(0.55, 0.12, S.ears) + Math.sin(t * 0.9) * 0.03;
-    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) ear.rotation.z = -ear.userData.side * earAngle;
+    // 귀: 쉴 땐 살짝 벌어지고, 관심이 생기면 쫑긋 섭니다. 두드리면 옆으로 누웠다(놀람) 돌아오고, 돌아갈 땐 뒤로 젖힙니다(안심).
+    const earAngle = THREE.MathUtils.lerp(THREE.MathUtils.lerp(0.55, 0.12, S.ears), 1.15, startle) + Math.sin(t * 0.9) * 0.03;
+    const earBack = -0.9 * S.back;
+    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { ear.rotation.z = -ear.userData.side * earAngle; ear.rotation.x = earBack; }
 
     // 반짝임: 밝기 펄스 1회. 0.75초 올라가 1.27배, 0.75초 내려옴. 과노출 금지.
     const pk = t - S.pulse;
     const pulse = pk >= 0 && pk < 1.5 ? 1 + 0.27 * Math.sin(Math.PI * pk / 1.5) : 1;
-    yuniAbove.body.material.emissiveIntensity = GLOW * pulse;
-    yuniAbove.ears.forEach((e) => { e.children[0].material.emissiveIntensity = GLOW * pulse; });
+    // C. 밤에 더 또렷: 카메라 화면이 어두울수록 또렷하고, 밝으면 희미합니다.
+    const vivid = 0.45 + 0.55 * S.night;
+    yuniAbove.body.material.emissiveIntensity = GLOW * pulse * vivid;
+    yuniAbove.body.material.opacity = 0.7 + 0.3 * S.night;
+    yuniAbove.ears.forEach((e) => { e.children[0].material.emissiveIntensity = GLOW * pulse * vivid; e.children[0].material.opacity = 0.7 + 0.3 * S.night; });
+    yuniAbove.eyes.forEach((e) => { e.material.transparent = true; e.material.opacity = 0.75 + 0.25 * S.night; });
     yuniLight.position.copy(yuniWorld).y += 0.08;
-    yuniLight.intensity = 0.35 * S.up * pulse;
+    yuniLight.intensity = 0.35 * S.up * pulse * vivid;
 
     // 물속 빛과 알갱이
     underGlow.position.set(yuniLocal.x, -yuniLocal.z, Math.min(-0.02, yuniLocal.y - 0.03));
-    underGlow.material.opacity = 0.85 * S.light * (0.9 + 0.1 * Math.sin(t * 2.2)) * pulse;
+    underGlow.material.opacity = 0.85 * S.light * (0.9 + 0.1 * Math.sin(t * 2.2)) * pulse * vivid;
     underGlow.scale.setScalar(0.32 + 0.22 * S.light);
     motes.material.opacity = 0.6 * S.light;
     const pos = pGeo.attributes.position;

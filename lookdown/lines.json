@@ -7,7 +7,8 @@
     "line": "오늘은 다 떠올라요. 무서운 거 아니에요, 바쁜 거예요.",
     "again": "다시 비추기",
     "nocam": "카메라를 쓸 수 없어 밤 거리 위에 띄웠어요. Safari나 Chrome에서 열면 진짜 바닥에 고여요.",
-    "nosensor": "화면을 끌어서 바닥을 보세요"
+    "nosensor": "화면을 끌어서 바닥을 보세요",
+    "bye": "비 오는 날 또 와요."
   },
   "en": {
     "start": "On a rainy night, look down.",
@@ -16,7 +17,8 @@
     "line": "Tonight, everything comes up. It's not scary. It's just busy.",
     "again": "Look again",
     "nocam": "No camera here, so it's a night street instead. Open in Safari or Chrome to see it on real ground.",
-    "nosensor": "Drag the screen to look down"
+    "nosensor": "Drag the screen to look down",
+    "bye": "Come again on a rainy day."
   },
   "zh": {
     "start": "下雨的夜晚，请往下看。",
@@ -25,6 +27,7 @@
     "line": "今晚大家都浮上来了。不吓人，只是有点忙。",
     "again": "再照一次",
     "nocam": "这里用不了相机，所以先放在夜晚的街道上。用 Safari 或 Chrome 打开，就会积在真正的地面上。",
-    "nosensor": "拖动画面往下看"
+    "nosensor": "拖动画面往下看",
+    "bye": "下雨天再来吧。"
   }
 }
