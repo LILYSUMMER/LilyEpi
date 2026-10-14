@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>LOOK DOWN lab · 추적 품질 하네스</title>
+<style>
+  :root { font-family: -apple-system, "Pretendard", "Noto Sans KR", sans-serif; color: #e5e7eb; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #0b1420; overflow: hidden; }
+  #stage { position: fixed; inset: 0; }
+  #stage video, #stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #overlay { pointer-events: none; }
+  .hud { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 8px; right: 8px; display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; pointer-events: none; }
+  .hud span { padding: 4px 8px; border-radius: 6px; background: rgba(0,0,0,.55); white-space: nowrap; }
+  .hud .lost { background: rgba(220,38,38,.8); }
+  .hud .ok { background: rgba(5,150,105,.8); }
+  .hud .init { background: rgba(217,119,6,.8); }
+  .panel { position: fixed; left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; }
+  button, select, label.file { padding: 9px 12px; border: 1px solid #374151; border-radius: 8px; background: #111827; color: #e5e7eb; font: inherit; }
+  button:disabled { opacity: .45; }
+  button.primary { background: #F2B45A; color: #111827; border-color: #F2B45A; font-weight: 700; }
+  button.rec { background: #b91c1c; border-color: #b91c1c; }
+  label.file input { display: none; }
+  #log { max-height: 26vh; overflow: auto; padding: 8px; border-radius: 8px; background: rgba(0,0,0,.6); font: 11px/1.4 ui-monospace, Menlo, monospace; white-space: pre-wrap; }
+  #summary { display: none; }
+  #summary.show { display: block; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "../../assets/vendor/three-0.160.0/three.module.js" } }
+</script>
+</head>
+<body>
+<!--
+  추적 품질 측정 하네스. 추적기(tracker)는 trackers/*.js에 있고 모두 같은 인터페이스를 쓴다.
+    tracker.init(width, height) / tracker.update(imageData, imuQuat, t) → { position, quaternion, confidence, lost }
+  URL 파라미터:
+    ?tracker=gyro|alva|alva-fb     추적기 (alva-fb = AlvaAR + 자이로 폴백)
+    ?video=URL&imu=URL             녹화 재생 (imu JSON 형식은 README 참조). 없으면 라이브 카메라
+    ?scenario=a|b|c                기록에 붙일 시나리오 라벨
+    ?step=1                        재생을 프레임 단위로 멈춰 가며 전부 처리(실시간 아님, 프레임 누락 없음)
+    ?auto=1                        열자마자 시작하고 재생이 끝나면 요약을 window.__LAB_RESULT에 남김(자동 실행용)
+    ?w=640&h=480&fov=67            처리 해상도·세로 화각
+-->
+<div id="stage">
+  <video id="video" playsinline muted></video>
+  <canvas id="overlay"></canvas>
+</div>
+<div class="hud">
+  <span id="h-tracker">tracker: -</span>
+  <span id="h-fps">FPS -</span>
+  <span id="h-ms">update - ms</span>
+  <span id="h-state" class="init">init</span>
+  <span id="h-dist">이동 0.00 m</span>
+  <span id="h-drift">밀림 - px / - m</span>
+  <span id="h-rec"></span>
+</div>
+<div class="panel">
+  <div class="row">
+    <select id="sel-tracker">
+      <option value="gyro">gyro (기준선: 자이로 3DoF + EYE 1.4)</option>
+      <option value="alva">alva (AlvaAR 단안 SLAM)</option>
+      <option value="alva-fb">alva-fb (AlvaAR + lost 시 자이로 폴백)</option>
+    </select>
+    <button id="btn-start" class="primary">시작 (카메라·센서)</button>
+    <button id="btn-reset" disabled>추적 리셋</button>
+  </div>
+  <div class="row">
+    <button id="btn-a" class="rec" disabled>(a) 제자리 회전 10초</button>
+    <button id="btn-b" class="rec" disabled>(b) 앞으로 2m 걷고 돌아오기</button>
+    <button id="btn-c" class="rec" disabled>(c) 쪼그렸다 일어나기</button>
+    <button id="btn-stop" disabled>기록 끝</button>
+  </div>
+  <div class="row">
+    <label class="file">영상 파일<input id="file-video" type="file" accept="video/*"></label>
+    <label class="file">IMU JSON<input id="file-imu" type="file" accept="application/json"></label>
+    <button id="btn-play" disabled>재생하며 측정</button>
+    <button id="btn-csv" disabled>CSV 저장</button>
+    <button id="btn-json" disabled>요약 JSON 저장</button>
+    <button id="btn-ga" disabled>GA4로 요약 보내기</button>
+  </div>
+  <pre id="log"></pre>
+  <pre id="summary"></pre>
+</div>
+<script type="module" src="harness.js"></script>
+</body>
+</html>
