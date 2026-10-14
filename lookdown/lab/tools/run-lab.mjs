@@ -1,5 +1,6 @@
 // 헤드리스 크로미움으로 하네스를 돌려 결과를 모은다.
-//   node tools/run-lab.mjs [trackers=gyro,alva,alva-fb] [scenarios=a,b,c]
+//   node tools/run-lab.mjs [trackers=gyro,alva,alva-fb] [scenarios=a,b,c] [extraQuery] [suffix]
+//   예) node tools/run-lab.mjs alva b 'scale=0.29' scaled   → results/alva-b-scaled.*
 // 결과: lab/results/<tracker>-<scenario>.csv / .json, 그리고 표를 stdout에 출력.
 // 크로미움: PLAYWRIGHT_BROWSERS_PATH/chromium 또는 CHROME_PATH. playwright-core 필요.
 import { chromium } from 'playwright-core';
@@ -12,6 +13,8 @@ const LAB = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(LAB, '..', '..');
 const trackers = (process.argv[2] || 'gyro,alva,alva-fb').split(',');
 const scenarios = (process.argv[3] || 'a,b,c').split(',');
+const extra = process.argv[4] ? '&' + process.argv[4] : '';
+const suffix = process.argv[5] ? '-' + process.argv[5] : '';
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.webm': 'video/webm', '.css': 'text/css' };
 
 const server = createServer(async (req, res) => {
@@ -39,7 +42,7 @@ for (const tr of trackers) for (const sc of scenarios) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  const url = `${base}/lookdown/lab/harness.html?tracker=${tr}&scenario=${sc}&video=data/${sc}.webm&imu=data/${sc}.json&step=1&auto=1`;
+  const url = `${base}/lookdown/lab/harness.html?tracker=${tr}&scenario=${sc}&video=data/${sc}.webm&imu=data/${sc}.json&step=1&auto=1${extra}`;
   const t0 = Date.now();
   await page.goto(url);
   try {
@@ -48,8 +51,8 @@ for (const tr of trackers) for (const sc of scenarios) {
   const r = await page.evaluate(() => window.__LAB_RESULT);
   r.summary.wall_s = +((Date.now() - t0) / 1000).toFixed(1);
   r.summary.errors = errors.slice(0, 5);
-  await writeFile(path.join(LAB, 'results', `${tr}-${sc}.csv`), r.csv);
-  await writeFile(path.join(LAB, 'results', `${tr}-${sc}.json`), JSON.stringify(r.summary, null, 2));
+  await writeFile(path.join(LAB, 'results', `${tr}-${sc}${suffix}.csv`), r.csv);
+  await writeFile(path.join(LAB, 'results', `${tr}-${sc}${suffix}.json`), JSON.stringify(r.summary, null, 2));
   const s = r.summary;
   rows.push([tr, sc, s.frames, s.update_ms_avg, s.update_ms_max, s.lost_frames, s.drift_px_max, s.drift_m_max, s.err_px_avg, s.err_px_max, s.err_m_avg, s.err_m_max, s.path_m, s.scale_est, s.wall_s]);
   console.log(`${tr}/${sc}: ${s.frames}f avg ${s.update_ms_avg}ms lost ${s.lost_frames} drift ${s.drift_px_max}px/${s.drift_m_max}m err ${s.err_px_avg}px/${s.err_m_avg}m scale ${s.scale_est}` + (errors.length ? ` ERR ${errors[0].slice(0, 80)}` : ''));

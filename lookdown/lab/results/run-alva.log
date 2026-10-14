@@ -1,0 +1,16 @@
+alva/a: 300f avg 11.21ms lost 7 drift 50939.6px/15.709m err 4223.3px/9.424m scale null
+alva/b: 360f avg 12.76ms lost 34 drift 18339px/6.534m err 862.2px/2.53m scale 0.29
+alva/c: 240f avg 10.64ms lost 48 drift 64.8px/0.999m err 73.9px/0.286m scale 0.69
+alva-fb/a: 300f avg 9.83ms lost 7 drift 44416.4px/14.045m err 3416.9px/8.995m scale null
+alva-fb/b: 360f avg 12.23ms lost 34 drift 16306.9px/6.536m err 853.1px/2.53m scale 0.29
+alva-fb/c: 240f avg 11.47ms lost 48 drift 67.8px/1.004m err 72.6px/0.288m scale 0.694
+
+| tracker | scn | frames | ms avg | ms max | lost | drift px max | drift m max | err px avg | err px max | err m avg | err m max | path m | scale | wall s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| alva | a | 300 | 11.21 | 120.1 | 7 | 50939.6 | 15.709 | 4223.3 | 50683.9 | 9.424 | 15.709 | 71.672 |  | 55.3 |
+| alva | b | 360 | 12.76 | 100.8 | 34 | 18339 | 6.534 | 862.2 | 18037.3 | 2.53 | 4.799 | 16.135 | 0.29 | 64.7 |
+| alva | c | 240 | 10.64 | 84.4 | 48 | 64.8 | 0.999 | 73.9 | 99.7 | 0.286 | 0.518 | 2.035 | 0.69 | 39.5 |
+| alva-fb | a | 300 | 9.83 | 75.4 | 7 | 44416.4 | 14.045 | 3416.9 | 44185.4 | 8.995 | 14.045 | 68.339 |  | 50.5 |
+| alva-fb | b | 360 | 12.23 | 83.6 | 34 | 16306.9 | 6.536 | 853.1 | 16005.2 | 2.53 | 4.801 | 16.175 | 0.29 | 62.2 |
+| alva-fb | c | 240 | 11.47 | 92 | 48 | 67.8 | 1.004 | 72.6 | 100.9 | 0.288 | 0.525 | 2.021 | 0.694 | 41.5 |
+EXIT 0
