@@ -51,7 +51,7 @@
 | Yuni 형태 | **코드로 만든 three.js 메시.** GLB·알파 비디오·스프라이트 아님. 구(`SphereGeometry(YUNI_R=0.055, 48, 32)`, y 스케일 1.06) + 귀 2개(`ConeGeometry`) + 눈 2개(`CircleGeometry`). 입·코 없음 | `lookdown.js:408-432` `makeYuni(below)`, `:400-406` `bodyMaterial()` |
 | 수면 위/아래 분리 | 같은 메시를 2벌 만들어 위쪽은 `clippingPlanes=ABOVE`(y≥0), 아래쪽은 `BELOW`(y≤0)+스텐실 안에서만 그림 | `lookdown.js:398-399`, `:403`, `:433-436` |
 | 재질 | `MeshStandardMaterial` color `0xd9a35c`, emissive `#F2B45A`, emissiveIntensity `GLOW=0.62`(아래쪽 ×0.8), roughness 1 | `lookdown.js:22-23`, `:401-404` |
-| 애니메이션 종류 | 코드로 구동, 총 **7종**: ① 떠오름(`S.up`, easeOut 2.4초) ② 둘둘 흔들림(`bob`, `sway`) ③ 보는 사람 쪽으로 회전(`facing`) ④ 귀 쫑긋(`S.ears`) ⑤ 귀 놀람(`startle`, 1.4초 사인) ⑥ 귀 뒤로(`S.back`) ⑦ 반짝임 펄스(1.5초, ×1.27) | `lookdown.js:673-700`, `:705-709` |
+| 애니메이션 종류 | 코드로 구동, 총 **7종**: ① 떠오름(`S.up`, easeOut 2.4초) ② 둘둘 흔들림(`bob`, `sway`) ③ 보는 사람 쪽으로 회전(`facing`) ④ 귀 쫑긋(`S.ears`) ⑤ 귀 놀람(`startle`, 1.4초 사인) ⑥ 귀 뒤로(`S.back`) ⑦ 반짝임 펄스(1.5초, ×1.27) | `lookdown.js:673-697`, `:700-709` |
 | 눈 표정 3종(동그라미/반달/선) | ❌ 없음. 동그라미 1종만 | `lookdown.js:425` |
 | 고개 돌림·듣기 자세(1·2단계) | ❌ 없음 | — |
 | 3D 모델 로더 | ❌ 없음. GLTFLoader import 없음 | `lookdown.js:1` |
@@ -81,13 +81,13 @@
 | 카메라 화각 정합 | `CAMERA_FOV=67`을 영상 cover 크롭 비율로 보정(`visibleFov()`). 기기별 실제 화각 읽기 없음 | `lookdown.js:18`, `:142-150` |
 | 가림(occlusion) | ❌ 없음. 실물이 웅덩이 앞에 있어도 가리지 못함. (참고: `assets/virtual-ooh-ar/ooh-ar.js`에 OSM 건물 기반 오클루더가 있으나 lookdown 미사용) | — |
 | 조명/색온도 매칭 | 🟡 `uTint`는 고정값 `(0.55, 0.62, 0.7)`. 평균 밝기(`S.night`)로 Yuni 발광·불투명도만 바꿈. 색온도 추정 없음 | `lookdown.js:291`, `:703-709` |
-| 조명 | `HemisphereLight(0x9fb8d0, 0x1a2430, 0.5)` + Yuni 위치 `PointLight(GOLD, 0~0.35, 1.2, 2)` | `lookdown.js:266`, `:438`, `:710-711` |
+| 조명 | `HemisphereLight(0x9fb8d0, 0x1a2430, 0.5)` + Yuni 위치 `PointLight(GOLD, 0~0.35, 1.2, 2)` | `lookdown.js:266`, `:438`, `:708-709` |
 
 ### F. 배포·진입 — 🟡 부분
 
 | 세부 | 상태 | 근거 |
 | --- | --- | --- |
-| URL 구조 | 단일 URL `https://epispace.kr/lookdown/`. 쿼리: `?lang=ko|en|zh`(언어 강제), `?view=phone|desk`(입력 모드), `?debug`(`window.__LD` 노출) | `lookdown.js:37`, `:53`, `:450` |
+| URL 구조 | 단일 URL `https://epispace.kr/lookdown/`. 쿼리: `?lang=ko|en|zh`(언어 강제), `?view=phone|desk`(입력 모드), `?debug`(`window.__LD` 노출) | `lookdown.js:37`, `:53`, `:449` |
 | QR | ❌ 없음 (virtual-ooh에는 `assets/virtual-ooh-ar/qr.svg` 있음) | — |
 | 장소별 콘텐츠 선택 | ❌ 없음. 장소 매개변수·라우팅 없음 | — |
 | 검색/링크 노출 | `noindex`. `sitemap.xml`·`site.webmanifest`·`index.html`에 링크 없음 | `lookdown/index.html:6`, `grep lookdown sitemap.xml site.webmanifest index.html` = 없음 |
@@ -130,17 +130,17 @@
 | 공간 | `CAMERA_FOV = 67` | `:18` | 기기 카메라 세로 화각. 기기마다 다름 |
 | 공간 | `LOOK_DOWN = -0.42` | `:19` | 바닥 판정 임계 |
 | 공간 | 거리 클램프 `0.7 ~ 2.6` | `:528` | 웅덩이 최소·최대 거리 |
-| 공간 | 0.5초 (바닥 응시 시간) | `:626` | 자동 고임 지연 |
+| 공간 | 0.5초 (바닥 응시 시간) | `:624` | 자동 고임 지연 |
 | 공간 | 바닥판 `PUDDLE*8`, 깊이 `-0.45` | `:367-368` | 물속 바닥 크기·깊이 |
-| 공간 | Yuni 시작 깊이 `-0.16` | `:676` | 떠오르기 전 위치 |
+| 공간 | Yuni 시작 깊이 `-0.16` | `:678` | 떠오르기 전 위치 |
 | 타이밍 | `T = {pool 1.6, light 0.9, rise 2.4, speak 0.8, hold 6.0, linger 10, bye 3.2, sink 3.0}` | `:20` | 연출 길이(초) |
-| 타이밍 | 펄스 1.5초·×1.27, 놀람 1.4초, 귀 쫑긋 0.6초, 웅얼거림 간격 3초·연타 창 2.5초 | `:699`, `:674`, `:634`, `:549` | 애니/반응 시간 |
-| 타이밍 | 밝기 샘플 0.6초, 센서 대기 0.8초 | `:602`, `:508` | 폴링 주기 |
+| 타이밍 | 펄스 1.5초·×1.27, 놀람 1.4초, 귀 쫑긋 0.6초, 웅얼거림 간격 3초·연타 창 2.5초 | `:700-701`, `:674`, `:636`, `:552` | 애니/반응 시간 |
+| 타이밍 | 밝기 샘플 0.6초, 센서 대기 0.8초 | `:601`, `:506` | 폴링 주기 |
 | 색 | `GOLD #F2B45A`, `DEEP #061423`, `DEEP_LIT #0d2a44`, Yuni color `0xd9a35c`, 눈 `0x120c08`, `GLOW 0.62`, `uTint (0.55,0.62,0.7)`, Hemisphere `0x9fb8d0/0x1a2430 ×0.5` | `:22-25`, `:401`, `:425`, `:291`, `:266` | 0화 첫 프레임에서 뽑아 고정해야 함(브리프 10/16). 현재는 임의값 |
 | 색 | CSS `--deep #0b1420`, `--ink #F6F3EC`, `--ink-soft #C8C4BA`, `--gold #F2B45A` | `lookdown.css:3-7` | UI 색 |
 | 조도 | 밤/낮 임계 `0.18 / 0.63`, 보간 `0.35`, 선명도 `0.45+0.55·night` | `lookdown.js:598-599`, `:703` | 어두움 판정 |
 | 셰이더 | blob 계수 `0.76/0.09/0.05/0.03`, 물결 `30/6/3.5/1.1`, 잔물결 `0.010`, 굴절 `0.8`, 금빛 `9.0/0.55`, 스펙 `22/3/0.45`, 림 `0.92/0.6`, 알파 `0.94/0.5`, df `0.15` | `:270-272`, `:283`, `:327-345` | 물 느낌 전체 |
-| 셰이더 | 알갱이 36개, 크기 0.012, 상승 0.00045/프레임 | `:384`, `:393`, `:717` | 물속 입자 |
+| 셰이더 | 알갱이 36개, 크기 0.012, 상승 0.00045/프레임 | `:384`, `:393`, `:718` | 물속 입자 |
 | 글 | ko/en/zh 각 8키 (`start, button, look, line, again, nocam, nosensor, bye`) | `lookdown/lines.json` | 대사·버튼. 번역은 손으로 |
 | 경로 | `../assets/vendor/three-0.160.0/three.module.js`, `lines.json`, `audio/rain.mp3`, `audio/mumble_1~3.mp3` | `index.html:22`, `lookdown.js:43`, `:221`, `:242` | 파일명 고정 |
 | 경로 | Pretendard CDN URL, GA ID `G-DXQEGVBYP8`, `og:url https://epispace.kr/lookdown/` | `index.html:17`, `:50-55`, `:12` | 외부 리소스 |
@@ -214,17 +214,17 @@
 | `assets/cherry-blossom-ar/guide.png` | 9,176,187 |
 | `assets/nfc-scan.jpg` | 8,562,685 |
 
-### 프레임마다 도는 연산 (`renderer.setAnimationLoop`, `lookdown.js:612-733`)
+### 프레임마다 도는 연산 (`renderer.setAnimationLoop`, `lookdown.js:612-730`)
 1. `updateCamera()` — 오일러→쿼터니언 1회, 앞 방향 벡터 1회 (`:518-523`)
 2. `videoTex.needsUpdate = true` — 카메라 프레임 GPU 업로드 (1280×720)
 3. 상태 머신 분기 (`pooling/rising/speaking/done/leaving/gone`) (`:631-662`)
-4. Yuni 자세: 삼각함수 약 10회, `atan2` 1회, 두 그룹 position/rotation 갱신 (`:673-690`)
-5. 귀 4개 rotation, 재질 emissive/opacity 갱신 6개 (`:693-709`)
-6. 알갱이 36개 position 갱신 + `needsUpdate` (`:714-722`)
+4. Yuni 자세: 삼각함수 약 10회, `atan2` 1회, 두 그룹 position/rotation 갱신 (`:677-692`)
+5. 귀 4개 rotation, 재질 emissive/opacity 갱신 6개 (`:694-709`)
+6. 알갱이 36개 position 갱신 + `needsUpdate` (`:716-723`)
 7. 물결 uniform 갱신 (`:726-727`)
 8. `renderer.render()` — 드로우콜: 마스크 1, 바닥 1, 스프라이트 1, 포인트 1, Yuni 아래(구+귀2) 3, Yuni 위(구+귀2+눈2) 5, 수면 1 ≈ **14 드로우콜**. 수면 프래그먼트는 픽셀당 물결 루프 8회 + 영상 샘플 1회
 
-프레임 밖: 0.6초마다 8×8 `drawImage`+`getImageData` (`:590-602`).
+프레임 밖: 0.6초마다 8×8 `drawImage`+`getImageData` (`:590-601`).
 
 ---
 
@@ -237,7 +237,7 @@
 1. **장소 데이터 파일 신설 (신규 1)** — `lookdown/places.json` 같은 파일에 `id, name, lat, lng, radius, line{ko,en,zh}, bye{ko,en,zh}` 구조를 정한다. 지금은 `lines.json`이 장소와 무관한 전역 1벌이라(`lines.json:ko/en/zh`) 장소별 대사를 담을 자리가 없다.
 2. **진입 라우팅 (수정: `lookdown.js`)** — `?place=<id>` 쿼리를 읽어 `places.json`에서 고르는 코드. 현재 쿼리 처리는 `lang/view/debug` 3개뿐(`lookdown.js:32-53`).
 3. **위치 읽기 (수정: `lookdown.js`)** — `navigator.geolocation.watchPosition`으로 반경 안인지 판정. lookdown에 없음. `assets/virtual-ooh-ar/ooh-ar.js`의 `watchPlace()`·`distanceToSpot()`·`showLocationHelp()`를 옮겨 오면 된다(위치 거부 시 iOS 설정 안내까지 포함).
-4. **대사 선택 (수정: `lookdown.js`)** — `text('line')`·`text('bye')`(`:641`, `:652`)가 전역 `lines`가 아니라 선택된 장소의 대사를 보게 바꾼다.
+4. **대사 선택 (수정: `lookdown.js`)** — `text('line')`·`text('bye')`(`:640`, `:653`)가 전역 `lines`가 아니라 선택된 장소의 대사를 보게 바꾼다.
 5. **계측 (수정: `lookdown.js`)** — `track()` 호출 9곳에 `place` 파라미터를 추가한다(`:460, :487, :512, :556, :577, :637, :643, :647, :655`).
 6. **진입 링크 (수동)** — 장소별 URL(`/lookdown/?place=waterfront`)을 QR 또는 영상 링크로 만든다. QR 생성 코드는 lookdown에 없다.
 7. **좌표 측정 (수동)** — 현장에서 lat/lng와 반경을 재서 1번 파일에 적는다. 자동화 불가.
