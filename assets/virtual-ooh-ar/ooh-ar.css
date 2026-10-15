@@ -50,9 +50,13 @@ html.is-phone .station-only { display: none !important; }
 .stage { position: sticky; top: 24px; }
 .stage-frame { aspect-ratio: 4 / 3; border-radius: 24px; box-shadow: 0 20px 50px rgba(17, 24, 39, .12); }
 .stage-caption { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; color: var(--muted); font-size: 14px; }
+.stage-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
 .stage-langs { display: flex; flex-wrap: wrap; gap: 6px; }
 .stage-langs button { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 13px; }
 .stage-langs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+.start-kinds { display: flex; justify-content: center; gap: 6px; }
+.start-kinds button { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 13px; }
+.start-kinds button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
 
 .info h1 { margin: 14px 0 16px; font-size: clamp(30px, 3.2vw, 42px); font-weight: 800; line-height: 1.25; letter-spacing: -.02em; text-wrap: balance; }
 .info .lead { color: var(--body); font-size: 18px; text-wrap: pretty; }
@@ -99,7 +103,12 @@ html.is-running #ar { display: block; }
 
 .ar-ui { position: fixed; inset: 0; z-index: 20; display: none; color: #fff; pointer-events: none; }
 html.is-running .ar-ui { display: block; }
-.ar-top { position: absolute; top: calc(12px + env(safe-area-inset-top)); left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; }
+.ar-top { position: absolute; top: calc(12px + env(safe-area-inset-top)); left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ar-top-left { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ad-kinds { display: flex; gap: 6px; opacity: 0; transition: opacity .4s; }
+.ad-kinds:not(.is-on) .chip { pointer-events: none; }
+.ad-kinds.is-on { opacity: 1; }
+.ad-kinds .chip[aria-pressed="true"] { background: #fff; color: var(--ink); }
 .chip { padding: 7px 13px; border: 1px solid rgba(255, 255, 255, .2); border-radius: 999px; background: rgba(17, 24, 39, .55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: #fff; font-size: 13px; font-weight: 600; pointer-events: auto; }
 .chip-sample { border-color: transparent; background: rgba(255, 107, 0, .92); pointer-events: none; }
 .status { position: absolute; top: calc(60px + env(safe-area-inset-top)); left: 50%; width: max-content; max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 14px; background: rgba(17, 24, 39, .6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-size: 13px; font-weight: 600; line-height: 1.45; text-align: center; transform: translateX(-50%); transition: opacity .4s; }

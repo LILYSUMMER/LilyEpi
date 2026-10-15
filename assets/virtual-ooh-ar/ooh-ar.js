@@ -23,6 +23,7 @@ const HOURS = { open: 10, close: 20 };
 const AD = {
   ko: {
     name: '귤빛 카페',
+    product: '귤차',
     tagline: '걷다가 잠깐, 귤차 한 잔',
     open: '지금 영업 중',
     closed: '오전 10시에 열어요',
@@ -40,6 +41,7 @@ const AD = {
   },
   en: {
     name: 'Gyulbit Café',
+    product: 'Tangerine tea',
     tagline: 'Take a break with a tangerine tea',
     open: 'Open now',
     closed: 'Opens at 10 am',
@@ -57,6 +59,7 @@ const AD = {
   },
   zh: {
     name: '橘光咖啡',
+    product: '橘子茶',
     tagline: '走累了吗？来杯橘子茶吧',
     open: '营业中',
     closed: '上午10点营业',
@@ -74,6 +77,7 @@ const AD = {
   },
   ja: {
     name: 'みかん色カフェ',
+    product: 'みかん茶',
     tagline: '散歩の途中に、みかん茶を一杯',
     open: '営業中',
     closed: '10時から営業',
@@ -121,6 +125,33 @@ document.querySelectorAll('[data-ad-lang]').forEach((button) => {
   });
 });
 setAdLang(adLang);
+
+/* ---------- 광고판이냐 제품이냐 ---------- */
+
+// sign은 광고판, product는 광고판 대신 떠 있는 제품(예시 가게의 귤차 컵)입니다.
+let adKind = 'sign';
+
+function setAdKind(kind) {
+  adKind = kind;
+  document.querySelectorAll('[data-ad-kind]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.adKind === kind));
+  });
+  document.querySelectorAll('[data-text-product]').forEach((el) => {
+    if (!el.dataset.textSign) el.dataset.textSign = el.textContent;
+    el.textContent = kind === 'product' ? el.dataset.textProduct : el.dataset.textSign;
+  });
+  liveAds.forEach((ad) => ad.setKind(kind));
+}
+
+document.querySelectorAll('[data-ad-kind]').forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (button.dataset.adKind === adKind) return;
+    setAdKind(button.dataset.adKind);
+    track('ooh_ar_kind', { kind: adKind });
+  });
+});
+setAdKind(adKind);
 
 /* ---------- 그리기 도구 ---------- */
 
@@ -220,6 +251,25 @@ function ledPattern(w, h) {
   return c;
 }
 
+function drawTangerine(g, cx, cy, r, leafAngle) {
+  const fruit = g.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r);
+  fruit.addColorStop(0, '#FFC27D');
+  fruit.addColorStop(0.55, '#FF7A12');
+  fruit.addColorStop(1, '#E05400');
+  g.fillStyle = fruit;
+  g.beginPath();
+  g.arc(cx, cy, r, 0, Math.PI * 2);
+  g.fill();
+  g.save();
+  g.translate(cx + r * 0.28, cy - r * 0.92);
+  g.rotate(leafAngle);
+  g.fillStyle = '#3FA34D';
+  g.beginPath();
+  g.ellipse(0, 0, r * 0.38, r * 0.16, 0, 0, Math.PI * 2);
+  g.fill();
+  g.restore();
+}
+
 function drawScreen(g, W, H, t, lang, open, distance, led) {
   const copy = AD[lang];
   const bg = g.createLinearGradient(0, 0, W, H);
@@ -231,26 +281,9 @@ function drawScreen(g, W, H, t, lang, open, distance, led) {
   const band = Math.round(H * 0.17);
   const body = H - band;
 
-  // 귤
   const r = body * 0.27;
   const cx = r + 70;
-  const cy = body * 0.5 + Math.sin(t * 2.4) * 6;
-  const fruit = g.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r);
-  fruit.addColorStop(0, '#FFC27D');
-  fruit.addColorStop(0.55, '#FF7A12');
-  fruit.addColorStop(1, '#E05400');
-  g.fillStyle = fruit;
-  g.beginPath();
-  g.arc(cx, cy, r, 0, Math.PI * 2);
-  g.fill();
-  g.save();
-  g.translate(cx + r * 0.28, cy - r * 0.92);
-  g.rotate(-0.5 + Math.sin(t * 2.4) * 0.08);
-  g.fillStyle = '#3FA34D';
-  g.beginPath();
-  g.ellipse(0, 0, r * 0.38, r * 0.16, 0, 0, Math.PI * 2);
-  g.fill();
-  g.restore();
+  drawTangerine(g, cx, body * 0.5 + Math.sin(t * 2.4) * 6, r, -0.5 + Math.sin(t * 2.4) * 0.08);
 
   const left = cx + r + 50;
   const textWidth = W - left - 40;
@@ -313,6 +346,12 @@ function drawScreen(g, W, H, t, lang, open, distance, led) {
 
 /* ---------- 광고판 ---------- */
 
+function additive(options) {
+  return new THREE.MeshBasicMaterial({
+    transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, ...options,
+  });
+}
+
 // grow를 켜면 멀리 있을수록 광고판을 키워서, 거리가 멀어도 글씨가 읽힐 만한 크기로 보이게 합니다.
 // ghost를 켜면 건물이나 나무에 가려진 부분에 희미한 윤곽을 남깁니다.
 // sky를 주면 카메라에 하늘이 찍혔는지에 따라서도 가립니다(skyUniforms).
@@ -320,9 +359,6 @@ function buildAd({ grow, ghost = false, sky = null }) {
   const W = BOARD.width;
   const H = BOARD.height;
   const top = BOARD.lift + H / 2;
-  const additive = (options) => new THREE.MeshBasicMaterial({
-    transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, ...options,
-  });
 
   const root = new THREE.Group();
   const face = new THREE.Group();
@@ -483,7 +519,7 @@ function buildAd({ grow, ghost = false, sky = null }) {
     hit: [screen, frame],
     center: (target) => board.getWorldPosition(target),
     ready: () => screenMat.opacity >= 1,
-    show(t) { if (startAt === null) startAt = t; },
+    show(t, again = false) { if (startAt === null || again) startAt = t; },
     update,
     setLang(next) { lang = next; drawnAt = -1; },
     setDistance(d) { distance = d; },
@@ -492,6 +528,347 @@ function buildAd({ grow, ghost = false, sky = null }) {
       const test = on ? THREE.LessEqualDepth : THREE.GreaterDepth;
       ghostFaceMat.depthFunc = test;
       ghostLineMat.depthFunc = test;
+    },
+  };
+}
+
+/* ---------- 광고판 대신 떠 있는 제품 ---------- */
+
+// 예시 가게의 귤차 컵입니다(m). 컵 가운데 높이를 광고판 가운데에 맞췄습니다.
+const CUP = { height: 5.4, bottom: 1.45, top: 1.95, lid: 0.4, center: BOARD.lift + BOARD.height / 2 };
+
+// 컵을 감싸는 띠입니다. 컵이 좌우로 돌아도 가게 이름이 보이도록 둘레에 두 번 그립니다.
+function drawSleeve(g, W, H, lang) {
+  const copy = AD[lang];
+  g.fillStyle = '#FF6B00';
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = '#E55A00';
+  g.fillRect(0, 0, W, H * 0.06);
+  g.fillRect(0, H * 0.94, W, H * 0.06);
+
+  const half = W / 2;
+  const r = H * 0.19;
+  for (let i = 0; i < 2; i++) {
+    const cx = i * half + 90 + r;
+    g.fillStyle = '#FFF4E8';
+    g.beginPath();
+    g.arc(cx, H / 2, r * 1.3, 0, Math.PI * 2);
+    g.fill();
+    drawTangerine(g, cx, H / 2 + r * 0.1, r * 0.82, -0.5);
+
+    const left = cx + r * 1.3 + 44;
+    const width = (i + 1) * half - left - 70;
+    g.textBaseline = 'alphabetic';
+    g.fillStyle = '#FFFFFF';
+    fitFont(g, copy.name, width, 118, 800);
+    g.fillText(copy.name, left, H * 0.53);
+
+    g.fillStyle = '#FFE3CC';
+    const size = fitFont(g, copy.product, width * 0.6, 62, 700);
+    g.fillText(copy.product, left, H * 0.8);
+    const tagX = left + g.measureText(copy.product).width + 22;
+    const tagH = size * 0.95;
+    const tagY = H * 0.8 - size * 0.8;
+    g.font = `700 ${Math.round(size * 0.6)}px ${FONT}`;
+    const tagW = g.measureText(copy.sample).width + 30;
+    g.fillStyle = 'rgba(255,255,255,0.22)';
+    pill(g, tagX, tagY, tagW, tagH);
+    g.fill();
+    g.fillStyle = '#FFFFFF';
+    g.textBaseline = 'middle';
+    g.fillText(copy.sample, tagX + 15, tagY + tagH / 2 + 1);
+  }
+}
+
+// 귤껍질의 오돌토돌한 점 무늬입니다.
+function peelTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#FF8A1F';
+  g.fillRect(0, 0, 256, 256);
+  const rand = seeded(11);
+  for (let i = 0; i < 900; i++) {
+    g.fillStyle = rand() < 0.5 ? 'rgba(204,84,0,0.35)' : 'rgba(255,196,120,0.35)';
+    g.beginPath();
+    g.arc(rand() * 256, rand() * 256, 0.8 + rand() * 1.6, 0, Math.PI * 2);
+    g.fill();
+  }
+  const texture = canvasTexture(c);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(3, 2);
+  return texture;
+}
+
+// 광고판과 같은 자리에 컵 하나와 귤 하나가 떠서 천천히 오르내립니다. 쓰는 법(grow, ghost, sky)과
+// 돌려주는 것은 buildAd와 같습니다.
+function buildProduct({ grow, ghost = false, sky = null }) {
+  const H = CUP.height;
+  const mid = (H + CUP.lid) / 2;
+  const radiusAt = (y) => CUP.bottom + ((CUP.top - CUP.bottom) * y) / H;
+  const lathe = (points) => new THREE.LatheGeometry(points.map(([x, y]) => new THREE.Vector2(x, y - mid)), 64);
+
+  const root = new THREE.Group();
+  const face = new THREE.Group();
+  const lift = new THREE.Group();
+  const cup = new THREE.Group();
+  root.add(face);
+  face.add(lift);
+  lift.add(cup);
+
+  const solids = [];
+  const solid = (geometry, material, parent) => {
+    const mesh = new THREE.Mesh(geometry, material);
+    parent.add(mesh);
+    solids.push(mesh);
+    return mesh;
+  };
+
+  const paper = new THREE.MeshStandardMaterial({ color: 0xfff6ea, roughness: 0.65 });
+  const body = solid(lathe([[0, 0], [CUP.bottom - 0.04, 0], [CUP.bottom, 0.04], [CUP.top, H]]), paper, cup);
+
+  const lidMat = new THREE.MeshStandardMaterial({ color: 0xf6f2ec, roughness: 0.45, side: THREE.DoubleSide });
+  const lid = solid(lathe([
+    [CUP.top + 0.01, H - 0.14],
+    [CUP.top + 0.08, H - 0.08],
+    [CUP.top + 0.08, H + 0.05],
+    [CUP.top - 0.02, H + 0.1],
+    [CUP.top - 0.12, H + CUP.lid],
+    [0, H + CUP.lid],
+  ]), lidMat, cup);
+
+  const slot = solid(new THREE.CircleGeometry(0.12, 24), new THREE.MeshStandardMaterial({ color: 0x5b4a3f, roughness: 0.6 }), cup);
+  slot.scale.x = 2;
+  slot.rotation.x = -Math.PI / 2;
+  slot.position.set(0, H + CUP.lid - mid + 0.005, 0.75);
+
+  const sleeveCanvas = document.createElement('canvas');
+  sleeveCanvas.width = 2048;
+  sleeveCanvas.height = 416;
+  const sleeveCtx = sleeveCanvas.getContext('2d');
+  const sleeveTex = canvasTexture(sleeveCanvas);
+  sleeveTex.anisotropy = 4;
+  const y0 = H * 0.3;
+  const y1 = H * 0.72;
+  const sleeve = solid(
+    new THREE.CylinderGeometry(radiusAt(y1) + 0.025, radiusAt(y0) + 0.025, y1 - y0, 96, 1, true).translate(0, (y0 + y1) / 2 - mid, 0),
+    new THREE.MeshStandardMaterial({ map: sleeveTex, roughness: 0.7 }),
+    cup,
+  );
+  // 띠 첫 번째 이름이 정면에 오게 돌려 둡니다.
+  sleeve.rotation.y = -Math.PI / 2;
+
+  const fruitGroup = new THREE.Group();
+  lift.add(fruitGroup);
+  const fruit = solid(new THREE.SphereGeometry(1.05, 40, 28), new THREE.MeshStandardMaterial({ map: peelTexture(), roughness: 0.55 }), fruitGroup);
+  fruit.scale.y = 0.86;
+  solid(new THREE.CylinderGeometry(0.05, 0.07, 0.22, 10).translate(0, 0.96, 0), new THREE.MeshStandardMaterial({ color: 0x5d7a2e, roughness: 0.7 }), fruitGroup);
+  const leafShape = new THREE.Shape();
+  leafShape.moveTo(0, 0);
+  leafShape.bezierCurveTo(0.28, 0.16, 0.42, 0.55, 0, 0.88);
+  leafShape.bezierCurveTo(-0.42, 0.55, -0.28, 0.16, 0, 0);
+  const leafGeometry = new THREE.ShapeGeometry(leafShape, 12);
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x3fa34d, roughness: 0.6, side: THREE.DoubleSide });
+  const leafA = solid(leafGeometry, leafMat, fruitGroup);
+  leafA.position.set(0.03, 0.98, 0);
+  leafA.rotation.set(-0.35, 0, -1.05);
+  const leafB = solid(leafGeometry, leafMat, fruitGroup);
+  leafB.position.set(-0.03, 0.98, 0);
+  leafB.rotation.set(0.3, 0.5, 1.15);
+
+  // 땅에는 그림자와 퍼지는 고리를 남겨, 무엇이 어디 떠 있는지 보이게 합니다.
+  const shadowMat = new THREE.MeshBasicMaterial({ map: glowTexture('40,26,12'), transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(3.2, 48), shadowMat);
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.02;
+  root.add(shadow);
+
+  const ringMat = additive({ color: 0xff8a2a, side: THREE.DoubleSide });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.7, 2, 64), ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.03;
+  root.add(ring);
+
+  const sparkTex = glowTexture('255,236,210');
+  const sparks = [];
+  for (let i = 0; i < 14; i++) {
+    const spark = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: sparkTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
+    }));
+    spark.userData = {
+      a: Math.random() * Math.PI * 2,
+      r: 1.6 + Math.random() * 1.2,
+      y0: Math.random(),
+      speed: 0.05 + Math.random() * 0.05,
+      phase: Math.random() * Math.PI * 2,
+      size: 0.12 + Math.random() * 0.16,
+    };
+    lift.add(spark);
+    sparks.push(spark);
+  }
+
+  const steamTex = glowTexture('255,255,255');
+  const steam = [];
+  for (let i = 0; i < 5; i++) {
+    const puff = new THREE.Sprite(new THREE.SpriteMaterial({ map: steamTex, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
+    puff.userData = {
+      x: (Math.random() - 0.5) * 0.5,
+      z: (Math.random() - 0.5) * 0.5,
+      y0: i / 5,
+      speed: 0.22 + Math.random() * 0.08,
+      phase: Math.random() * Math.PI * 2,
+    };
+    cup.add(puff);
+    steam.push(puff);
+  }
+
+  // 부품이 여럿이라 윤곽끼리 겹칩니다. 제품이 그려진 곳(스텐실 1)과 이미 윤곽을 칠한 곳은 건너뛰게 해서,
+  // 귤 윤곽이 컵 위로 비치거나 겹친 자리만 진해지지 않게 합니다.
+  const ghostMat = new THREE.MeshBasicMaterial({
+    color: 0xff6b00, transparent: true, opacity: 0, depthWrite: false, depthFunc: THREE.GreaterDepth, side: THREE.DoubleSide, toneMapped: false,
+    stencilWrite: true, stencilRef: 0, stencilFunc: THREE.EqualStencilFunc, stencilZPass: THREE.IncrementStencilOp,
+  });
+  const solidMats = [...new Set(solids.map((mesh) => mesh.material))];
+  if (ghost) {
+    for (const material of solidMats) {
+      Object.assign(material, { stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    }
+    for (const mesh of solids) {
+      const shade = new THREE.Mesh(mesh.geometry, ghostMat);
+      shade.renderOrder = 10;
+      mesh.add(shade);
+    }
+  }
+
+  if (sky) {
+    for (const material of solidMats) skyPatch(material, sky, 'cut');
+    for (const material of [shadowMat, ringMat, ...sparks.map((s) => s.material), ...steam.map((s) => s.material)]) {
+      skyPatch(material, sky, 'fade');
+    }
+    skyPatch(ghostMat, sky, 'ghost');
+  }
+
+  let lang = adLang;
+  let startAt = null;
+  let ready = false;
+
+  function drawLabel() {
+    drawSleeve(sleeveCtx, sleeveCanvas.width, sleeveCanvas.height, lang);
+    sleeveTex.needsUpdate = true;
+  }
+  drawLabel();
+  // 글꼴이 늦게 오면 띠를 다시 그립니다. 광고판 화면과 달리 띠는 매번 다시 그리지 않습니다.
+  document.fonts?.ready.then(drawLabel);
+
+  function update(t, eye) {
+    root.visible = startAt !== null;
+    if (startAt === null) return;
+
+    const dx = eye.x - root.position.x;
+    const dz = eye.z - root.position.z;
+    face.rotation.y = Math.atan2(dx, dz);
+    if (grow) root.scale.setScalar(THREE.MathUtils.clamp(Math.hypot(dx, dz) / 30, 1, 4));
+
+    const k = t - startAt;
+    ready = k > 0.9;
+    const ground = easeOut(clamp01(k / 0.6));
+    const wave = (t * 0.7) % 1;
+    ring.scale.setScalar(0.6 + 0.9 * wave);
+    ringMat.opacity = 0.6 * ground * (1 - wave);
+
+    // 둥실둥실: 아래에서 떠올라 천천히 오르내리고, 살짝 기울었다 돌아옵니다.
+    const pop = clamp01((k - 0.15) / 0.7);
+    const bob = Math.sin(t * 1.8);
+    lift.visible = pop > 0;
+    lift.position.y = CUP.center - 2.5 * (1 - easeOut(pop)) + 0.25 * bob;
+    lift.scale.setScalar(0.25 + 0.75 * easeBack(pop));
+    lift.rotation.z = 0.045 * Math.sin(t * 1.2);
+    lift.rotation.x = 0.03 * Math.sin(t * 0.9 + 1);
+    cup.rotation.y = 0.8 * Math.sin(t * 0.5);
+
+    const fruitPop = clamp01((k - 0.45) / 0.6);
+    fruitGroup.scale.setScalar(Math.max(0.001, easeBack(fruitPop)));
+    fruitGroup.position.set(3.15, 1.15 + 0.38 * Math.sin(t * 2.2 + 1.3), 0.45);
+    fruitGroup.rotation.set(0, t * 0.9, 0.25 + 0.08 * Math.sin(t * 1.6));
+
+    // 높이 뜰수록 그림자가 넓고 옅어집니다.
+    shadow.scale.setScalar(1 + 0.06 * bob);
+    shadowMat.opacity = 0.32 * ground * (1 - 0.15 * bob);
+    ghostMat.opacity = 0.3 * clamp01((k - 0.3) / 0.5);
+
+    const fade = clamp01((k - 1.1) / 0.8);
+    const span = H + CUP.lid + 1.5;
+    for (const spark of sparks) {
+      const d = spark.userData;
+      const f = (d.y0 + t * d.speed) % 1;
+      const a = d.a + t * 0.15;
+      spark.position.set(Math.cos(a) * d.r, -mid + f * span, Math.sin(a) * d.r);
+      spark.material.opacity = fade * Math.sin(Math.PI * f) * (0.55 + 0.45 * Math.sin(t * 4 + d.phase));
+      spark.scale.setScalar(d.size);
+    }
+    const lidTop = H + CUP.lid - mid;
+    for (const puff of steam) {
+      const d = puff.userData;
+      const f = (d.y0 + t * d.speed) % 1;
+      puff.position.set(d.x + 0.18 * f * Math.sin(t * 1.3 + d.phase), lidTop + 0.1 + f * 1.7, d.z);
+      puff.scale.setScalar(0.35 + 0.85 * f);
+      puff.material.opacity = 0.3 * fade * Math.sin(Math.PI * f);
+    }
+  }
+
+  return {
+    root,
+    hit: [body, lid, sleeve, fruit],
+    center: (target) => cup.getWorldPosition(target),
+    ready: () => ready,
+    show(t, again = false) { if (startAt === null || again) startAt = t; },
+    update,
+    setLang(next) {
+      lang = next;
+      drawLabel();
+    },
+    setDistance() {},
+    setSky(on) { ghostMat.depthFunc = on ? THREE.LessEqualDepth : THREE.GreaterDepth; },
+  };
+}
+
+// 광고판과 제품을 같은 자리에 함께 두고, 고른 쪽만 보여 줍니다. 바꾸면 새로 보이는 쪽이 처음처럼 나타납니다.
+function buildShowcase(options) {
+  const root = new THREE.Group();
+  const items = { sign: buildAd(options), product: buildProduct(options) };
+  for (const item of Object.values(items)) {
+    item.root.visible = false;
+    root.add(item.root);
+  }
+  let active = items[adKind];
+  let shownAt = null;
+  let lastT = 0;
+  const local = new THREE.Vector3();
+
+  return {
+    root,
+    get hit() { return active.hit; },
+    center: (target) => active.center(target),
+    ready: () => active.ready(),
+    show(t) {
+      if (shownAt !== null) return;
+      shownAt = t;
+      active.show(t);
+    },
+    update(t, eye) {
+      lastT = t;
+      // 둘 다 이 묶음 안에 있으므로, 보는 사람 위치도 묶음 기준으로 바꿔서 넘깁니다.
+      local.copy(eye).sub(root.position);
+      active.update(t, local);
+    },
+    setLang(next) { for (const item of Object.values(items)) item.setLang(next); },
+    setDistance(d) { for (const item of Object.values(items)) item.setDistance(d); },
+    setSky(on) { for (const item of Object.values(items)) item.setSky(on); },
+    setKind(kind) {
+      if (items[kind] === active) return;
+      active.root.visible = false;
+      active = items[kind];
+      if (shownAt !== null) active.show(lastT, true);
     },
   };
 }
@@ -1139,7 +1516,7 @@ async function startAR() {
   camera.position.set(0, EYE, 0);
   const sky = skyUniforms();
   sky.uNearFar.value.set(camera.near, camera.far);
-  const ad = buildAd({ grow: true, ghost: true, sky });
+  const ad = buildShowcase({ grow: true, ghost: true, sky });
   liveAds.add(ad);
   scene.add(ad.root);
 
@@ -1262,6 +1639,7 @@ async function startAR() {
     }
     ad.show(clock.getElapsedTime());
     $('ad-langs').classList.add('is-on');
+    $('ad-kinds').classList.add('is-on');
     track('ooh_ar_shown', { mode: next, reason: why });
   }
 
@@ -1291,7 +1669,8 @@ async function startAR() {
     pointer.style.left = `${halfW + dx * reach}px`;
     pointer.style.top = `${halfH - dy * reach}px`;
     arrow.style.transform = `rotate(${Math.atan2(-dy, dx)}rad)`;
-    pointerLabel.textContent = [pointer.dataset.label, formatDistance(distance, PAGE_LANG)].filter(Boolean).join(' · ');
+    const label = adKind === 'product' ? pointer.dataset.labelProduct : pointer.dataset.label;
+    pointerLabel.textContent = [label, formatDistance(distance, PAGE_LANG)].filter(Boolean).join(' · ');
     pointer.hidden = !sheet.hidden;
     return false;
   }
@@ -1496,7 +1875,7 @@ function startPreview(stage) {
   scene.fog = new THREE.Fog(0xdce9f5, 70, 260);
   addLights(scene);
   scene.add(buildStreet());
-  const ad = buildAd({ grow: false });
+  const ad = buildShowcase({ grow: false });
   liveAds.add(ad);
   scene.add(ad.root);
 
