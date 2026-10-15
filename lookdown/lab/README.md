@@ -9,7 +9,9 @@
 | `harness.html`, `harness.js` | 측정 하네스. 추적기를 꽂고 FPS·처리시간·상태·이동 거리를 띄우며, 가상 마커(시작 시 1 m 앞 바닥)의 화면 좌표와 밀림을 매 프레임 기록해 CSV·요약 JSON으로 저장 |
 | `trackers/gyro.js` | 기준선. `lookdown.js`의 자이로 3DoF + EYE 1.4 m + floorPoint를 그대로 추출 |
 | `trackers/alva.js` | AlvaAR 단안 SLAM 추적기 (+ `useFallback`: lost면 자이로로) |
-| `trackers/hybrid-plan.md` | 자이로 + 바닥 광류 하이브리드 설계 문서 (코드 없음) |
+| `trackers/hybrid.js` | **하이브리드 추적기.** 회전은 자이로, 이동은 바닥 광류(jsfeat FAST + 피라미드 LK) → 회전 보상 → 바닥 평면 역투영 → 2점 RANSAC으로 수평 이동·높이 동시 추정 → ZUPT·상보 필터. `?stage=1..4`로 단계별 측정 |
+| `trackers/hybrid-plan.md` | 하이브리드 설계 문서 |
+| `vendor/jsfeat/` | jsfeat 0.0.8 (`jsfeat-min.js` 66 KB, MIT, 순수 JS). 선택 근거는 `vendor/jsfeat/SOURCE.md` |
 | `vendor/alvaar/` | AlvaAR 빌드 파일(`alva_ar.js` 4.3 MB, WASM 내장), `LICENSE`(GPLv3), `SOURCE.md`(커밋) |
 | `tools/make-synthetic.py` | (a)(b)(c) 합성 바닥 영상 + IMU + 정답 경로 생성 |
 | `tools/run-lab.mjs` | 헤드리스 크로미움으로 하네스를 돌려 `results/`에 CSV·JSON 저장 |
@@ -47,7 +49,7 @@ const r = tracker.update(imageData /* W×H RGBA 또는 null */, imuQuat /* THREE
 5. 「CSV 저장」「요약 JSON 저장」으로 결과를 받고, 요약 JSON을 `results/`에 넣어 주면 `RESULTS.md`에 반영한다.
 6. iOS Safari에서 녹화 포맷은 `MediaRecorder.isTypeSupported('video/webm;codecs=vp8')`가 false면 기본 포맷(mp4)으로 저장된다. 재생은 같은 기기/크로미움에서 가능.
 
-URL 파라미터: `?tracker=gyro|alva|alva-fb`, `?video=…&imu=…`(재생), `?step=1`(프레임 단위 전부 처리), `?auto=1`, `?w=640&h=480&fov=67`, `?scale=`(alva 이동량 배율).
+URL 파라미터: `?tracker=gyro|alva|alva-fb|hybrid`, `?stage=1..4`(hybrid 단계), `?video=…&imu=…`(재생), `?step=1`(프레임 단위 전부 처리), `?auto=1`, `?w=640&h=480&fov=67`, `?scale=`(alva 이동량 배율).
 
 ## PC에서 돌리기 (합성 데이터)
 
@@ -56,7 +58,9 @@ URL 파라미터: `?tracker=gyro|alva|alva-fb`, `?video=…&imu=…`(재생), `?
 npm install --no-save playwright-core
 python3 lookdown/lab/tools/make-synthetic.py all     # data/ 생성 (PIL, numpy, ffmpeg)
 node lookdown/lab/tools/run-lab.mjs gyro,alva,alva-fb a,b,c
+node lookdown/lab/tools/run-lab.mjs hybrid a,b,c,b2 'stage=4' s4     # 결과는 results/hybrid-<scn>-s4.*
 ```
+`b2`는 b와 같은 경로에 상자 2개와 왼쪽 벽을 넣은 시나리오다(바닥이 아닌 특징점 = 이상치 검증용).
 `run-lab.mjs`는 `?step=1`로 모든 프레임을 빠짐없이 처리한다. 그래서 **FPS는 의미가 없고** `update_ms`만 본다.
 
 ## AlvaAR 라이선스

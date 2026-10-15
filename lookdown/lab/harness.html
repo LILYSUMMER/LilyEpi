@@ -37,7 +37,8 @@
   추적 품질 측정 하네스. 추적기(tracker)는 trackers/*.js에 있고 모두 같은 인터페이스를 쓴다.
     tracker.init(width, height) / tracker.update(imageData, imuQuat, t) → { position, quaternion, confidence, lost }
   URL 파라미터:
-    ?tracker=gyro|alva|alva-fb     추적기 (alva-fb = AlvaAR + 자이로 폴백)
+    ?tracker=gyro|alva|alva-fb|hybrid  추적기 (alva-fb = AlvaAR + 자이로 폴백, hybrid = 자이로+바닥 광류)
+    ?stage=1..4                    hybrid 단계만 켜기 (1 특징점, 2 +회전 보상, 3 +이동 추정, 4 전부)
     ?video=URL&imu=URL             녹화 재생 (imu JSON 형식은 README 참조). 없으면 라이브 카메라
     ?scenario=a|b|c                기록에 붙일 시나리오 라벨
     ?step=1                        재생을 프레임 단위로 멈춰 가며 전부 처리(실시간 아님, 프레임 누락 없음)
@@ -63,6 +64,7 @@
       <option value="gyro">gyro (기준선: 자이로 3DoF + EYE 1.4)</option>
       <option value="alva">alva (AlvaAR 단안 SLAM)</option>
       <option value="alva-fb">alva-fb (AlvaAR + lost 시 자이로 폴백)</option>
+      <option value="hybrid">hybrid (자이로 회전 + 바닥 광류 이동)</option>
     </select>
     <button id="btn-start" class="primary">시작 (카메라·센서)</button>
     <button id="btn-reset" disabled>추적 리셋</button>

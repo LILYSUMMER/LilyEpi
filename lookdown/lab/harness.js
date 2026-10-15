@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { GyroTracker } from './trackers/gyro.js';
 import { AlvaTracker } from './trackers/alva.js';
+import { HybridTracker } from './trackers/hybrid.js';
 
 const q = new URLSearchParams(location.search);
 const W = +q.get('w') || 640;
@@ -131,6 +132,7 @@ let tracker = null; let trackerId = q.get('tracker') || 'gyro';
 $('sel-tracker').value = trackerId;
 async function makeTracker(id) {
   const t = id === 'gyro' ? new GyroTracker({ eye: EYE })
+    : id === 'hybrid' ? new HybridTracker({ eye: EYE, fov: FOV, stage: +q.get('stage') || 4 })
     : new AlvaTracker({ eye: EYE, fov: FOV, useFallback: id === 'alva-fb', scale: +q.get('scale') || 1 });
   await t.init(W, H);
   $('h-tracker').textContent = `tracker: ${id}`;
@@ -143,7 +145,7 @@ const CSV_HEAD = 't,frame,ms,lost,confidence,px,py,drift_px,drift_m,cam_x,cam_y,
 
 function beginSession(label) {
   S.running = true; S.scenario = label; S.rows = []; S.t0 = null; S.marker = null; S.startPx = null; S.startPos = null; S.lastPos = null;
-  S.dist = 0; S.lost = 0; S.ms = []; S.frames = 0; S.fpsT = performance.now(); S.fpsN = 0; imu.log = []; S.gtAlign = null;
+  S.dist = 0; S.lost = 0; S.ms = []; S.frames = 0; S.fpsT = performance.now(); S.fpsN = 0; imu.log = []; S.gtAlign = null; S.dbg = {};
   $('summary').classList.remove('show');
   log(`▶ 세션 시작 (${label}) tracker=${trackerId} ${source.kind}${STEP ? ' step' : ''}`);
 }
@@ -168,6 +170,8 @@ function onFrame(t) {          // t: 세션 기준 초
   const ms = performance.now() - a;
   S.ms.push(ms); S.frames++; S.fpsN++;
   if (r.lost) S.lost++;
+  // 추적기가 debug 숫자를 주면 평균·최대를 요약에 넣는다 (hybrid: tracked, inliers, resid_px, h, ms_*)
+  if (r.debug) for (const [k, v] of Object.entries(r.debug)) { if (typeof v !== 'number') continue; const d = S.dbg[k] || (S.dbg[k] = { sum: 0, n: 0, max: -Infinity }); d.sum += v; d.n++; if (v > d.max) d.max = v; }
 
   if (!S.marker && !r.lost) { placeMarker(r.position, r.quaternion); S.startPos = r.position.clone(); S.lastPos = r.position.clone(); }
   const px = S.marker ? project(S.marker, r.position, r.quaternion) : null;
@@ -219,6 +223,7 @@ function summarize() {
     err_m_avg: errM.length ? +avg(errM).toFixed(3) : null, err_m_max: errM.length ? +Math.max(...errM).toFixed(3) : null,
     gt: !!imu.gt,
   };
+  if (Object.keys(S.dbg).length) { sum.debug = {}; for (const [k, d] of Object.entries(S.dbg)) sum.debug[k] = { avg: +(d.sum / d.n).toFixed(3), max: +d.max.toFixed(3) }; }
   // 단안 SLAM 스케일 추정: 추적 경로 길이 / 정답 경로 길이 (정답이 있을 때만)
   if (imu.gt && imu.gt.length > 1) {
     let gtLen = 0; for (let i = 1; i < imu.gt.length; i++) gtLen += new THREE.Vector3().fromArray(imu.gt[i].p).distanceTo(new THREE.Vector3().fromArray(imu.gt[i - 1].p));
@@ -275,13 +280,14 @@ async function replay() {
   video.pause(); video.currentTime = 0;
   await new Promise((r) => video.addEventListener('seeked', r, { once: true }));
   if (STEP) {
-    const dt = 1 / (+q.get('fps') || 30);
-    while (video.currentTime + dt <= video.duration - 1e-3) {
-      onFrame(video.currentTime);
-      video.currentTime = Math.min(video.duration, video.currentTime + dt);
+    // 프레임 k의 가운데 시각((k+0.5)/fps)으로 seek해야 디코더가 k−1 프레임을 주는 일이 없다. IMU는 프레임 시각 k/fps로 샘플.
+    const fps = +q.get('fps') || 30;
+    const frames = Math.floor(video.duration * fps + 1e-6);
+    for (let k = 0; k < frames; k++) {
+      video.currentTime = Math.min(video.duration, (k + 0.5) / fps);
       await new Promise((r) => video.addEventListener('seeked', r, { once: true }));
+      onFrame(k / fps);
     }
-    onFrame(video.currentTime);
   } else {
     await video.play();
     await new Promise((resolve) => {

@@ -9,6 +9,8 @@
   a  제자리 회전: 10초 동안 yaw 0→360°, 위치 고정 (0, 1.4, 0), pitch −55°
   b  걷기: z 0→−2m (0~5초) 정지 (5~6초) 복귀 (6~11초) 정지 (11~12초). 걸음 흔들림 y ±2cm, yaw ±2°
   c  쪼그리기: y 1.4→0.7 (0~2.5초) 정지 (2.5~4.5초) 복귀 (4.5~7초) 정지 (7~8초). pitch −55°→−45°
+  b2 b와 같은 경로 + 바닥 위 1 m 높이 상자 2개((−0.6, −2.5), (0.7, −3.5), 0.5×1.0×0.5 m) + 왼쪽 벽(x=−1.5, 높이 2.5 m).
+     바닥이 아닌 특징점(이상치)이 추적기에 들어오게 하기 위한 시나리오.
 
 출력(lab/data/): <s>.webm (VP8 30fps), <s>.json { scenario, fov, eye, frame, fps, samples:[{t,q}], gt:[{t,p,q}] }
   q = three.js 카메라 쿼터니언 [x,y,z,w] (world-from-camera), p = 카메라 위치 [x,y,z] (m, y가 위, 바닥 y=0)
@@ -45,6 +47,71 @@ def floor_texture(seed=7):
     rgb = np.stack([img * 0.78, img * 0.84, img * 0.95], -1)      # 청회색
     return Image.fromarray((rgb * 255).astype(np.uint8))
 
+def box_texture(seed=11, n=256):
+    rng = np.random.default_rng(seed)
+    base = rng.normal(0.55, 0.08, (n, n))
+    yy, xx = np.mgrid[0:n, 0:n]
+    base[(yy // 32 + xx // 32) % 2 == 0] += 0.12          # 체크무늬
+    base[(yy % 64) < 4] -= 0.3; base[(xx % 64) < 4] -= 0.3  # 테이프 선
+    for _ in range(120):
+        x0, y0 = int(rng.uniform(0, n)), int(rng.uniform(0, n)); s_ = int(rng.uniform(2, 6)); base[y0:y0 + s_, x0:x0 + s_] += rng.uniform(0.2, 0.4)
+    img = np.clip(base, 0, 1)
+    return Image.fromarray((np.stack([img * 0.95, img * 0.78, img * 0.55], -1) * 255).astype(np.uint8))   # 판지색
+
+def wall_texture(seed=13, w=2048, h=640):
+    rng = np.random.default_rng(seed)
+    base = rng.normal(0.5, 0.06, (h, w))
+    yy, xx = np.mgrid[0:h, 0:w]
+    row = yy // 40; off = (row % 2) * 60
+    base[(yy % 40) < 4] -= 0.35; base[((xx + off) % 120) < 4] -= 0.35      # 벽돌 줄눈
+    base += 0.1 * (((xx + off) // 120 + row) % 3 == 0)
+    for _ in range(300):
+        x0, y0 = int(rng.uniform(0, w)), int(rng.uniform(0, h)); s_ = int(rng.uniform(2, 7)); base[y0:y0 + s_, x0:x0 + s_] += rng.uniform(0.15, 0.4)
+    img = np.clip(base, 0, 1)
+    return Image.fromarray((np.stack([img * 0.72, img * 0.62, img * 0.6], -1) * 255).astype(np.uint8))   # 벽돌색
+
+def homography(src_pts, dst_pts):
+    """4점 대응 → 3×3 H (src → dst), DLT"""
+    A = []
+    for (x, y), (u, v) in zip(src_pts, dst_pts):
+        A.append([x, y, 1, 0, 0, 0, -u * x, -u * y]); A.append([0, 0, 0, x, y, 1, -v * x, -v * y])
+    b = np.array([c for p in dst_pts for c in p], float)
+    hv = np.linalg.solve(np.array(A, float), b)
+    return np.append(hv, 1).reshape(3, 3)
+
+def draw_quad(frame, tex, quad_world, R, C):
+    """월드 사각형(4점, 시계 또는 반시계)에 텍스처를 입혀 frame 위에 그린다. 카메라 뒤에 걸리면 건너뜀."""
+    from PIL import ImageDraw
+    Rt = R.T; pts = []
+    for X in quad_world:
+        Xc = Rt @ (np.array(X, float) - C)
+        if Xc[2] > -0.05: return frame
+        pts.append((cx + fx * Xc[0] / -Xc[2], cy - fy * Xc[1] / -Xc[2]))
+    if all(p[0] < -50 or p[0] > W + 50 for p in pts) or all(p[1] < -50 or p[1] > H + 50 for p in pts): return frame
+    tw, th = tex.size
+    Hm = homography([(0, 0), (tw, 0), (tw, th), (0, th)], pts)
+    Hinv = np.linalg.inv(Hm); Hinv /= Hinv[2, 2]
+    coeffs = [Hinv[0, 0], Hinv[0, 1], Hinv[0, 2], Hinv[1, 0], Hinv[1, 1], Hinv[1, 2], Hinv[2, 0], Hinv[2, 1]]
+    warped = tex.transform((W, H), Image.PERSPECTIVE, coeffs, Image.BILINEAR)
+    mask = Image.new('L', (W, H), 0); ImageDraw.Draw(mask).polygon(pts, fill=255)
+    return Image.composite(warped, frame, mask)
+
+# b2 물체: 왼쪽 벽 + 상자 2개. 각 면은 (사각형 4점, 텍스처). 멀리 있는 것부터 그린다.
+def objects_b2(texs):
+    boxes = [(-0.6, -2.5), (0.7, -3.5)]; d, hh = 0.5, 1.0
+    faces = []
+    # 벽은 1 m 조각으로 나눠 그린다. 한 조각이라도 카메라 뒤에 걸리면 그 조각만 건너뛴다.
+    for z0 in range(1, -9, -1):
+        z1 = z0 - 1
+        faces.append(([(-1.5, 0, z0), (-1.5, 0, z1), (-1.5, 2.5, z1), (-1.5, 2.5, z0)], texs['wall_seg'], z1 - 0.5))
+    for (bx, bz) in boxes:
+        x0, x1, z0, z1 = bx - d / 2, bx + d / 2, bz - d / 2, bz + d / 2
+        faces.append(([(x0, 0, z1), (x1, 0, z1), (x1, hh, z1), (x0, hh, z1)], texs['box'], bz))          # 앞면 (+z)
+        faces.append(([(x0, hh, z1), (x1, hh, z1), (x1, hh, z0), (x0, hh, z0)], texs['box'], bz - 0.1))  # 윗면
+        faces.append(([(x1, 0, z1), (x1, 0, z0), (x1, hh, z0), (x1, hh, z1)], texs['box'], bz - 0.05))   # 오른면 (+x)
+        faces.append(([(x0, 0, z0), (x0, 0, z1), (x0, hh, z1), (x0, hh, z0)], texs['box'], bz - 0.05))   # 왼면 (−x)
+    return faces
+
 def rot_y(a): c, s = math.cos(a), math.sin(a); return np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
 def rot_x(a): c, s = math.cos(a), math.sin(a); return np.array([[1, 0, 0], [0, c, -s], [0, s, c]])
 def rot_z(a): c, s = math.cos(a), math.sin(a); return np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
@@ -69,7 +136,7 @@ def pose(scn, t):
     jitter_p = math.radians(0.3) * math.sin(2 * math.pi * 1.7 * t + 2)
     if scn == 'a':
         return np.array([0.0, EYE, 0.0]), 2 * math.pi * (t / 10.0) + jitter_y, math.radians(-55) + jitter_p, math.radians(0.3) * math.sin(2 * t)
-    if scn == 'b':
+    if scn in ('b', 'b2'):
         if t < 5: z = -2.0 * ease(t / 5)
         elif t < 6: z = -2.0
         elif t < 11: z = -2.0 * (1 - ease((t - 6) / 5))
@@ -85,8 +152,9 @@ def pose(scn, t):
         return np.array([0.0, EYE - 0.7 * k, 0.05 * k]), jitter_y, math.radians(-55 + 10 * k) + jitter_p, math.radians(0.3) * math.sin(2 * t)
     raise ValueError(scn)
 
-LEN = {'a': 10.0, 'b': 12.0, 'c': 8.0}
+LEN = {'a': 10.0, 'b': 12.0, 'c': 8.0, 'b2': 12.0}
 
+TEX_OBJ = None
 def render(scn, tex):
     n = tex.size[0]
     T = np.array([[1 / PPM, 0, -HALF], [0, 1 / PPM, -HALF], [0, 0, 1.0]])        # 텍스처 px → 바닥 (x,z)
@@ -113,7 +181,12 @@ def render(scn, tex):
         dist = np.where(hit, -C[1] / np.minimum(dw[..., 1], -1e-6), 1e9)
         far = np.clip((dist - 6) / 14, 0, 1)[..., None]
         arr = np.where(hit[..., None], (arr * (1 - far) + sky * far).astype(np.uint8), sky)
-        Image.fromarray(arr).save(os.path.join(tmp, f'{i:05d}.png'))
+        frame = Image.fromarray(arr)
+        if scn == 'b2':
+            cam_z = C[2]
+            for quad, texo, depth in sorted(objects_b2(TEX_OBJ), key=lambda f: f[2]):   # 먼 것(z 작은 것)부터
+                frame = draw_quad(frame, texo, quad, R, C)
+        frame.save(os.path.join(tmp, f'{i:05d}.png'))
         qv = quat_from_R(R)
         samples.append({'t': round(t, 4), 'q': qv})
         gt.append({'t': round(t, 4), 'p': [round(float(v), 4) for v in C], 'q': qv})
@@ -132,5 +205,6 @@ def render(scn, tex):
 if __name__ == '__main__':
     which = sys.argv[1] if len(sys.argv) > 1 else 'all'
     tex = floor_texture()
-    for s in (['a', 'b', 'c'] if which == 'all' else [which]):
+    TEX_OBJ = {'box': box_texture(), 'wall_seg': wall_texture(w=256, h=640)}
+    for s in (['a', 'b', 'c', 'b2'] if which == 'all' else [which]):
         render(s, tex)
