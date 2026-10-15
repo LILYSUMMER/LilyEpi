@@ -17,7 +17,7 @@ const YUNI_R = 0.055;         // Yuni 머리 반지름 → 지름 11cm (브리�
 const YUNI_UP = 0.045;        // 다 떠올랐을 때 머리 중심이 수면 위로 올라온 높이
 const CAMERA_FOV = 67;        // 휴대폰 기본 카메라 세로 화각
 const LOOK_DOWN = -0.42;      // 카메라 앞 방향의 y가 이보다 낮으면 '바닥을 비추는 중'
-const T = { pool: 1.6, light: 0.9, rise: 2.4, speak: 0.8, hold: 6.0, linger: 10, bye: 3.2, sink: 3.0 };  // 고임 → 빛 → 떠오름 → 한마디 → 자막 유지 → 머묾 → 인사 → 가라앉음
+const T = { pool: 2.0, light: 1.5, rise: 1.0, speak: 4.5, item: 3.5, sink: 2.5 };  // 고임 → 물속 빛 → 수면을 깨고 올려다봄 → 한마디 → 분실물 → 반짝 한 번 하고 가라앉음
 const MAX_RIPPLES = 8;
 const GOLD = new THREE.Color('#F2B45A');
 const GLOW = 0.62;             // Yuni 몸의 기본 발광. 반짝임 펄스는 여기의 1.27배까지만 (과노출 금지)
@@ -42,6 +42,10 @@ const LANG = (() => {
 document.documentElement.lang = LANG;
 const lines = await fetch(new URL('lines.json', import.meta.url)).then((r) => r.json());
 const text = (key) => lines[LANG][key];
+// 날짜 창: lines.json의 from~to(포함). ?line=halloween|default, ?item=1|0 으로 강제할 수 있습니다.
+const inWindow = (w) => { if (!w) return false; const d = new Date().toISOString().slice(0, 10); return d >= w.from && d <= w.to; };
+const lineText = () => (q.get('line') === 'halloween' || (q.get('line') !== 'default' && inWindow(lines.halloween))) ? text('line_halloween') : text('line');
+const itemEnabled = () => q.get('item') === '1' || (q.get('item') !== '0' && inWindow(lines.item));
 document.querySelectorAll('[data-text]').forEach((el) => { el.textContent = text(el.dataset.text); });
 document.title = 'LOOK DOWN';
 
@@ -65,7 +69,7 @@ if (location.protocol === 'file:') fail('이 페이지는 파일로 직접 열�
 /* ---------- 상태 ---------- */
 
 const S = {
-  phase: 'idle',        // idle → pooling → rising → speaking → done → leaving → gone
+  phase: 'idle',        // idle → pooling → light → rising → speaking → item → leaving → ended
   t0: 0,                // 단계가 바뀐 시각
   clickAt: 0,           // 버튼을 누른 시각(performance.now). 3초 안 Yuni 지표
   open: 0,              // 웅덩이 고인 정도 0~1
@@ -75,7 +79,8 @@ const S = {
   pulse: -10,           // 반짝임 펄스 시작 시각
   ears: 0,              // 귀 각도: 0 쉼, 1 쫑긋
   startle: -10,         // 수면을 두드린 시각. 귀가 옆으로 누웠다 돌아옵니다
-  back: 0,              // 귀 뒤로(안심). 인사하고 돌아갈 때
+  lookUp: 0,            // 수면을 깨고 보는 사람을 올려다보는 정도
+  item: 0,              // 그 주 분실물이 떠오른 정도
   night: 1,             // 카메라 화면의 어두움 0~1. 어두울수록 Yuni가 또렷합니다
   placed: false,
 };
@@ -394,6 +399,13 @@ function build() {
   motes.renderOrder = 3;
   deep.add(motes);
 
+  // 비침: 실제 하늘엔 없는 불빛이 물속에 비칩니다. 가로등 주황, 간판 파랑, 창문 흰빛이 천천히 흐릅니다.
+  const glints = [[255, 170, 90, 0.4], [120, 170, 255, 0.3], [255, 232, 205, 0.28], [90, 200, 180, 0.22]].map(([r, g, b, a], i) => {
+    const sp = new THREE.Sprite(stencilIn(new THREE.SpriteMaterial({ map: glowTex, color: new THREE.Color(r / 255, g / 255, b / 255), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })));
+    sp.userData = { a, r: 0.14 + i * 0.06, phase: i * 1.7, speed: 0.11 + i * 0.03, z: -0.12 - i * 0.05, size: 0.16 + i * 0.03 };
+    sp.renderOrder = 3; deep.add(sp); return sp;
+  });
+
   /* Yuni: 불투명한 따뜻한 빛의 둥근 몸 + 작은 고양이 귀 + 검은 점 눈 두 개. 입·코·윤곽선 없음. 눈을 감지 않음. */
   const ABOVE = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)];
   const BELOW = [new THREE.Plane(new THREE.Vector3(0, -1, 0), 0)];
@@ -438,6 +450,33 @@ function build() {
   const yuniLight = new THREE.PointLight(GOLD, 0, 1.2, 2);
   scene.add(yuniLight);
 
+  /* 그 주 분실물: 핼러윈엔 호박 사탕통. 위아래 두 벌로 만들어 수면에서 자릅니다(Yuni와 같은 방식). */
+  function itemMaterial(below, color, emissive) {
+    const m = new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: below ? 0.2 : 0.3, roughness: 0.9, metalness: 0, side: THREE.DoubleSide, clippingPlanes: below ? BELOW : ABOVE, transparent: true, opacity: below ? 0.9 : 1 });
+    if (below) stencilIn(m);
+    return m;
+  }
+  function makeItem(below) {
+    const g = new THREE.Group();
+    const prof = [[0.001, 0], [0.062, 0], [0.07, 0.01], [0.08, 0.06], [0.086, 0.11], [0.082, 0.13]].map(([x, y]) => new THREE.Vector2(x * 0.62, y * 0.62));  // 지름 약 10cm
+    g.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 32), itemMaterial(below, 0xe8731c, 0xff7a1a)));
+    if (!below) {
+      const c = document.createElement('canvas'); c.width = 256; c.height = 128; const x = c.getContext('2d');
+      x.fillStyle = '#1a0d05';
+      const tri = (cx, cy, r) => { x.beginPath(); x.moveTo(cx, cy - r); x.lineTo(cx + r, cy + r * 0.8); x.lineTo(cx - r, cy + r * 0.8); x.closePath(); x.fill(); };
+      tri(78, 42, 26); tri(178, 42, 26);
+      x.beginPath(); x.moveTo(52, 84); for (let i = 0; i < 7; i++) x.lineTo(52 + (i + 1) * 152 / 7, i % 2 ? 84 : 108); x.lineTo(204, 96); x.lineTo(52, 96); x.closePath(); x.fill();
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(0.068, 0.034), new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, clippingPlanes: ABOVE }));
+      face.position.set(0, 0.044, 0.052); g.add(face);
+    }
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.048, 0.004, 8, 28, Math.PI), itemMaterial(below, 0x1a1410, 0x000000));
+    handle.position.y = 0.078; g.add(handle);
+    return g;
+  }
+  const itemAbove = makeItem(false); itemAbove.visible = false; scene.add(itemAbove);
+  const itemBelow = makeItem(true); itemBelow.visible = false; itemBelow.traverse((o) => { if (o.isMesh) o.renderOrder = 3; }); deep.add(itemBelow);
+
   // 수면 위 동심원 물결: Yuni 둘레로 천천히 번집니다(uRipples 0번은 Yuni 전용).
   let rippleIdx = 1;
   function ripple(local, strength, t) {
@@ -445,17 +484,18 @@ function build() {
     rp.set(local.x, local.y, t, strength);
   }
 
-  const parts = { renderer, scene, camera, puddle, maskMesh, surfMesh, floor, U, underGlow, motes, pGeo, pSeed, yuniAbove, yuniBelow, yuniLight, ripple };
-  if (q.has('debug')) window.__LD = parts;   // ?debug: 콘솔에서 부품을 만질 수 있게
+  const parts = { renderer, scene, camera, puddle, maskMesh, surfMesh, floor, U, underGlow, motes, glints, pGeo, pSeed, yuniAbove, yuniBelow, yuniLight, itemAbove, itemBelow, ripple };
+  if (q.has('debug')) window.__LD = Object.assign(parts, { S });   // ?debug: 콘솔에서 부품과 상태를 만질 수 있게
   return parts;
 }
 
 /* ---------- 시작 ---------- */
 
 const startEl = $('start');
-const btn = $('btn-start');
-btn.addEventListener('click', async () => {
-  btn.disabled = true;
+let started = false;
+startEl.addEventListener('click', async () => {
+  if (started) return;
+  started = true; startEl.disabled = true;
   S.clickAt = performance.now();
   track('lookdown_open', { lang: LANG, phone: PHONE, in_app: IN_APP });
   try {
@@ -469,7 +509,7 @@ async function run() {
   // 권한은 버튼 누른 동작 안에서 한꺼번에: 방향(아이폰) → 카메라 → 소리.
   const motionOk = PHONE ? await requestMotion() : false;
   const camera3 = build();
-  const { renderer, scene, camera, puddle, surfMesh, U, underGlow, motes, pGeo, pSeed, yuniAbove, yuniBelow, yuniLight, ripple } = camera3;
+  const { renderer, scene, camera, puddle, surfMesh, U, underGlow, motes, glints, pGeo, pSeed, yuniAbove, yuniBelow, yuniLight, itemAbove, itemBelow, ripple } = camera3;
 
   let hasCamera = false;
   try {
@@ -479,6 +519,7 @@ async function run() {
     console.warn('camera unavailable', e);
   }
   U.uVideo.value = hasCamera ? videoTex : nightStreetTexture();
+  const bgImage = hasCamera ? null : U.uVideo.value.image;
   if (!hasCamera) {
     sceneEl.style.background = `url("${U.uVideo.value.image.toDataURL ? U.uVideo.value.image.toDataURL('image/jpeg', 0.8) : ''}") center / cover`;
     const notice = $('notice');
@@ -539,27 +580,25 @@ async function run() {
     if (sensorReady || look.dragging) return;
     onTap(ev.clientX, ev.clientY);
   });
+  // 바닥 탭이 기본 경로입니다. 바닥 인식에 기대지 않고, 탭한 자리(바닥을 못 셈하면 앞쪽 1.3 m)에 바로 고입니다.
+  function aheadPoint() {
+    const f = forward.clone(); f.y = 0; if (f.lengthSq() < 1e-4) f.set(0, 0, -1); f.normalize();
+    return new THREE.Vector3(f.x * 1.3, 0, f.z * 1.3);
+  }
   function onTap(x, y) {
     ndc.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     const t = clock.getElapsedTime();
-    if (S.placed) {
-      const hit = ray.intersectObject(surfMesh, false)[0];
-      if (hit && hit.uv) {
-        ripple(new THREE.Vector2(hit.uv.x * 2 - 1, hit.uv.y * 2 - 1), 0.9, t);
-        // A. 물 두드리기: 귀가 옆으로 누웠다 돌아오고, 연달아 두드리면 짧게 웅얼거립니다. 머무는 동안이면 떠날 시각을 미룹니다.
-        if (S.up > 0.5 && S.phase !== 'leaving' && S.phase !== 'gone') {
-          if (t - S.startle < 2.5 && t - lastMumble > 3) { mumble(); lastMumble = t; }
-          S.startle = t;
-          if (S.phase === 'done') S.t0 = t;
-        }
-        track('lookdown_tap_water');
-        return;
-      }
+    if (S.phase === 'idle') { placePuddle(floorPoint(ray.ray.direction, new THREE.Vector3()) || aheadPoint()); return; }
+    // 고인 뒤의 탭은 물결뿐입니다. (Yuni가 떠 있으면 귀가 옆으로 누웠다 돌아옵니다. 분실물을 탭해도 물결만.)
+    const hit = ray.intersectObject(surfMesh, false)[0];
+    const local = hit && hit.uv ? new THREE.Vector2(hit.uv.x * 2 - 1, hit.uv.y * 2 - 1) : new THREE.Vector2(0, 0);
+    ripple(local, 0.9, t);
+    if (S.up > 0.5 && (S.phase === 'speaking' || S.phase === 'item' || S.phase === 'rising')) {
+      if (t - S.startle < 2.5 && t - lastMumble > 3) { mumble(); lastMumble = t; }
+      S.startle = t;
     }
-    // 웅덩이 밖 바닥을 탭하면 그 자리에(다시) 고입니다.
-    const p = floorPoint(ray.ray.direction, new THREE.Vector3());
-    if (p && (S.phase === 'idle' || S.phase === 'done' || S.phase === 'gone')) placePuddle(p);
+    track('lookdown_tap_water');
   }
   let lastMumble = -10;
 
@@ -567,21 +606,43 @@ async function run() {
     puddle.position.copy(p);
     puddle.visible = true;
     S.placed = true;
-    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.back = 0; S.startle = -10;
+    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.lookUp = 0; S.item = 0; S.startle = -10;
     S.phase = 'pooling';
     S.t0 = clock.getElapsedTime();
     U.uRipples.value.forEach((r) => r.set(0, 0, 0, 0));
     hint('');
     caption('');
-    $('btn-again').hidden = true;
     track('lookdown_pool', { ms: Math.round(performance.now() - S.clickAt) });
   }
 
-  $('btn-again').addEventListener('click', () => {
-    if (!floorPoint(forward, floorHit)) look.pitch = -0.95;
-    const p = floorPoint(forward, floorHit) || puddle.position;
-    placePuddle(p);
-  });
+  /* 나가기 화면과 공유 */
+  const endEl = $('end');
+  const wordmark = $('wordmark');
+  wordmark.addEventListener('load', () => { wordmark.hidden = false; endEl.querySelectorAll('.mark-text, .mark-reflect').forEach((el) => { el.hidden = true; }); });
+  function showEnd() { endEl.hidden = false; requestAnimationFrame(() => endEl.classList.add('is-on')); }
+  // 웅덩이 사진: 카메라 프레임 + 3D 화면 + #lookdown. 공유 시트(인스타그램 등)로 넘기고, 안 되면 내려받습니다.
+  async function sharePhoto() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const c = document.createElement('canvas'); c.width = Math.round(window.innerWidth * dpr); c.height = Math.round(window.innerHeight * dpr);
+    const g = c.getContext('2d');
+    const cover = (img, iw, ih) => { const sc = Math.max(c.width / iw, c.height / ih); const dw = iw * sc, dh = ih * sc; g.drawImage(img, (c.width - dw) / 2, (c.height - dh) / 2, dw, dh); };
+    if (video && video.videoWidth) cover(video, video.videoWidth, video.videoHeight);
+    else { g.fillStyle = '#0b1420'; g.fillRect(0, 0, c.width, c.height); if (bgImage) cover(bgImage, bgImage.width, bgImage.height); }
+    renderer.render(scene, camera);
+    g.drawImage(renderer.domElement, 0, 0, c.width, c.height);
+    g.font = `600 ${Math.round(15 * dpr)}px Pretendard, -apple-system, sans-serif`; g.fillStyle = '#F6F3EC'; g.textAlign = 'center';
+    g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 8 * dpr;
+    g.fillText(text('shareText'), c.width / 2, c.height - 30 * dpr);
+    const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.92));
+    const file = new File([blob], 'lookdown.jpg', { type: 'image/jpeg' });
+    let method = 'download';
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: text('shareText'), title: 'LOOK DOWN' }); method = 'share'; }
+      else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lookdown.jpg'; a.click(); }
+    } catch (e) { method = e && e.name === 'AbortError' ? 'cancel' : 'download'; if (method === 'download') { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lookdown.jpg'; a.click(); } }
+    track('lookdown_share', { method });
+  }
+  $('btn-share').addEventListener('click', () => { sharePhoto().catch((e) => console.warn('share failed', e)); });
 
   // C. 카메라 화면의 평균 밝기를 0.6초마다 재서 S.night(어두움)로 씁니다. 카메라가 없으면 밤으로 둡니다.
   if (hasCamera) {
@@ -627,43 +688,49 @@ async function run() {
 
     const k = t - S.t0;
     if (S.phase === 'pooling') {
+      // 가장자리가 번지며 고입니다. 끝 무렵부터 물속 빛이 비치기 시작합니다.
       S.open = smooth(k / T.pool);
-      if (k > T.pool * 0.55) S.light = smooth((k - T.pool * 0.55) / T.light);
-      if (k > T.pool) { S.phase = 'rising'; S.t0 = t; S.ears = 0; }
+      S.light = smooth((k - T.pool * 0.6) / T.light) * 0.5;
+      if (k > T.pool) { S.phase = 'light'; S.t0 = t; }
+    } else if (S.phase === 'light') {
+      // 물속에서 빛이 다가옵니다(영상과 같은 문법). 1.5초.
+      S.open = 1; S.light = 0.5 + 0.5 * smooth(k / T.light);
+      if (k > T.light) { S.phase = 'rising'; S.t0 = t; S.ears = 0; }
     } else if (S.phase === 'rising') {
-      S.open = 1; S.light = 1;
-      S.up = easeOut(k / T.rise);
-      S.ears = smooth((k - T.rise * 0.6) / 0.6);         // 머리가 올라온 뒤 귀가 쫑긋
+      // 수면을 깨고 올려다봅니다. 물 밖으로는 안 나옵니다.
+      S.light = 1; S.up = easeOut(k / T.rise);
+      S.ears = smooth((k - 0.4) / 0.5);
+      S.lookUp = smooth((k - 0.5) / 0.6);
       if (seenAt === null && S.up > 0.35) { seenAt = performance.now(); track('lookdown_yuni_seen', { ms: Math.round(seenAt - S.clickAt) }); }
-      if (k > T.rise + T.speak) {
-        S.phase = 'speaking'; S.t0 = t; S.pulse = t;
-        caption(text('line'));
+      if (k > T.rise) {
+        S.phase = 'speaking'; S.t0 = t;
+        caption(lineText());
         mumble();
         ripple(new THREE.Vector2(0, 0.05), 0.7, t);
         track('lookdown_line', { ms: Math.round(performance.now() - S.clickAt) });
       }
     } else if (S.phase === 'speaking') {
       S.up = 1;
-      if (k > T.hold) { S.phase = 'done'; S.t0 = t; caption(''); track('lookdown_done'); }
-    } else if (S.phase === 'done') {
-      S.up = 1;
-      // D. 떠나기: 한마디 뒤 10초쯤 더 보고 있으면 인사하고 천천히 가라앉습니다. 두드리면 그만큼 더 머뭅니다.
-      if (k > T.linger) {
-        S.phase = 'leaving'; S.t0 = t;
-        caption(text('bye'));
-        mumble();
-        track('lookdown_bye');
+      if (k > T.speak) {
+        caption('');
+        S.t0 = t;
+        if (itemEnabled()) { S.phase = 'item'; ripple(new THREE.Vector2(-0.17 / (PUDDLE / 2), -0.07 / (PUDDLE / 2)), 0.6, t); }
+        else { S.phase = 'leaving'; S.pulse = t; }
       }
+    } else if (S.phase === 'item') {
+      // 그 주 분실물이 옆에 떠오릅니다. 탭하면 물결만. 돌려주기는 1단계.
+      S.up = 1; S.item = easeOut(k / 1.2);
+      if (k > T.item) { S.phase = 'leaving'; S.t0 = t; S.pulse = t; }
     } else if (S.phase === 'leaving') {
-      S.back = smooth(k / 0.8);
-      if (k > T.bye) {
-        S.up = 1 - smooth((k - T.bye) / T.sink);
-        S.light = 1 - smooth((k - T.bye) / (T.sink + 1.5));
-        if (k > T.bye + 0.6) caption('');
+      // 반짝 한 번(1.1초) 하고 가라앉습니다.
+      if (k > 1.1) {
+        const sk2 = smooth((k - 1.1) / T.sink);
+        S.up = 1 - sk2; S.item = Math.max(0, 1 - sk2 * 1.3); S.lookUp = 1 - sk2;
+        S.light = 1 - smooth((k - 1.1) / (T.sink + 1.2));
       }
-      if (k > T.bye + T.sink + 0.5) { S.phase = 'gone'; S.t0 = t; S.up = 0; S.light = 0; $('btn-again').hidden = false; }
-    } else if (S.phase === 'gone') {
-      S.up = 0; S.light = 0;
+      if (k > 1.1 + T.sink + 0.3) { S.phase = 'ended'; S.t0 = t; S.up = 0; S.item = 0; S.light = 0; showEnd(); track('lookdown_end'); }
+    } else if (S.phase === 'ended') {
+      S.up = 0; S.item = 0; S.light = 0;
     }
     S.clarity += ((S.up > 0.2 ? 1 : 0) - S.clarity) * dt * 1.5;
     U.uOpen.value = S.open;
@@ -683,7 +750,8 @@ async function run() {
     yuniAbove.group.visible = S.placed && S.up > 0.01;
     toCam.copy(camera.position).sub(yuniWorld); toCam.y = 0;
     const facing = Math.atan2(toCam.x, toCam.z);
-    yuniAbove.group.rotation.set(Math.sin(t * 0.5) * 0.03, facing, Math.cos(t * 0.41) * 0.03);
+    // 올려다보기: 떠오른 뒤 머리를 살짝 젖혀 보는 사람을 봅니다.
+    yuniAbove.group.rotation.set(Math.sin(t * 0.5) * 0.03 - 0.28 * S.lookUp, facing, Math.cos(t * 0.41) * 0.03);
     // 아랫몸은 puddle 그룹(z가 위) 안에 있으므로 같은 자세를 그 좌표로 옮깁니다.
     yuniBelow.group.position.set(yuniLocal.x, -yuniLocal.z, yuniLocal.y);
     yuniBelow.group.rotation.set(Math.PI / 2, 0, 0);
@@ -693,8 +761,17 @@ async function run() {
 
     // 귀: 쉴 땐 살짝 벌어지고, 관심이 생기면 쫑긋 섭니다. 두드리면 옆으로 누웠다(놀람) 돌아오고, 돌아갈 땐 뒤로 젖힙니다(안심).
     const earAngle = THREE.MathUtils.lerp(THREE.MathUtils.lerp(0.55, 0.12, S.ears), 1.15, startle) + Math.sin(t * 0.9) * 0.03;
-    const earBack = -0.9 * S.back;
-    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { ear.rotation.z = -ear.userData.side * earAngle; ear.rotation.x = earBack; }
+    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { ear.rotation.z = -ear.userData.side * earAngle; }
+
+    // 분실물: 웅덩이 왼쪽 앞에서 떠올라 반쯤 잠긴 채 둥둥. 보는 사람 쪽을 향합니다.
+    const itemY = -0.14 + (0.1) * S.item + Math.sin(t * 0.9 + 1) * 0.004 * S.item;   // 바닥 -0.14m에서 떠올라 -0.04m: 아랫부분은 잠긴 채
+    const itemLocal = new THREE.Vector3(-0.17, itemY, 0.07);
+    itemAbove.position.copy(puddle.position).add(itemLocal);
+    itemAbove.rotation.set(0, facing, Math.sin(t * 0.7) * 0.06 * S.item);
+    itemAbove.visible = S.placed && S.item > 0.01;
+    itemBelow.position.set(itemLocal.x, -itemLocal.z, itemLocal.y);
+    itemBelow.rotation.set(Math.PI / 2, 0, 0); itemBelow.rotateOnAxis(new THREE.Vector3(0, 1, 0), facing);
+    itemBelow.visible = S.placed && S.item > 0.01;
 
     // 반짝임: 밝기 펄스 1회. 0.75초 올라가 1.27배, 0.75초 내려옴. 과노출 금지.
     const pk = t - S.pulse;
@@ -713,6 +790,12 @@ async function run() {
     underGlow.material.opacity = 0.85 * S.light * (0.9 + 0.1 * Math.sin(t * 2.2)) * pulse * vivid;
     underGlow.scale.setScalar(0.32 + 0.22 * S.light);
     motes.material.opacity = 0.6 * S.light;
+    for (const sp of glints) {
+      const d = sp.userData; const a = t * d.speed + d.phase;
+      sp.position.set(Math.cos(a) * d.r, Math.sin(a * 0.8) * d.r * 0.7, d.z + Math.sin(t * 0.5 + d.phase) * 0.02);
+      sp.scale.setScalar(d.size * (0.9 + 0.1 * Math.sin(t * 1.7 + d.phase)));
+      sp.material.opacity = d.a * S.open * (0.7 + 0.3 * S.night);
+    }
     const pos = pGeo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       let z = pos.getZ(i) + 0.00045;

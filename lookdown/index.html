@@ -28,19 +28,30 @@
     <!-- 0단계 「비춤」: 바닥을 비추면 웅덩이가 고이고 Yuni가 떠올라 한마디 합니다. 글은 lines.json, 수치는 lookdown.js 맨 위에 있습니다. -->
     <div id="scene"></div>
 
-    <div class="start" id="start">
-        <p class="wordmark" aria-hidden="true">LOOK DOWN</p>
-        <p class="start-line" data-text="start"></p>
-        <button class="btn-start" id="btn-start" type="button" data-text="button"></button>
-        <p class="drop" aria-hidden="true"></p>
-    </div>
+    <!-- 시작: 한 줄과 탭. 카메라·센서 권한은 터치 한 번 안에서 받아야 해서 이 화면만은 남깁니다. -->
+    <button class="start" id="start" type="button">
+        <span class="wordmark" aria-hidden="true">LOOK DOWN</span>
+        <span class="start-line" data-text="start"></span>
+        <span class="start-tap" data-text="tap"></span>
+        <span class="drop" aria-hidden="true"></span>
+    </button>
 
     <div class="ui" id="ui">
         <p class="hint" id="hint" role="status"></p>
         <p class="caption" id="caption" aria-live="polite"></p>
         <p class="notice" id="notice" hidden></p>
-        <button class="again" id="btn-again" type="button" data-text="again" hidden></button>
         <p class="tag" id="tag" aria-hidden="true">003</p>
+    </div>
+
+    <!-- 나가기: 비침 워드마크 + 한 줄 + 버튼 하나. lookdown/assets/wordmark.png 가 있으면 글자 대신 그 이미지를 씁니다. -->
+    <div class="end" id="end" hidden>
+        <div class="mark">
+            <img id="wordmark" src="assets/wordmark.png" alt="LOOK DOWN" hidden>
+            <span class="mark-text" aria-hidden="true">LOOK DOWN</span>
+            <span class="mark-reflect" aria-hidden="true">LOOK DOWN</span>
+        </div>
+        <p class="end-line" data-text="end"></p>
+        <button class="btn-share" id="btn-share" type="button" data-text="share"></button>
     </div>
 
     <div class="err" id="err" hidden><p></p></div>
