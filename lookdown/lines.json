@@ -1,7 +1,14 @@
 {
-  "_readme": "0단계 「비춤」의 모든 글. 기기 언어로 하나만 고른다(한·영·중). Yuni 대사는 두 문장 이하, 설명·재촉·광고 문구 금지. halloween/item의 from~to(포함) 사이에만 핼러윈 한마디와 그 주 분실물이 나온다. 테스트: ?line=halloween|default, ?item=1|0",
-  "halloween": { "from": "2026-10-26", "to": "2026-11-05" },
-  "item": { "id": "pumpkin-bucket", "from": "2026-10-26", "to": "2026-11-05" },
+  "_readme": "0단계 「비춤」의 모든 글. 기기 언어로 하나만 고른다(한·영·중). Yuni 대사는 두 문장 이하, 설명·재촉·광고 문구 금지. halloween/item의 from~to(포함) 사이에만 핼러윈 한마디와 그 주 분실물이 나온다. 테스트: ?line=halloween|default, ?item=1|0 공유 버튼: 탭=사진, 길게=영상(최대 15초).",
+  "halloween": {
+    "from": "2026-10-26",
+    "to": "2026-11-05"
+  },
+  "item": {
+    "id": "pumpkin-bucket",
+    "from": "2026-10-26",
+    "to": "2026-11-05"
+  },
   "ko": {
     "start": "바닥을 비춰 주세요.",
     "tap": "탭해서 시작",
@@ -13,7 +20,10 @@
     "shareText": "#lookdown",
     "item": "호박 사탕통",
     "nocam": "카메라를 쓸 수 없어 밤 거리 위에 띄웠어요. Safari나 Chrome에서 열면 진짜 바닥에 고여요.",
-    "nosensor": "화면을 끌어서 바닥을 보세요"
+    "nosensor": "화면을 끌어서 바닥을 보세요",
+    "tapfloor": "바닥을 탭해 주세요.",
+    "share_hint": "길게 누르면 영상",
+    "recording": "녹화 중 · 손을 떼면 끝"
   },
   "en": {
     "start": "Point your phone at the ground.",
@@ -26,7 +36,10 @@
     "shareText": "#lookdown",
     "item": "pumpkin candy bucket",
     "nocam": "No camera here, so it's a night street instead. Open in Safari or Chrome to see it on real ground.",
-    "nosensor": "Drag the screen to look down"
+    "nosensor": "Drag the screen to look down",
+    "tapfloor": "Tap the ground.",
+    "share_hint": "Hold for video",
+    "recording": "Recording · release to stop"
   },
   "zh": {
     "start": "把手机对准地面。",
@@ -39,6 +52,9 @@
     "shareText": "#lookdown",
     "item": "南瓜糖果桶",
     "nocam": "这里用不了相机，所以先放在夜晚的街道上。用 Safari 或 Chrome 打开，就会积在真正的地面上。",
-    "nosensor": "拖动画面往下看"
+    "nosensor": "拖动画面往下看",
+    "tapfloor": "点一下地面。",
+    "share_hint": "长按录视频",
+    "recording": "录制中 · 松开结束"
   }
 }

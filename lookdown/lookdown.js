@@ -17,7 +17,7 @@ const YUNI_R = 0.055;         // Yuni 머리 반지름 → 지름 11cm (브리�
 const YUNI_UP = 0.045;        // 다 떠올랐을 때 머리 중심이 수면 위로 올라온 높이
 const CAMERA_FOV = 67;        // 휴대폰 기본 카메라 세로 화각
 const LOOK_DOWN = -0.42;      // 카메라 앞 방향의 y가 이보다 낮으면 '바닥을 비추는 중'
-const T = { pool: 2.0, light: 1.5, rise: 1.0, speak: 4.5, item: 3.5, sink: 2.5 };  // 고임 → 물속 빛 → 수면을 깨고 올려다봄 → 한마디 → 분실물 → 반짝 한 번 하고 가라앉음
+const T = { pool: 2.0, light: 1.5, rise: 1.0, speak: 4.5, item: 3.5, sink: 2.5, stay: 9.0, video: 15 };  // 고임 → 물속 빛 → 수면을 깨고 올려다봄 → 한마디 → 분실물 → 반짝 한 번 하고 가라앉음. stay: 다시 불렀을 때 머무는 초, video: 영상 최대 초
 const MAX_RIPPLES = 8;
 const GOLD = new THREE.Color('#F2B45A');
 const GLOW = 0.62;             // Yuni 몸의 기본 발광. 반짝임 펄스는 여기의 1.27배까지만 (과노출 금지)
@@ -69,7 +69,8 @@ if (location.protocol === 'file:') fail('이 페이지는 파일로 직접 열�
 /* ---------- 상태 ---------- */
 
 const S = {
-  phase: 'idle',        // idle → pooling → light → rising → speaking → item → leaving → ended
+  phase: 'idle',        // idle → pooling → light → rising → speaking → item → leaving → ended. ended에서 물을 탭하면 light → rising → stay → leaving → ended
+  encore: false,        // 가라앉은 뒤 다시 불러낸 상태(한마디·분실물 없이 머물다 감)
   t0: 0,                // 단계가 바뀐 시각
   clickAt: 0,           // 버튼을 누른 시각(performance.now). 3초 안 Yuni 지표
   open: 0,              // 웅덩이 고인 정도 0~1
@@ -107,6 +108,22 @@ async function startCamera() {
   videoTex = new THREE.VideoTexture(video);
   videoTex.colorSpace = THREE.SRGBColorSpace;
   return stream;
+}
+
+// 공유 시트·다른 앱에 갔다 돌아오면 iOS가 카메라를 멈춰 둡니다. 다시 재생하고, 트랙이 끝났으면 카메라를 새로 엽니다.
+async function resumeCamera(onNewTexture) {
+  if (!video) return;
+  const track = video.srcObject && video.srcObject.getVideoTracks()[0];
+  if (track && track.readyState === 'ended') {
+    try {
+      const old = video;
+      await startCamera();
+      old.remove();
+      onNewTexture(videoTex);
+    } catch (e) { console.warn('camera restart failed', e); }
+  } else {
+    video.play().catch(() => {});
+  }
 }
 
 // 카메라가 없을 때 쓰는 밤 거리: 젖은 아스팔트의 청회색과 가로등 보케.
@@ -201,7 +218,7 @@ async function requestMotion() {
 /* ---------- 소리: 빗소리 루프 + 웅얼거림 ---------- */
 // 파일이 있으면 씁니다(lookdown/audio/rain.mp3, mumble_1.mp3, mumble_2.mp3). 없으면 빗소리는 노이즈로 대신하고 웅얼거림은 건너뜁니다.
 
-const audio = { ctx: null, rain: null, mumbles: [] };
+const audio = { ctx: null, rain: null, mumbles: [], capture: null };
 async function startAudio() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return;
@@ -211,6 +228,8 @@ async function startAudio() {
   const master = ctx.createGain();
   master.gain.value = 0;
   master.connect(ctx.destination);
+  // 영상 녹화에 소리를 섞기 위한 출력
+  try { audio.capture = ctx.createMediaStreamDestination(); master.connect(audio.capture); } catch { audio.capture = null; }
   master.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 2.5);
   audio.master = master;
 
@@ -520,6 +539,15 @@ async function run() {
   }
   U.uVideo.value = hasCamera ? videoTex : nightStreetTexture();
   const bgImage = hasCamera ? null : U.uVideo.value.image;
+  // 돌아왔을 때 멈춘 화면 풀기: 카메라 재생, 소리 재개.
+  const resumeAll = () => {
+    if (hasCamera) resumeCamera((tex) => { U.uVideo.value = tex; });
+    if (audio.ctx && audio.ctx.state !== 'running') audio.ctx.resume().catch(() => {});
+  };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') resumeAll(); });
+  window.addEventListener('pageshow', resumeAll);
+  window.addEventListener('focus', resumeAll);
+  renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); }, false);
   if (!hasCamera) {
     sceneEl.style.background = `url("${U.uVideo.value.image.toDataURL ? U.uVideo.value.image.toDataURL('image/jpeg', 0.8) : ''}") center / cover`;
     const notice = $('notice');
@@ -549,20 +577,18 @@ async function run() {
   });
   if (!sensorReady) { enableDragLook(); look.pitch = -0.95; }
   startEl.classList.add('is-off');
-  hint(sensorReady ? text('look') : text('nosensor'));
+  hint(sensorReady ? text('tapfloor') : text('nosensor'));
   track('lookdown_started', { camera: hasCamera, sensor: sensorReady, ms: Math.round(performance.now() - S.clickAt) });
 
   /* 바닥 자리 셈하기 */
   const camQuat = new THREE.Quaternion();
   const forward = new THREE.Vector3();
-  const floorHit = new THREE.Vector3();
   function updateCamera() {
     if (sensorReady && look.orientation) deviceQuat(camQuat, look.orientation);
     else camQuat.setFromEuler(new THREE.Euler(look.pitch, look.yaw, 0, 'YXZ'));
     camera.quaternion.copy(camQuat);
     forward.set(0, 0, -1).applyQuaternion(camQuat);
   }
-  function lookingDown() { return forward.y < LOOK_DOWN; }
   // 카메라 앞 방향이 바닥(y=0)과 만나는 점. 너무 가깝거나 멀면 0.7~2.6m로 당깁니다.
   function floorPoint(dir, out) {
     if (dir.y > -0.08) return null;
@@ -594,10 +620,13 @@ async function run() {
     const hit = ray.intersectObject(surfMesh, false)[0];
     const local = hit && hit.uv ? new THREE.Vector2(hit.uv.x * 2 - 1, hit.uv.y * 2 - 1) : new THREE.Vector2(0, 0);
     ripple(local, 0.9, t);
-    if (S.up > 0.5 && (S.phase === 'speaking' || S.phase === 'item' || S.phase === 'rising')) {
+    if (S.up > 0.5 && (S.phase === 'speaking' || S.phase === 'item' || S.phase === 'rising' || S.phase === 'stay')) {
       if (t - S.startle < 2.5 && t - lastMumble > 3) { mumble(); lastMumble = t; }
       S.startle = t;
+      if (S.phase === 'stay') S.t0 = t;   // 두드리면 그만큼 더 머뭅니다
     }
+    // 가라앉은 뒤 물을 탭하면 다시 올라옵니다(한마디·분실물 없이 머물다 감).
+    if (S.phase === 'ended' && hit) { S.encore = true; S.phase = 'light'; S.t0 = t; S.light = 0; S.ears = 0; track('lookdown_return'); }
     track('lookdown_tap_water');
   }
   let lastMumble = -10;
@@ -606,7 +635,7 @@ async function run() {
     puddle.position.copy(p);
     puddle.visible = true;
     S.placed = true;
-    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.lookUp = 0; S.item = 0; S.startle = -10;
+    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.lookUp = 0; S.item = 0; S.startle = -10; S.encore = false;
     S.phase = 'pooling';
     S.t0 = clock.getElapsedTime();
     U.uRipples.value.forEach((r) => r.set(0, 0, 0, 0));
@@ -620,29 +649,109 @@ async function run() {
   const wordmark = $('wordmark');
   wordmark.addEventListener('load', () => { wordmark.hidden = false; endEl.querySelectorAll('.mark-text, .mark-reflect').forEach((el) => { el.hidden = true; }); });
   function showEnd() { endEl.hidden = false; requestAnimationFrame(() => endEl.classList.add('is-on')); }
-  // 웅덩이 사진: 카메라 프레임 + 3D 화면 + #lookdown. 공유 시트(인스타그램 등)로 넘기고, 안 되면 내려받습니다.
-  async function sharePhoto() {
+  // 합성: 카메라 프레임 + 3D 화면 + 아래쪽 워드마크·한 줄·#lookdown. 사진과 영상이 같은 그림을 씁니다.
+  let captureFrame = null;
+  function makeComposer() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const c = document.createElement('canvas'); c.width = Math.round(window.innerWidth * dpr); c.height = Math.round(window.innerHeight * dpr);
     const g = c.getContext('2d');
     const cover = (img, iw, ih) => { const sc = Math.max(c.width / iw, c.height / ih); const dw = iw * sc, dh = ih * sc; g.drawImage(img, (c.width - dw) / 2, (c.height - dh) / 2, dw, dh); };
-    if (video && video.videoWidth) cover(video, video.videoWidth, video.videoHeight);
-    else { g.fillStyle = '#0b1420'; g.fillRect(0, 0, c.width, c.height); if (bgImage) cover(bgImage, bgImage.width, bgImage.height); }
-    renderer.render(scene, camera);
-    g.drawImage(renderer.domElement, 0, 0, c.width, c.height);
-    g.font = `600 ${Math.round(15 * dpr)}px Pretendard, -apple-system, sans-serif`; g.fillStyle = '#F6F3EC'; g.textAlign = 'center';
-    g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 8 * dpr;
-    g.fillText(text('shareText'), c.width / 2, c.height - 30 * dpr);
-    const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.92));
-    const file = new File([blob], 'lookdown.jpg', { type: 'image/jpeg' });
+    const spaced = (str, x, y, size, alpha) => {   // 자간 .42em 워드마크를 글자 단위로
+      g.font = `600 ${size}px Pretendard, -apple-system, sans-serif`; g.textAlign = 'left'; g.globalAlpha = alpha;
+      const gap = size * 0.42; const widths = [...str].map((ch) => g.measureText(ch).width); const total = widths.reduce((a, w) => a + w + gap, -gap);
+      let cx = x - total / 2; [...str].forEach((ch, i) => { g.fillText(ch, cx, y); cx += widths[i] + gap; }); g.globalAlpha = 1;
+    };
+    const draw = () => {
+      if (video && video.videoWidth) cover(video, video.videoWidth, video.videoHeight);
+      else { g.fillStyle = '#0b1420'; g.fillRect(0, 0, c.width, c.height); if (bgImage) cover(bgImage, bgImage.width, bgImage.height); }
+      g.drawImage(renderer.domElement, 0, 0, c.width, c.height);
+      // 아래쪽: 나가기 화면과 같은 워드마크(반사) + 한 줄 + 해시태그
+      const H = c.height, W = c.width, base = H - 36 * dpr;
+      const grd = g.createLinearGradient(0, H - 230 * dpr, 0, H); grd.addColorStop(0, 'rgba(11,20,32,0)'); grd.addColorStop(1, 'rgba(11,20,32,.85)');
+      g.fillStyle = grd; g.fillRect(0, H - 230 * dpr, W, 230 * dpr);
+      g.fillStyle = '#F6F3EC'; g.textBaseline = 'alphabetic';
+      const markY = base - 92 * dpr;
+      if (!wordmark.hidden && wordmark.naturalWidth) {
+        const mw = Math.min(200 * dpr, wordmark.naturalWidth), mh = mw * wordmark.naturalHeight / wordmark.naturalWidth;
+        g.drawImage(wordmark, W / 2 - mw / 2, markY - mh, mw, mh);
+        g.save(); g.globalAlpha = 0.3; g.translate(0, markY * 2 + 4 * dpr); g.scale(1, -1); g.drawImage(wordmark, W / 2 - mw / 2, markY - mh, mw, mh); g.restore();
+      } else {
+        g.fillStyle = '#C8C4BA'; spaced('LOOK DOWN', W / 2, markY, 20 * dpr, 1);
+        g.save(); g.translate(0, markY * 2 + 6 * dpr); g.scale(1, -1); spaced('LOOK DOWN', W / 2, markY, 20 * dpr, 0.28); g.restore();
+      }
+      g.fillStyle = '#F6F3EC'; g.textAlign = 'center';
+      g.font = `400 ${Math.round(16 * dpr)}px Pretendard, -apple-system, sans-serif`; g.fillText(text('end'), W / 2, base - 36 * dpr);
+      g.font = `600 ${Math.round(14 * dpr)}px Pretendard, -apple-system, sans-serif`; g.fillText(text('shareText'), W / 2, base);
+    };
+    return { canvas: c, draw };
+  }
+  async function deliver(blob, name, type) {
+    const file = new File([blob], name, { type });
+    const download = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
     let method = 'download';
     try {
       if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: text('shareText'), title: 'LOOK DOWN' }); method = 'share'; }
-      else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lookdown.jpg'; a.click(); }
-    } catch (e) { method = e && e.name === 'AbortError' ? 'cancel' : 'download'; if (method === 'download') { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lookdown.jpg'; a.click(); } }
-    track('lookdown_share', { method });
+      else download();
+    } catch (e) { method = e && e.name === 'AbortError' ? 'cancel' : 'download'; if (method === 'download') download(); }
+    track('lookdown_share', { method, kind: type.startsWith('video') ? 'video' : 'photo' });
+    resumeAll();
   }
-  $('btn-share').addEventListener('click', () => { sharePhoto().catch((e) => console.warn('share failed', e)); });
+  async function sharePhoto() {
+    const { canvas, draw } = makeComposer();
+    renderer.render(scene, camera);
+    draw();
+    const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.92));
+    await deliver(blob, 'lookdown.jpg', 'image/jpeg');
+  }
+  // 영상: 버튼을 길게 누르는 동안(최대 T.video초) 매 프레임 합성해 녹화합니다. 빗소리·웅얼거림도 섞습니다.
+  let rec = null;
+  function startVideo() {
+    if (rec || typeof MediaRecorder === 'undefined') return false;
+    const { canvas, draw } = makeComposer();
+    const stream = canvas.captureStream(30);
+    if (audio.capture) audio.capture.stream.getAudioTracks().forEach((tr) => stream.addTrack(tr));
+    const mime = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || '';
+    let mr;
+    try { mr = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 6e6 } : undefined); } catch (e) { console.warn('recorder', e); return false; }
+    const chunks = [];
+    mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    const done = new Promise((resolve) => { mr.onstop = () => resolve(new Blob(chunks, { type: mr.mimeType || mime || 'video/webm' })); });
+    mr.start(250);
+    captureFrame = draw;
+    const timer = setTimeout(stopVideo, T.video * 1000);
+    rec = { mr, done, timer, stream, at: performance.now() };
+    endEl.classList.add('is-rec'); shareBtn.classList.add('is-rec'); shareBtn.textContent = text('recording');
+    return true;
+  }
+  async function stopVideo() {
+    if (!rec) return;
+    const r = rec; rec = null;
+    clearTimeout(r.timer); captureFrame = null;
+    endEl.classList.remove('is-rec'); shareBtn.classList.remove('is-rec'); shareBtn.textContent = text('share');
+    if (r.mr.state !== 'inactive') r.mr.stop();
+    const blob = await r.done;
+    r.stream.getTracks().forEach((tr) => { if (tr.kind === 'video') tr.stop(); });
+    const type = blob.type || 'video/webm';
+    if (performance.now() - r.at < 600 || !blob.size) { track('lookdown_share', { method: 'too_short', kind: 'video' }); return; }
+    await deliver(blob, type.includes('mp4') ? 'lookdown.mp4' : 'lookdown.webm', type);
+  }
+  // 버튼 하나: 탭하면 사진, 길게 누르면(0.4초) 영상. 손을 떼면 녹화가 끝나고 공유 시트로 갑니다.
+  const shareBtn = $('btn-share');
+  let holdTimer = null, held = false;
+  const release = () => {
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    if (held) { held = false; stopVideo().catch((e) => console.warn('video failed', e)); }
+    else if (release.armed) { release.armed = false; sharePhoto().catch((e) => console.warn('share failed', e)); }
+  };
+  shareBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); release.armed = true; held = false;
+    holdTimer = setTimeout(() => { holdTimer = null; if (startVideo()) { held = true; release.armed = false; } }, 400);
+  });
+  shareBtn.addEventListener('pointerup', release);
+  shareBtn.addEventListener('pointercancel', release);
+  shareBtn.addEventListener('pointerleave', () => { if (held) release(); });
+  shareBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+  shareBtn.addEventListener('click', (e) => e.preventDefault());
 
   // C. 카메라 화면의 평균 밝기를 0.6초마다 재서 S.night(어두움)로 씁니다. 카메라가 없으면 밤으로 둡니다.
   if (hasCamera) {
@@ -665,7 +774,6 @@ async function run() {
   /* 매 프레임 */
   const clock = new THREE.Clock();
   let seenAt = null;
-  let downSince = null;
   const yuniLocal = new THREE.Vector3();
   const yuniWorld = new THREE.Vector3();
   const toCam = new THREE.Vector3();
@@ -678,13 +786,7 @@ async function run() {
     U.uResolution.value.set(renderer.domElement.width, renderer.domElement.height);
     if (videoTex) videoTex.needsUpdate = true;
 
-    // 바닥을 0.5초쯤 비추고 있으면 그 자리에 고입니다.
-    if (S.phase === 'idle') {
-      if (lookingDown()) {
-        if (downSince === null) downSince = t;
-        if (t - downSince > 0.5) { const p = floorPoint(forward, floorHit); if (p) placePuddle(p); }
-      } else downSince = null;
-    }
+    // 웅덩이는 탭으로만 고입니다(바닥을 비추기만 해서는 생기지 않습니다. 현실 물체 위에 멋대로 생기는 걸 막기 위해).
 
     const k = t - S.t0;
     if (S.phase === 'pooling') {
@@ -694,7 +796,7 @@ async function run() {
       if (k > T.pool) { S.phase = 'light'; S.t0 = t; }
     } else if (S.phase === 'light') {
       // 물속에서 빛이 다가옵니다(영상과 같은 문법). 1.5초.
-      S.open = 1; S.light = 0.5 + 0.5 * smooth(k / T.light);
+      S.open = 1; S.light = S.encore ? smooth(k / T.light) : 0.5 + 0.5 * smooth(k / T.light);
       if (k > T.light) { S.phase = 'rising'; S.t0 = t; S.ears = 0; }
     } else if (S.phase === 'rising') {
       // 수면을 깨고 올려다봅니다. 물 밖으로는 안 나옵니다.
@@ -703,12 +805,20 @@ async function run() {
       S.lookUp = smooth((k - 0.5) / 0.6);
       if (seenAt === null && S.up > 0.35) { seenAt = performance.now(); track('lookdown_yuni_seen', { ms: Math.round(seenAt - S.clickAt) }); }
       if (k > T.rise) {
-        S.phase = 'speaking'; S.t0 = t;
-        caption(lineText());
-        mumble();
+        S.t0 = t;
         ripple(new THREE.Vector2(0, 0.05), 0.7, t);
-        track('lookdown_line', { ms: Math.round(performance.now() - S.clickAt) });
+        if (S.encore) { S.phase = 'stay'; mumble(); }
+        else {
+          S.phase = 'speaking';
+          caption(lineText());
+          mumble();
+          track('lookdown_line', { ms: Math.round(performance.now() - S.clickAt) });
+        }
       }
+    } else if (S.phase === 'stay') {
+      // 다시 불려 나온 Yuni: 말 없이 머뭅니다. 두드리면 더 머물고, 가만두면 가라앉습니다.
+      S.up = 1;
+      if (k > T.stay) { S.phase = 'leaving'; S.t0 = t; S.pulse = t; }
     } else if (S.phase === 'speaking') {
       S.up = 1;
       if (k > T.speak) {
@@ -728,7 +838,7 @@ async function run() {
         S.up = 1 - sk2; S.item = Math.max(0, 1 - sk2 * 1.3); S.lookUp = 1 - sk2;
         S.light = 1 - smooth((k - 1.1) / (T.sink + 1.2));
       }
-      if (k > 1.1 + T.sink + 0.3) { S.phase = 'ended'; S.t0 = t; S.up = 0; S.item = 0; S.light = 0; showEnd(); track('lookdown_end'); }
+      if (k > 1.1 + T.sink + 0.3) { S.phase = 'ended'; S.t0 = t; S.up = 0; S.item = 0; S.light = 0; if (!S.encore) { showEnd(); track('lookdown_end'); } }
     } else if (S.phase === 'ended') {
       S.up = 0; S.item = 0; S.light = 0;
     }
@@ -810,13 +920,15 @@ async function run() {
     if (S.up > 0.05 && (t - ring.z > 2.2 || ring.w < 0.001)) ring.set(U.uYuni.value.x, U.uYuni.value.y, t, 0.45);
 
     renderer.render(scene, camera);
+    if (captureFrame) captureFrame();
   });
 
   // Yuni는 웅덩이 자리에만 있으므로 카메라가 웅덩이를 벗어나면 화면 밖으로 나갑니다. 끌어내는 조작은 없습니다.
 
   // 체류 시간
+  // 공유 시트에 다녀와도 세션은 이어지므로 숨겨질 때마다 보냅니다. GA에서는 세션당 마지막 값(가장 큰 s)을 보면 됩니다.
   const leave = () => track('lookdown_dwell', { s: Math.round((performance.now() - S.clickAt) / 1000), phase: S.phase });
-  window.addEventListener('pagehide', leave, { once: true });
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') leave(); }, { once: true });
+  window.addEventListener('pagehide', leave);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') leave(); });
 }
 

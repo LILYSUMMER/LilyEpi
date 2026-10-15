@@ -53,6 +53,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn-share { margin-top: 4px; padding: 14px 32px; border: 1px solid rgba(246, 243, 236, .35); border-radius: 999px; background: rgba(246, 243, 236, .1);
   font-size: 16px; font-weight: 600; backdrop-filter: blur(6px); pointer-events: auto; }
 .btn-share:active { transform: scale(.97); }
+.btn-share.is-rec { background: rgba(226, 80, 70, .85); border-color: rgba(226, 80, 70, .9); }
+.share-hint { margin-top: -6px; font-size: 12px; color: var(--ink-soft); opacity: .75; }
+.end.is-rec .mark, .end.is-rec .end-line { visibility: hidden; }  /* 녹화 중엔 버튼만 남깁니다(결과물에는 워드마크가 합성됩니다) */
 
 .tag { position: absolute; right: 18px; top: calc(22px + env(safe-area-inset-top)); font-size: 11px; letter-spacing: .3em; color: rgba(200, 196, 186, .55); }
 
