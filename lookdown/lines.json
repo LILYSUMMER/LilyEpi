@@ -1,24 +1,13 @@
 {
-  "_readme": "0단계 「비춤」의 모든 글. 기기 언어로 하나만 고른다(한·영·중). Yuni 대사는 두 문장 이하, 설명·재촉·광고 문구 금지. halloween/item의 from~to(포함) 사이에만 핼러윈 한마디와 그 주 분실물이 나온다. 테스트: ?line=halloween|default, ?item=1|0 공유 버튼: 탭=사진, 길게=영상(최대 15초).",
-  "halloween": {
-    "from": "2026-10-26",
-    "to": "2026-11-05"
-  },
-  "item": {
-    "id": "pumpkin-bucket",
-    "from": "2026-10-26",
-    "to": "2026-11-05"
-  },
+  "_readme": "0단계 「비춤」의 모든 글(점쾌 문장은 fortunes.json). 기기 언어로 하나만 고른다(한·영·중). Yuni 대사는 두 문장 이하, 설명·재촉·광고 문구 금지. 공유 버튼: 탭=사진, 길게=영상(최대 15초).",
   "ko": {
-    "start": "바닥을 비춰 주세요.",
+    "start": "당신이 오늘 밤 뭘 잃어버릴지는 웅덩이가 알아요.",
     "tap": "탭해서 시작",
     "look": "바닥을 비춰 주세요.",
-    "line_halloween": "오늘은 다 떠올라요. 무서운 거 아니에요, 바쁜 거예요.",
     "line": "비 오는 날 또 와요.",
     "end": "비 오는 날 또 고여요",
     "share": "웅덩이 사진 올리기",
     "shareText": "#lookdown",
-    "item": "호박 사탕통",
     "nocam": "카메라를 쓸 수 없어 밤 거리 위에 띄웠어요. Safari나 Chrome에서 열면 진짜 바닥에 고여요.",
     "nosensor": "화면을 끌어서 바닥을 보세요",
     "tapfloor": "바닥을 탭해 주세요.",
@@ -26,15 +15,13 @@
     "recording": "녹화 중 · 손을 떼면 끝"
   },
   "en": {
-    "start": "Point your phone at the ground.",
+    "start": "The puddle knows what you will lose tonight.",
     "tap": "Tap to start",
     "look": "Point your phone at the ground.",
-    "line_halloween": "Tonight, everything comes up. It's not scary. It's just busy.",
     "line": "Come again on a rainy day.",
     "end": "It pools again on rainy days",
     "share": "Post a photo of the puddle",
     "shareText": "#lookdown",
-    "item": "pumpkin candy bucket",
     "nocam": "No camera here, so it's a night street instead. Open in Safari or Chrome to see it on real ground.",
     "nosensor": "Drag the screen to look down",
     "tapfloor": "Tap the ground.",
@@ -42,15 +29,13 @@
     "recording": "Recording · release to stop"
   },
   "zh": {
-    "start": "把手机对准地面。",
+    "start": "今晚你会丢什么，水洼知道。",
     "tap": "点一下开始",
     "look": "把手机对准地面。",
-    "line_halloween": "今晚大家都浮上来了。不吓人，只是有点忙。",
     "line": "下雨天再来吧。",
     "end": "下雨天还会再积起来",
     "share": "发一张水洼的照片",
     "shareText": "#lookdown",
-    "item": "南瓜糖果桶",
     "nocam": "这里用不了相机，所以先放在夜晚的街道上。用 Safari 或 Chrome 打开，就会积在真正的地面上。",
     "nosensor": "拖动画面往下看",
     "tapfloor": "点一下地面。",

@@ -46,7 +46,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
   background: linear-gradient(to top, rgba(11, 20, 32, .92), rgba(11, 20, 32, .6) 70%, rgba(11, 20, 32, 0)); opacity: 0; transition: opacity 1.2s; }
 .end.is-on { opacity: 1; }
 .end.is-early { padding-top: 20px; background: linear-gradient(to top, rgba(11, 20, 32, .55), rgba(11, 20, 32, 0)); }
-.end.is-early .mark, .end.is-early .end-line { display: none; }
+.end.is-early .mark, .end.is-early .end-line, .end.is-early .end-fortune { display: none; }
+.end-fortune { margin-bottom: 10px; font-size: 22px; font-weight: 500; line-height: 1.5; color: var(--ink); word-break: keep-all; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+.end-fortune:empty { display: none; }
 .mark { position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1; }
 .mark img { max-width: 220px; max-height: 80px; }
 .mark-text, .mark-reflect { font-size: 22px; font-weight: 600; letter-spacing: .42em; color: var(--ink-soft); }

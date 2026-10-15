@@ -1,0 +1,9 @@
+{
+  "_readme": "0단계 점쾌. Yuni가 떠올라 이 중 한 줄을 무작위로 말합니다(클라이언트 무작위, 서버 없음). 원본은 EPI제작/2026-10-15_ep3-halloween/AR_점쾌_20.md — 거기 20줄을 여기 lines에 그대로 옮기면 됩니다. 각 줄: ko(필수), en, zh(없으면 en→ko 순으로 대신), shape(떠오르는 실루엣: glove 장갑 / tooth 이·작은 것 / string 끈·긴 것 / person 사람 / card 납작한 것 / bucket 호박 사탕통, 없으면 안 떠오름). 테스트: ?n=0 (0부터 세는 번호).",
+  "lines": [
+    { "ko": "장갑 한 짝. 오른손이요.", "en": "One glove. The right one.", "shape": "glove" },
+    { "ko": "송곳니 한 짝. 웃다가 빠져요.", "en": "One fang. It slips out while you laugh.", "shape": "tooth" },
+    { "ko": "후드 끈 한쪽. 우산은 안 쓰시잖아요.", "en": "One hoodie string. You never use an umbrella anyway.", "shape": "string" },
+    { "ko": "친구 한 명. 사람 많은 데서요. 내일 찾아요.", "en": "One friend. Somewhere crowded. You'll find them tomorrow.", "shape": "person" }
+  ]
+}
