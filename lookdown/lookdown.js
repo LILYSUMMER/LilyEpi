@@ -17,7 +17,7 @@ const YUNI_R = 0.055;         // Yuni 머리 반지름 → 지름 11cm (브리�
 const YUNI_UP = 0.045;        // 다 떠올랐을 때 머리 중심이 수면 위로 올라온 높이
 const CAMERA_FOV = 67;        // 휴대폰 기본 카메라 세로 화각
 const LOOK_DOWN = -0.42;      // 카메라 앞 방향의 y가 이보다 낮으면 '바닥을 비추는 중'
-const T = { pool: 2.0, light: 1.5, rise: 1.0, speak: 4.5, item: 3.5, sink: 2.5, stay: 9.0, video: 15 };  // 고임 → 물속 빛 → 수면을 깨고 올려다봄 → 한마디 → 분실물 → 반짝 한 번 하고 가라앉음. stay: 다시 불렀을 때 머무는 초, video: 영상 최대 초
+const T = { pool: 2.0, light: 1.5, rise: 1.0, speak: 4.5, item: 5.0, sink: 2.5, stay: 9.0, video: 15 };  // 고임 → 물속 빛 → 수면을 깨고 올려다봄 → 한마디 → 분실물 → 반짝 한 번 하고 가라앉음. stay: 다시 불렀을 때 머무는 초, video: 영상 최대 초
 const MAX_RIPPLES = 8;
 const GOLD = new THREE.Color('#F2B45A');
 const GLOW = 0.62;             // Yuni 몸의 기본 발광. 반짝임 펄스는 여기의 1.27배까지만 (과노출 금지)
@@ -471,13 +471,13 @@ function build() {
 
   /* 그 주 분실물: 핼러윈엔 호박 사탕통. 위아래 두 벌로 만들어 수면에서 자릅니다(Yuni와 같은 방식). */
   function itemMaterial(below, color, emissive) {
-    const m = new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: below ? 0.2 : 0.3, roughness: 0.9, metalness: 0, side: THREE.DoubleSide, clippingPlanes: below ? BELOW : ABOVE, transparent: true, opacity: below ? 0.9 : 1 });
+    const m = new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: below ? 0.25 : 0.55, roughness: 0.85, metalness: 0, side: THREE.DoubleSide, clippingPlanes: below ? BELOW : ABOVE, transparent: true, opacity: below ? 0.9 : 1 });
     if (below) stencilIn(m);
     return m;
   }
   function makeItem(below) {
     const g = new THREE.Group();
-    const prof = [[0.001, 0], [0.062, 0], [0.07, 0.01], [0.08, 0.06], [0.086, 0.11], [0.082, 0.13]].map(([x, y]) => new THREE.Vector2(x * 0.62, y * 0.62));  // 지름 약 10cm
+    const prof = [[0.001, 0], [0.062, 0], [0.07, 0.01], [0.08, 0.06], [0.086, 0.11], [0.082, 0.13]].map(([x, y]) => new THREE.Vector2(x * 0.9, y * 0.9));  // 지름 약 15cm
     g.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 32), itemMaterial(below, 0xe8731c, 0xff7a1a)));
     if (!below) {
       const c = document.createElement('canvas'); c.width = 256; c.height = 128; const x = c.getContext('2d');
@@ -486,11 +486,11 @@ function build() {
       tri(78, 42, 26); tri(178, 42, 26);
       x.beginPath(); x.moveTo(52, 84); for (let i = 0; i < 7; i++) x.lineTo(52 + (i + 1) * 152 / 7, i % 2 ? 84 : 108); x.lineTo(204, 96); x.lineTo(52, 96); x.closePath(); x.fill();
       const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-      const face = new THREE.Mesh(new THREE.PlaneGeometry(0.068, 0.034), new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, clippingPlanes: ABOVE }));
-      face.position.set(0, 0.044, 0.052); g.add(face);
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(0.1, 0.05), new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: 0.5, clippingPlanes: ABOVE }));
+      face.position.set(0, 0.066, 0.076); g.add(face);
     }
-    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.048, 0.004, 8, 28, Math.PI), itemMaterial(below, 0x1a1410, 0x000000));
-    handle.position.y = 0.078; g.add(handle);
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.005, 8, 28, Math.PI), itemMaterial(below, 0x1a1410, 0x000000));
+    handle.position.y = 0.114; g.add(handle);
     return g;
   }
   const itemAbove = makeItem(false); itemAbove.visible = false; scene.add(itemAbove);
@@ -648,7 +648,9 @@ async function run() {
   const endEl = $('end');
   const wordmark = $('wordmark');
   wordmark.addEventListener('load', () => { wordmark.hidden = false; endEl.querySelectorAll('.mark-text, .mark-reflect').forEach((el) => { el.hidden = true; }); });
-  function showEnd() { endEl.hidden = false; requestAnimationFrame(() => endEl.classList.add('is-on')); }
+  // 공유 버튼은 Yuni가 올라올 때부터 보입니다(Yuni가 있을 때 찍어야 하니까). 가라앉은 뒤엔 워드마크와 한 줄이 더해집니다.
+  function showShare() { if (endEl.hidden) { endEl.hidden = false; endEl.classList.add('is-early'); requestAnimationFrame(() => endEl.classList.add('is-on')); } }
+  function showEnd() { showShare(); endEl.classList.remove('is-early'); }
   // 합성: 카메라 프레임 + 3D 화면 + 아래쪽 워드마크·한 줄·#lookdown. 사진과 영상이 같은 그림을 씁니다.
   let captureFrame = null;
   function makeComposer() {
@@ -797,7 +799,7 @@ async function run() {
     } else if (S.phase === 'light') {
       // 물속에서 빛이 다가옵니다(영상과 같은 문법). 1.5초.
       S.open = 1; S.light = S.encore ? smooth(k / T.light) : 0.5 + 0.5 * smooth(k / T.light);
-      if (k > T.light) { S.phase = 'rising'; S.t0 = t; S.ears = 0; }
+      if (k > T.light) { S.phase = 'rising'; S.t0 = t; S.ears = 0; showShare(); }
     } else if (S.phase === 'rising') {
       // 수면을 깨고 올려다봅니다. 물 밖으로는 안 나옵니다.
       S.light = 1; S.up = easeOut(k / T.rise);
@@ -874,13 +876,14 @@ async function run() {
     for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { ear.rotation.z = -ear.userData.side * earAngle; }
 
     // 분실물: 웅덩이 왼쪽 앞에서 떠올라 반쯤 잠긴 채 둥둥. 보는 사람 쪽을 향합니다.
-    const itemY = -0.14 + (0.1) * S.item + Math.sin(t * 0.9 + 1) * 0.004 * S.item;   // 바닥 -0.14m에서 떠올라 -0.04m: 아랫부분은 잠긴 채
-    const itemLocal = new THREE.Vector3(-0.17, itemY, 0.07);
+    const itemY = -0.14 + (0.12) * S.item + Math.sin(t * 0.9 + 1) * 0.004 * S.item;   // 바닥 -0.14m에서 떠올라 -0.02m: 바닥만 잠긴 채 둥둥
+    const itemLocal = new THREE.Vector3(-0.17, itemY, 0.09);
+    const itemTilt = -0.5 * S.item;   // 얼굴이 보는 사람 쪽(위)을 향하도록 앞으로 기울임
     itemAbove.position.copy(puddle.position).add(itemLocal);
-    itemAbove.rotation.set(0, facing, Math.sin(t * 0.7) * 0.06 * S.item);
+    itemAbove.rotation.set(0, facing, Math.sin(t * 0.7) * 0.05 * S.item); itemAbove.rotateX(itemTilt);
     itemAbove.visible = S.placed && S.item > 0.01;
     itemBelow.position.set(itemLocal.x, -itemLocal.z, itemLocal.y);
-    itemBelow.rotation.set(Math.PI / 2, 0, 0); itemBelow.rotateOnAxis(new THREE.Vector3(0, 1, 0), facing);
+    itemBelow.rotation.set(Math.PI / 2, 0, 0); itemBelow.rotateOnAxis(new THREE.Vector3(0, 1, 0), facing); itemBelow.rotateX(itemTilt);
     itemBelow.visible = S.placed && S.item > 0.01;
 
     // 반짝임: 밝기 펄스 1회. 0.75초 올라가 1.27배, 0.75초 내려옴. 과노출 금지.
