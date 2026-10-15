@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+// 자리 고정: 회전은 자이로, 이동은 바닥 광류(lab/trackers/hybrid.js, jsfeat MIT). ?track=gyro 로 끌 수 있습니다.
+import { HybridTracker } from './lab/trackers/hybrid.js';
 
 /* =========================================================================
    LOOK DOWN · 0단계 「비춤」
@@ -698,21 +700,46 @@ async function run() {
   if (!sensorReady) { enableDragLook(); look.pitch = -0.95; }
   startEl.classList.add('is-off');
   hint(sensorReady ? text('tapfloor') : text('nosensor'));
-  track('lookdown_started', { camera: hasCamera, sensor: sensorReady, ms: Math.round(performance.now() - S.clickAt) });
+
+  /* 자리 고정(하이브리드 추적): 카메라 프레임을 320px 폭으로 줄여 바닥 광류로 이동을 재고, 자이로로 회전을 잽니다.
+     조건: 카메라·센서가 있고, 영상 방향이 화면 방향과 같을 때(iOS Safari 세로). 아니면 자이로만(이동 없음). */
+  let tracker = null, trackCanvas = null, trackCtx = null, lastTrack = -1, trackDbg = null;
+  const sameOrientation = () => video && (video.videoWidth < video.videoHeight) === (window.innerWidth < window.innerHeight);
+  if (hasCamera && sensorReady && q.get('track') !== 'gyro' && sameOrientation()) {
+    try {
+      const k = 320 / Math.max(video.videoWidth, video.videoHeight);
+      trackCanvas = document.createElement('canvas');
+      trackCanvas.width = Math.round(video.videoWidth * k); trackCanvas.height = Math.round(video.videoHeight * k);
+      trackCtx = trackCanvas.getContext('2d', { willReadFrequently: true });
+      tracker = new HybridTracker({ fov: CAMERA_FOV, eye: EYE });
+      await tracker.init(trackCanvas.width, trackCanvas.height);
+    } catch (e) { console.warn('tracker off', e); tracker = null; }
+  }
+  track('lookdown_started', { camera: hasCamera, sensor: sensorReady, track: tracker ? 'hybrid' : 'gyro', ms: Math.round(performance.now() - S.clickAt) });
 
   /* 바닥 자리 셈하기 */
   const camQuat = new THREE.Quaternion();
   const forward = new THREE.Vector3();
-  function updateCamera() {
+  function updateCamera(t) {
     if (sensorReady && look.orientation) deviceQuat(camQuat, look.orientation);
     else camQuat.setFromEuler(new THREE.Euler(look.pitch, look.yaw, 0, 'YXZ'));
     camera.quaternion.copy(camQuat);
     forward.set(0, 0, -1).applyQuaternion(camQuat);
+    // 이동: 최대 30Hz로 프레임을 읽어 추적기에 넣고, 그 위치를 카메라에 씁니다. 추적이 끊기면 마지막 자리를 유지합니다.
+    if (tracker && video && video.videoWidth && t - lastTrack >= 1 / 30) {
+      lastTrack = t;
+      try {
+        trackCtx.drawImage(video, 0, 0, trackCanvas.width, trackCanvas.height);
+        const r = tracker.update(trackCtx.getImageData(0, 0, trackCanvas.width, trackCanvas.height), camQuat, t);
+        camera.position.copy(r.position);
+        trackDbg = r.debug;
+      } catch (e) { console.warn('tracker stopped', e); tracker = null; }
+    }
   }
   // 카메라 앞 방향이 바닥(y=0)과 만나는 점. 너무 가깝거나 멀면 0.7~2.6m로 당깁니다.
   function floorPoint(dir, out) {
     if (dir.y > -0.08) return null;
-    const d = THREE.MathUtils.clamp(EYE / -dir.y, 0.7, 2.6);
+    const d = THREE.MathUtils.clamp(camera.position.y / -dir.y, 0.7, 2.6);
     return out.copy(camera.position).addScaledVector(dir, d);
   }
 
@@ -910,11 +937,12 @@ async function run() {
   const yuniLocal = new THREE.Vector3();
   const yuniWorld = new THREE.Vector3();
   const toCam = new THREE.Vector3();
+  const DEBUG = q.has('debug'); let frameNo = 0;
 
   renderer.setAnimationLoop(() => {
     const t = clock.getElapsedTime();
     const dt = Math.min(0.05, clock.getDelta() || 0.016);
-    updateCamera();
+    updateCamera(t);
     U.uTime.value = t;
     U.uResolution.value.set(renderer.domElement.width, renderer.domElement.height);
     if (videoTex) videoTex.needsUpdate = true;
@@ -1066,6 +1094,7 @@ async function run() {
 
     renderer.render(scene, camera);
     if (captureFrame) captureFrame();
+    if (DEBUG && trackDbg && (frameNo++ % 10 === 0)) $('tag').textContent = `trk ${trackDbg.ms_total.toFixed(1)}ms in ${trackDbg.inliers}/${trackDbg.tracked} h ${trackDbg.h.toFixed(2)} xz ${camera.position.x.toFixed(2)},${camera.position.z.toFixed(2)}${tracker.lostCount ? ' lost' + tracker.lostCount : ''}`;
   });
 
   // Yuni는 웅덩이 자리에만 있으므로 카메라가 웅덩이를 벗어나면 화면 밖으로 나갑니다. 끌어내는 조작은 없습니다.

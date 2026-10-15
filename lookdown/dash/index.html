@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LOOK DOWN 대시보드</title>
+<style>
+  :root { color-scheme: dark; --bg: #0b1420; --surface: #121e2d; --line: rgba(246,243,236,.12); --ink: #f0efec; --ink2: #c3c2b7; --muted: #8e8d84;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --gold: #F2B45A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 Pretendard, -apple-system, "Segoe UI", sans-serif; padding: 20px 16px 48px; }
+  h1 { font-size: 15px; letter-spacing: .3em; font-weight: 600; margin: 0; color: var(--ink2); }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button, select, input { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; }
+  button { cursor: pointer; } button.primary { background: var(--s1); border-color: var(--s1); color: #fff; }
+  .seg button { border-radius: 0; } .seg button:first-child { border-radius: 8px 0 0 8px; } .seg button:last-child { border-radius: 0 8px 8px 0; } .seg button.on { background: rgba(57,135,229,.25); border-color: var(--s1); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; min-height: 120px; position: relative; }
+  .card h2 { font-size: 13px; font-weight: 600; color: var(--ink2); margin: 0 0 10px; }
+  .card .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .card.wide { grid-column: 1 / -1; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .tile { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  .tile .k { font-size: 12px; color: var(--muted); } .tile .v { font-size: 26px; font-weight: 600; line-height: 1.2; } .tile .sub { font-size: 12px; color: var(--ink2); }
+  svg { width: 100%; height: auto; display: block; overflow: visible; }
+  svg text { fill: var(--ink2); font-size: 11px; }
+  .tip { position: fixed; pointer-events: none; background: #1d2b3c; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; display: none; z-index: 5; white-space: nowrap; }
+  .setup { max-width: 560px; margin: 40px auto; }
+  .setup label { display: block; margin: 12px 0 4px; color: var(--ink2); font-size: 13px; }
+  .setup input { width: 100%; }
+  .setup ol { color: var(--ink2); padding-left: 20px; } .setup code { background: rgba(255,255,255,.08); padding: 1px 5px; border-radius: 4px; }
+  .err { color: #e66767; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; } td, th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); } th { color: var(--muted); font-weight: 500; } td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>LOOK DOWN · 0단계</h1><div id="status" style="color:var(--muted);font-size:12px"></div></div>
+  <div class="row">
+    <div class="seg" id="range"><button data-d="7">7일</button><button data-d="14" class="on">14일</button><button data-d="30">30일</button></div>
+    <button id="reload">새로고침</button>
+    <button id="signin" class="primary">Google 로그인</button>
+    <button id="reset" title="속성·클라이언트 ID 지우기">설정</button>
+  </div>
+</header>
+
+<div class="setup" id="setup" hidden>
+  <h2 style="font-size:16px;margin:0 0 6px">처음 한 번만 설정</h2>
+  <p style="color:var(--ink2)">이 페이지는 서버 없이 브라우저에서 바로 GA4 Data API를 부릅니다. 사장님 Google 계정으로 로그인하면 보이고, 아무것도 저장되지 않습니다(ID 두 개만 이 브라우저에 기억).</p>
+  <ol>
+    <li>GA4 관리 → 속성 설정 → <b>속성 ID</b>(숫자 9자리). 측정 ID(G-DXQEGVBYP8)가 아닙니다.</li>
+    <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--s1)">Google Cloud Console → 사용자 인증 정보</a> → OAuth 클라이언트 ID(웹 애플리케이션) 만들기. 승인된 JavaScript 원본에 <code>https://epispace.kr</code> 추가. 같은 프로젝트에서 <b>Google Analytics Data API</b> 사용 설정.</li>
+    <li>GA4 관리 → 맞춤 정의 → 맞춤 측정기준(이벤트 범위)으로 <code>ms</code> <code>s</code> <code>n</code> <code>kind</code> <code>method</code> <code>phase</code> 등록. 등록 전 데이터는 소급되지 않습니다.</li>
+  </ol>
+  <label>GA4 속성 ID</label><input id="in-prop" placeholder="예: 123456789" inputmode="numeric">
+  <label>OAuth 클라이언트 ID</label><input id="in-client" placeholder="예: 1234-abcd.apps.googleusercontent.com">
+  <p class="row" style="margin-top:14px"><button class="primary" id="save">저장하고 로그인</button><button id="demo">예시 데이터로 보기</button></p>
+  <p class="err" id="setup-err"></p>
+</div>
+
+<main class="grid" id="main" hidden>
+  <section class="card wide"><h2>지금</h2><div class="tiles" id="now"></div><div class="note">실시간(최근 30분) 이벤트 수. 왼쪽부터 브리프의 지표 넷.</div></section>
+  <section class="card wide"><h2>깔때기</h2><div id="funnel"></div><div class="note" id="funnel-note"></div></section>
+  <section class="card wide"><h2>날마다</h2><div id="daily"></div><div class="note">링크 클릭(lookdown_open)과 공유(lookdown_share). 호버하면 값.</div></section>
+  <section class="card"><h2>Yuni가 보이기까지</h2><div id="seen"></div><div class="note" id="seen-note"></div></section>
+  <section class="card"><h2>체류 시간</h2><div id="dwell"></div><div class="note" id="dwell-note"></div></section>
+  <section class="card wide"><h2>점쾌 번호별</h2><div id="fortune"></div><div class="note" id="fortune-note"></div></section>
+  <section class="card"><h2>공유</h2><div id="share"></div><div class="note" id="share-note"></div></section>
+  <section class="card"><h2>기기·언어</h2><div id="device"></div><div class="note">lookdown_open 기준.</div></section>
+</main>
+<div class="tip" id="tip"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const q = new URLSearchParams(location.search);
+const LS = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} }, del: (k) => { try { localStorage.removeItem(k); } catch {} } };
+const cfg = { prop: q.get('property') || LS.get('ld_prop'), client: q.get('client') || LS.get('ld_client') };
+if (q.get('property')) LS.set('ld_prop', cfg.prop); if (q.get('client')) LS.set('ld_client', cfg.client);
+const DEMO = q.has('demo');
+let token = null, days = 14;
+const EVENTS = ['lookdown_open', 'lookdown_started', 'lookdown_pool', 'lookdown_yuni_seen', 'lookdown_line', 'lookdown_end', 'lookdown_share'];
+const LABEL = { lookdown_open: '링크 클릭', lookdown_started: '카메라 켬', lookdown_pool: '웅덩이 고임', lookdown_yuni_seen: 'Yuni 봄', lookdown_line: '한마디 들음', lookdown_end: '끝까지 봄', lookdown_share: '공유 버튼' };
+const FORTUNES = await fetch('../fortunes.json').then((r) => r.json()).then((f) => f.lines.map((l) => l.ko)).catch(() => []);
+
+/* ---------- 설정·로그인 ---------- */
+function showSetup(msg) { $('setup').hidden = false; $('main').hidden = true; $('in-prop').value = cfg.prop || ''; $('in-client').value = cfg.client || ''; $('setup-err').textContent = msg || ''; }
+$('save').onclick = () => { cfg.prop = $('in-prop').value.trim(); cfg.client = $('in-client').value.trim(); if (!/^\d+$/.test(cfg.prop) || !cfg.client) return showSetup('속성 ID는 숫자, 클라이언트 ID는 비울 수 없습니다.'); LS.set('ld_prop', cfg.prop); LS.set('ld_client', cfg.client); signIn(); };
+$('demo').onclick = () => { location.search = '?demo=1'; };
+$('reset').onclick = () => { LS.del('ld_prop'); LS.del('ld_client'); location.search = ''; };
+$('signin').onclick = () => (cfg.prop && cfg.client ? signIn() : showSetup());
+$('reload').onclick = () => load();
+$('range').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; [...$('range').children].forEach((x) => x.classList.toggle('on', x === b)); days = +b.dataset.d; load(); };
+function signIn() {
+  if (!window.google || !google.accounts) return setTimeout(signIn, 300);
+  const tc = google.accounts.oauth2.initTokenClient({ client_id: cfg.client, scope: 'https://www.googleapis.com/auth/analytics.readonly', callback: (r) => { if (r.error) return showSetup('로그인 실패: ' + r.error); token = r.access_token; $('setup').hidden = true; $('main').hidden = false; load(); } });
+  tc.requestAccessToken();
+}
+
+/* ---------- GA4 Data API ---------- */
+const ymd = (d) => d.toISOString().slice(0, 10);
+async function ga(method, body) {
+  const url = `https://analyticsdata.googleapis.com/v1beta/properties/${cfg.prop}:${method}`;
+  const res = await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error((e.error && e.error.message) || res.status); }
+  return res.json();
+}
+const evFilter = (names) => names.length === 1 ? { filter: { fieldName: 'eventName', stringFilter: { value: names[0] } } } : { filter: { fieldName: 'eventName', inListFilter: { values: names } } };
+async function report(dims, metrics, names, extra = {}) {
+  const r = await ga('runReport', { dateRanges: [{ startDate: `${days - 1}daysAgo`, endDate: 'today' }], dimensions: dims.map((name) => ({ name })), metrics: metrics.map((name) => ({ name })), dimensionFilter: evFilter(names), limit: 10000, ...extra });
+  return (r.rows || []).map((row) => ({ d: row.dimensionValues.map((v) => v.value), m: row.metricValues.map((v) => +v.value) }));
+}
+
+/* ---------- 예시 데이터 ---------- */
+function demoRows(kind) {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  if (kind === 'funnel') { let n = 420; return EVENTS.map((e, i) => { n = Math.round(n * [1, .78, .9, .93, .85, .7, .25][i]); return { d: [e], m: [n] }; }); }
+  if (kind === 'daily') { const out = []; for (let i = days - 1; i >= 0; i--) { const d = new Date(Date.now() - i * 864e5); const o = rnd(10, 60); out.push({ d: [ymd(d).replace(/-/g, ''), 'lookdown_open'], m: [o] }); out.push({ d: [ymd(d).replace(/-/g, ''), 'lookdown_share'], m: [Math.round(o * (0.05 + Math.random() * 0.15))] }); } return out; }
+  if (kind === 'seen') return Array.from({ length: 200 }, () => ({ d: [String(rnd(1200, 6000))], m: [1] }));
+  if (kind === 'dwell') return Array.from({ length: 200 }, () => ({ d: [String(rnd(3, 60))], m: [1] }));
+  if (kind === 'fortune') return Array.from({ length: 20 }, (_, i) => ({ d: [String(i)], m: [rnd(4, 30)] }));
+  if (kind === 'share') return [{ d: ['photo', 'share'], m: [38] }, { d: ['video', 'share'], m: [21] }, { d: ['photo', 'download'], m: [6] }, { d: ['photo', 'cancel'], m: [9] }];
+  if (kind === 'device') return [{ d: ['mobile', 'iOS'], m: [300] }, { d: ['mobile', 'Android'], m: [90] }, { d: ['desktop', 'Macintosh'], m: [30] }];
+  if (kind === 'lang') return [{ d: ['ko-kr'], m: [260] }, { d: ['en-us'], m: [120] }, { d: ['en-ca'], m: [30] }, { d: ['zh-cn'], m: [10] }];
+  if (kind === 'now') return EVENTS.map((e, i) => ({ d: [e], m: [[12, 10, 9, 8, 7, 5, 2][i]] }));
+  return [];
+}
+
+/* ---------- 그림 ---------- */
+const tip = $('tip');
+function hover(el, text) { el.addEventListener('pointermove', (e) => { tip.style.display = 'block'; tip.textContent = text; tip.style.left = (e.clientX + 12) + 'px'; tip.style.top = (e.clientY + 12) + 'px'; }); el.addEventListener('pointerleave', () => { tip.style.display = 'none'; }); }
+const svgEl = (tag, attrs = {}) => { const el = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) el.setAttribute(k, attrs[k]); return el; };
+const fmt = (n) => n.toLocaleString('ko-KR');
+function hbars(root, rows, { color = 'var(--s1)', label = (r) => r.label, value = (r) => r.v, sub } = {}) {
+  root.innerHTML = '';
+  const W = 600, rowH = 28, pad = 200, H = rows.length * rowH;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}` });
+  const max = Math.max(1, ...rows.map(value));
+  rows.forEach((r, i) => {
+    const y = i * rowH, w = (W - pad - 70) * value(r) / max;
+    svg.append(Object.assign(svgEl('text', { x: pad - 10, y: y + 18, 'text-anchor': 'end' }), { textContent: label(r) }));
+    const bar = svgEl('rect', { x: pad, y: y + 6, width: Math.max(w, 2), height: 16, rx: 4, fill: color });
+    hover(bar, `${label(r)}: ${fmt(value(r))}${sub ? ' · ' + sub(r) : ''}`); svg.append(bar);
+    svg.append(Object.assign(svgEl('text', { x: pad + Math.max(w, 2) + 8, y: y + 18 }), { textContent: fmt(value(r)) + (sub ? '  ' + sub(r) : '') }));
+  });
+  root.append(svg);
+}
+function histogram(root, values, { bins, color = 'var(--s1)', unit = '', mark }) {
+  root.innerHTML = '';
+  const counts = bins.map(() => 0);
+  for (const v of values) { const i = bins.findIndex(([a, b]) => v >= a && v < b); if (i >= 0) counts[i] += 1; }
+  const W = 320, H = 120, bw = W / bins.length;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H + 22}` });
+  const max = Math.max(1, ...counts);
+  bins.forEach(([a, b], i) => {
+    const h = H * counts[i] / max;
+    const r = svgEl('rect', { x: i * bw + 1, y: H - h, width: bw - 2, height: Math.max(h, counts[i] ? 2 : 0), rx: 3, fill: mark && mark(a, b) ? 'var(--gold)' : color });
+    hover(r, `${a}${unit}~${b === Infinity ? '' : b + unit}: ${counts[i]}`); svg.append(r);
+    svg.append(Object.assign(svgEl('text', { x: i * bw + bw / 2, y: H + 15, 'text-anchor': 'middle' }), { textContent: a + (b === Infinity ? '+' : '') }));
+  });
+  root.append(svg);
+}
+function lines(root, series, dates) {
+  root.innerHTML = '';
+  const W = 720, H = 160, L = 36, B = 22, R = 70;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H + B}` });
+  const max = Math.max(1, ...series.flatMap((s) => s.values));
+  const x = (i) => L + (W - L - R) * (dates.length > 1 ? i / (dates.length - 1) : 0.5), y = (v) => H - (H - 10) * v / max;
+  [0, 0.5, 1].forEach((f) => { svg.append(svgEl('line', { x1: L, x2: W - R, y1: y(max * f), y2: y(max * f), stroke: 'var(--line)' })); svg.append(Object.assign(svgEl('text', { x: L - 6, y: y(max * f) + 4, 'text-anchor': 'end' }), { textContent: Math.round(max * f) })); });
+  dates.forEach((d, i) => { if (i % Math.ceil(dates.length / 7) === 0 || i === dates.length - 1) svg.append(Object.assign(svgEl('text', { x: x(i), y: H + 16, 'text-anchor': 'middle' }), { textContent: d.slice(4, 6) + '/' + d.slice(6) })); });
+  for (const s of series) {
+    svg.append(svgEl('path', { d: s.values.map((v, i) => (i ? 'L' : 'M') + x(i) + ' ' + y(v)).join(' '), fill: 'none', stroke: s.color, 'stroke-width': 2, 'stroke-linejoin': 'round' }));
+    s.values.forEach((v, i) => { const c = svgEl('circle', { cx: x(i), cy: y(v), r: 8, fill: 'transparent' }); const dot = svgEl('circle', { cx: x(i), cy: y(v), r: 3, fill: s.color, stroke: 'var(--surface)', 'stroke-width': 2 }); hover(c, `${dates[i].slice(4, 6)}/${dates[i].slice(6)} ${s.name}: ${v}`); svg.append(dot, c); });
+    const last = s.values.length - 1; svg.append(Object.assign(svgEl('text', { x: x(last) + 6, y: y(s.values[last]) + 4, fill: s.color }), { textContent: s.name }));
+  }
+  root.append(svg);
+}
+function tableOf(root, rows, heads) { root.innerHTML = ''; const t = document.createElement('table'); t.innerHTML = '<tr>' + heads.map((h) => `<th>${h}</th>`).join('') + '</tr>' + rows.map((r) => '<tr>' + r.map((c, i) => `<td class="${i === r.length - 1 ? 'n' : ''}">${c}</td>`).join('') + '</tr>').join(''); root.append(t); }
+const needDim = (name) => `GA4 관리 → 맞춤 정의에 이벤트 매개변수 <code>${name}</code>을 등록하면 여기 나옵니다(등록 뒤 쌓이는 데이터부터).`;
+
+/* ---------- 불러오기 ---------- */
+async function get(kind, fn) { if (DEMO) return demoRows(kind); return fn(); }
+async function card(id, noteId, work) { try { await work(); } catch (e) { const el = $(id); el.innerHTML = ''; if (noteId) $(noteId).innerHTML = `<span class="err">${e.message}</span>`; else el.innerHTML = `<span class="err">${e.message}</span>`; } }
+async function load() {
+  $('status').textContent = DEMO ? '예시 데이터 · 실제 수치 아님' : `GA4 ${cfg.prop} · 최근 ${days}일 · ${new Date().toLocaleTimeString('ko-KR')}`;
+  await Promise.all([
+    card('now', null, async () => {
+      const rows = await get('now', () => ga('runRealtimeReport', { dimensions: [{ name: 'eventName' }], metrics: [{ name: 'eventCount' }], dimensionFilter: evFilter(EVENTS) }).then((r) => (r.rows || []).map((row) => ({ d: [row.dimensionValues[0].value], m: [+row.metricValues[0].value] }))));
+      const by = Object.fromEntries(rows.map((r) => [r.d[0], r.m[0]]));
+      $('now').innerHTML = ['lookdown_open', 'lookdown_yuni_seen', 'lookdown_line', 'lookdown_share'].map((e) => `<div class="tile"><div class="k">${LABEL[e]}</div><div class="v">${fmt(by[e] || 0)}</div><div class="sub">최근 30분</div></div>`).join('');
+    }),
+    card('funnel', 'funnel-note', async () => {
+      const rows = await get('funnel', () => report(['eventName'], ['eventCount'], EVENTS));
+      const by = Object.fromEntries(rows.map((r) => [r.d[0], r.m[0]]));
+      const open = by.lookdown_open || 0;
+      hbars($('funnel'), EVENTS.map((e) => ({ label: LABEL[e], v: by[e] || 0 })), { sub: (r) => (open ? Math.round(100 * r.v / open) + '%' : '') });
+      $('funnel-note').textContent = `최근 ${days}일. 비율은 링크 클릭 대비. 브리프 지표: Yuni 봄 ${open ? Math.round(100 * (by.lookdown_yuni_seen || 0) / open) : 0}% · 한마디 ${open ? Math.round(100 * (by.lookdown_line || 0) / open) : 0}% · 공유 ${fmt(by.lookdown_share || 0)}회.`;
+    }),
+    card('daily', null, async () => {
+      const rows = await get('daily', () => report(['date', 'eventName'], ['eventCount'], ['lookdown_open', 'lookdown_share']));
+      const dates = []; for (let i = days - 1; i >= 0; i--) dates.push(ymd(new Date(Date.now() - i * 864e5)).replace(/-/g, ''));
+      const pick = (e) => dates.map((d) => (rows.find((r) => r.d[0] === d && r.d[1] === e) || { m: [0] }).m[0]);
+      lines($('daily'), [{ name: '링크 클릭', color: 'var(--s1)', values: pick('lookdown_open') }, { name: '공유', color: 'var(--s2)', values: pick('lookdown_share') }], dates);
+    }),
+    card('seen', 'seen-note', async () => {
+      const rows = await get('seen', () => report(['customEvent:ms'], ['eventCount'], ['lookdown_yuni_seen']));
+      const vals = rows.flatMap((r) => Array(r.m[0]).fill(+r.d[0] / 1000)).filter((v) => !isNaN(v));
+      if (!vals.length) { $('seen').innerHTML = ''; $('seen-note').innerHTML = needDim('ms'); return; }
+      histogram($('seen'), vals, { bins: [[0, 2], [2, 3], [3, 4], [4, 6], [6, 10], [10, Infinity]], unit: 's', mark: (a, b) => b <= 3 });
+      const within = vals.filter((v) => v <= 3).length;
+      $('seen-note').textContent = `탭(시작)부터 Yuni가 보이기까지. 3초 안에 보인 비율 ${Math.round(100 * within / vals.length)}% (${within}/${vals.length}). 브리프 목표 지표.`;
+    }),
+    card('dwell', 'dwell-note', async () => {
+      const rows = await get('dwell', () => report(['customEvent:s'], ['eventCount'], ['lookdown_dwell']));
+      const vals = rows.flatMap((r) => Array(r.m[0]).fill(+r.d[0])).filter((v) => !isNaN(v));
+      if (!vals.length) { $('dwell').innerHTML = ''; $('dwell-note').innerHTML = needDim('s'); return; }
+      histogram($('dwell'), vals, { bins: [[0, 10], [10, 20], [20, 30], [30, 60], [60, 120], [120, Infinity]], unit: '초', color: 'var(--s3)' });
+      const sorted = [...vals].sort((a, b) => a - b);
+      $('dwell-note').textContent = `화면이 숨겨질 때마다 보내므로 한 사람이 여러 번 찍힐 수 있습니다. 중앙값 ${sorted[sorted.length >> 1]}초, 평균 ${Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)}초.`;
+    }),
+    card('fortune', 'fortune-note', async () => {
+      const rows = await get('fortune', () => report(['customEvent:n'], ['eventCount'], ['lookdown_line']));
+      const by = Object.fromEntries(rows.map((r) => [r.d[0], r.m[0]]));
+      if (!rows.length) { $('fortune').innerHTML = ''; $('fortune-note').innerHTML = needDim('n'); return; }
+      const list = FORTUNES.map((t, i) => ({ label: `${i + 1}. ${t.length > 17 ? t.slice(0, 17) + '…' : t}`, v: by[String(i)] || 0 }));
+      hbars($('fortune'), list, { color: 'var(--gold)' });
+      $('fortune-note').textContent = '무작위라 고르게 나와야 정상. 공유가 몰리는 문장은 공유 카드의 kind·n을 같이 보면 압니다.';
+    }),
+    card('share', 'share-note', async () => {
+      const rows = await get('share', () => report(['customEvent:kind', 'customEvent:method'], ['eventCount'], ['lookdown_share']));
+      if (!rows.length) { $('share').innerHTML = ''; $('share-note').innerHTML = needDim('kind') + ' ' + needDim('method'); return; }
+      tableOf($('share'), rows.map((r) => [r.d[0] === 'video' ? '영상' : '사진', { share: '공유 시트', download: '내려받기', cancel: '취소', too_short: '너무 짧음' }[r.d[1]] || r.d[1], fmt(r.m[0])]), ['종류', '결과', '횟수']);
+      $('share-note').textContent = '공유 시트로 넘어간 수가 실제 올린 수에 가장 가깝습니다. 취소는 시트를 열고 닫은 것.';
+    }),
+    card('device', null, async () => {
+      const dev = await get('device', () => report(['deviceCategory', 'operatingSystem'], ['eventCount'], ['lookdown_open']));
+      const lang = await get('lang', () => report(['language'], ['eventCount'], ['lookdown_open'], { orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }], limit: 6 }));
+      tableOf($('device'), [...dev.map((r) => [r.d[0] + ' · ' + r.d[1], fmt(r.m[0])]), ...lang.map((r) => ['언어 ' + r.d[0], fmt(r.m[0])])], ['구분', '클릭']);
+    }),
+  ]);
+}
+
+if (DEMO) { $('main').hidden = false; load(); }
+else if (cfg.prop && cfg.client) { $('main').hidden = false; $('status').textContent = '오른쪽 위 Google 로그인을 누르세요.'; }
+else showSetup();
+</script>
+</body>
+</html>
