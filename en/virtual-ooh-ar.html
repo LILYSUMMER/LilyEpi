@@ -73,7 +73,7 @@
             <section class="info">
                 <span class="badge">Virtual out-of-home · Sample</span>
                 <h1>An ad over the street, with no sign to put up</h1>
-                <p class="lead">We put a sign for a sample shop, Gyulbit Café, over Robson Street in Vancouver. We also let a cup of tangerine tea float there instead — switch between them on the screen. Hold up your phone on that street and you’ll see it in place. Anywhere else, it appears in front of you.</p>
+                <p class="lead">We put a sign for a sample shop, Gyulbit Café, over Robson Street in Vancouver and Lee Jung-seop Street in Seogwipo. We also let a cup of tangerine tea float there instead — switch between them on the screen. Stand on either street and you’ll see it in place. Anywhere else, it appears in front of you.</p>
                 <ol class="steps">
                     <li>Scan the QR code below with your phone camera.</li>
                     <li>Tap Start and allow camera and location access.</li>
@@ -84,7 +84,7 @@
                     <p><strong>Open on your phone</strong>epispace.kr/en/virtual-ooh-ar.html</p>
                 </div>
                 <p class="fine">Tap the sign or the cup to open the shop card. Use the buttons on the screen to switch between them, and the ones below to change the language. Gyulbit Café and its offer are made up for this sample.</p>
-                <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Tree data: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
+                <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Robson Street trees: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
                 <div class="cta">
                     <p>Want one on your street?</p>
                     <div class="row">
@@ -110,18 +110,29 @@
                 <button type="button" data-ad-kind="sign">Sign</button>
                 <button type="button" data-ad-kind="product">Cup</button>
             </div>
-            <div class="place-card">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-                <div>
-                    <strong>Robson Street, Vancouver</strong>
-                    <p>It floats over the plaza where Bute Street meets Robson. Anywhere else, we’ll put it in front of you.</p>
-                    <a id="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">Open in Maps</a>
+            <div class="place-list">
+                <div class="place-card">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    <div>
+                        <strong>Robson Street, Vancouver</strong>
+                        <p>It floats over the plaza where Bute Street meets Robson.</p>
+                        <a id="map-vancouver" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">Open in Maps</a>
+                    </div>
+                </div>
+                <div class="place-card">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    <div>
+                        <strong>Lee Jung-seop Street, Seogwipo</strong>
+                        <p>It floats over the alley on Ijungseop-ro.</p>
+                        <a id="map-seogwipo" href="https://www.google.com/maps/search/?api=1&amp;query=33.245547%2C126.564409" target="_blank" rel="noopener">Open in Maps</a>
+                    </div>
                 </div>
             </div>
+            <p class="place-note">Away from both streets, we’ll put it in front of you.</p>
         </div>
         <button class="btn btn-primary" id="btn-start" type="button" data-loading="Getting ready...">Start</button>
         <p class="fine">We’ll ask for camera and location access, and iPhone also asks for motion access. Gyulbit Café and its offer are made up for this sample.</p>
-        <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Tree data: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
+        <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Robson Street trees: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
     </div>
 
     <div id="ar" class="ar-only"></div>
@@ -138,7 +149,7 @@
         </div>
         <p class="status is-off" id="status" role="status"
            data-locating="Finding your location..."
-           data-far="You’re {d} from Robson Street, so it’s right in front of you."
+           data-far="You’re {d} from {place}, so it’s right in front of you."
            data-searching="Still finding your location, so it’s in front of you for now."
            data-found="Got your location, so it has moved to its real spot."
            data-nocompass="This phone has no compass, so it’s in front of you."

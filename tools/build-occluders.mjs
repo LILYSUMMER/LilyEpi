@@ -1,8 +1,20 @@
-// AR 가상 옥외광고에서 광고판을 가리는 건물·나무 모형 데이터(assets/virtual-ooh-ar/occluders.json)를 만듭니다.
-// 건물은 오픈스트리트맵(층수로 높이를 어림), 나무는 밴쿠버 시 가로수 데이터입니다.
-// ooh-ar.js의 SPOT을 옮기면 다시 돌려야 합니다. 페이지는 SPOT과 다른 자리의 데이터는 쓰지 않습니다.
-//   node tools/build-occluders.mjs
-import { readFile, writeFile } from 'node:fs/promises';
+// AR 가상 옥외광고에서 광고판을 가리는 건물·나무 모형 데이터를 만듭니다.
+// 건물은 오픈스트리트맵(층수로 높이를 어림), 밴쿠버 자리는 시 가로수 데이터도 넣습니다.
+// 자리를 옮기면 해당 자리를 인자로 다시 돌려야 합니다. 페이지는 자리와 다른 데이터는 쓰지 않습니다.
+//   node tools/build-occluders.mjs vancouver
+//   node tools/build-occluders.mjs seogwipo
+import { writeFile } from 'node:fs/promises';
+
+const CATALOG = {
+  vancouver: { lat: 49.2856, lng: -123.127619, trees: true, out: 'occluders.json' },
+  seogwipo: { lat: 33.245547, lng: 126.564409, trees: false, out: 'occluders-seogwipo.json' },
+};
+const id = process.argv[2];
+if (!CATALOG[id]) {
+  console.error('usage: node tools/build-occluders.mjs vancouver|seogwipo');
+  process.exit(1);
+}
+const spot = CATALOG[id];
 
 // SPOT.radius(500m) 경계에 걸친 건물까지 담습니다.
 const RADIUS = 520;
@@ -16,10 +28,6 @@ const LOBBY = 1.3;
 const MIN_TREE = 4;
 
 const root = new URL('../', import.meta.url);
-const source = await readFile(new URL('assets/virtual-ooh-ar/ooh-ar.js', root), 'utf8');
-const found = source.match(/const SPOT = \{\s*lat: (-?[\d.]+),\s*lng: (-?[\d.]+)/);
-if (!found) throw new Error('ooh-ar.js에서 SPOT을 찾지 못했습니다.');
-const spot = { lat: Number(found[1]), lng: Number(found[2]) };
 
 // ooh-ar.js의 metersFromSpot과 같은 계산입니다. x는 동쪽, z는 남쪽이 +입니다.
 const EARTH = 6371008.8;
@@ -257,17 +265,20 @@ async function fetchTrees() {
   return { flat, count, all: rows.length };
 }
 
-const [buildings, trees] = await Promise.all([fetchBuildings(), fetchTrees()]);
+const [buildings, trees] = await Promise.all([
+  fetchBuildings(),
+  spot.trees ? fetchTrees() : Promise.resolve({ flat: [], count: 0, all: 0 }),
+]);
 const far = await fetchFarBuildings(buildings.ids);
 
 const data = {
-  spot,
+  spot: { lat: spot.lat, lng: spot.lng },
   radius: RADIUS,
   farRadius: FAR_RADIUS,
   made: new Date().toISOString().slice(0, 10),
   credit: {
     buildings: '© OpenStreetMap contributors. Available under the Open Database License (ODbL) 1.0: https://www.openstreetmap.org/copyright',
-    trees: 'Contains information licensed under the Open Government Licence – Vancouver: https://opendata.vancouver.ca/pages/licence/',
+    ...(spot.trees ? { trees: 'Contains information licensed under the Open Government Licence – Vancouver: https://opendata.vancouver.ca/pages/licence/' } : {}),
   },
   // buildings: [높이, 바닥 높이, x0, z0, x1, z1, ...] (m)
   // far: radius 바깥 farRadius 안의 고층 건물로, 형식은 buildings와 같고 1m 단위입니다.
@@ -278,10 +289,11 @@ const data = {
   trees: trees.flat,
 };
 
-const out = new URL('assets/virtual-ooh-ar/occluders.json', root);
+const out = new URL(`assets/virtual-ooh-ar/${spot.out}`, root);
 const text = JSON.stringify(data);
 await writeFile(out, `${text}\n`);
-console.log(`buildings ${buildings.list.length} (outlines ${buildings.outlines}, parts ${buildings.parts})`);
-console.log(`far buildings ${far.length} (${FAR_MIN_HEIGHT} m or taller, up to ${FAR_RADIUS} m)`);
-console.log(`trees ${trees.count} of ${trees.all} (shorter than ${MIN_TREE} m left out)`);
+console.log(`${id}: buildings ${buildings.list.length} (outlines ${buildings.outlines}, parts ${buildings.parts})`);
+console.log(`${id}: far buildings ${far.length} (${FAR_MIN_HEIGHT} m or taller, up to ${FAR_RADIUS} m)`);
+if (spot.trees) console.log(`${id}: trees ${trees.count} of ${trees.all} (shorter than ${MIN_TREE} m left out)`);
+else console.log(`${id}: trees skipped`);
 console.log(`${out.pathname} ${(text.length / 1024).toFixed(1)} KB`);

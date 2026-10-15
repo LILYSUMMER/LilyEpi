@@ -3,12 +3,26 @@ import * as THREE from 'three';
 // 광고판이 떠 있을 자리입니다. declination은 그 지역의 자편각(나침반의 북쪽이 진북에서 동쪽으로 틀어진 각도)이라,
 // 자리를 다른 도시로 옮기면 함께 바꿔야 광고판이 엉뚱한 방향에 뜨지 않습니다.
 // radius 안에 있으면 실제 자리에 띄우고, 더 멀면 보는 사람 앞쪽에 띄웁니다.
-const SPOT = {
-  lat: 49.2856,
-  lng: -123.127619,
-  declination: 15.4,
-  radius: 500,
+// 휴대폰 위치가 잡히면 가까운 자리를 씁니다. 그 전에는 시간대로 고릅니다.
+const SPOTS = {
+  vancouver: { id: 'vancouver', lat: 49.2856, lng: -123.127619, declination: 15.4, radius: 500, file: 'occluders.json' },
+  seogwipo: { id: 'seogwipo', lat: 33.245547, lng: 126.564409, declination: -8, radius: 500, file: 'occluders-seogwipo.json' },
 };
+const PLACE = {
+  vancouver: { ko: '랍슨 스트리트', en: 'Robson Street' },
+  seogwipo: { ko: '이중섭거리', en: 'Lee Jung-seop Street' },
+};
+
+function guessSpot() {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  return tz === 'Asia/Seoul' ? SPOTS.seogwipo : SPOTS.vancouver;
+}
+
+let spot = guessSpot();
+
+function placeName(id = spot.id) {
+  return PLACE[id][PAGE_LANG] || PLACE[id].en;
+}
 
 // 단위는 m입니다. lift는 땅에서 광고판 아래 끝까지의 높이입니다.
 const BOARD = { width: 8, height: 3, lift: 7 };
@@ -101,8 +115,10 @@ const $ = (id) => document.getElementById(id);
 const track = (name, params) => window.gtag && window.gtag('event', name, params);
 const sheet = $('sheet');
 
-const mapLink = $('map-link');
-if (mapLink) mapLink.href = `https://www.google.com/maps/search/?api=1&query=${SPOT.lat}%2C${SPOT.lng}`;
+for (const place of Object.values(SPOTS)) {
+  const link = $(`map-${place.id}`);
+  if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${place.lat}%2C${place.lng}`;
+}
 
 /* ---------- 광고 언어 ---------- */
 
@@ -1017,7 +1033,7 @@ function watchMotion() {
     lastYaw = yaw;
     lastAt = now;
     if (turning) return;
-    const target = wrapAngle(-deg(heading + SPOT.declination) - yaw);
+    const target = wrapAngle(-deg(heading + spot.declination) - yaw);
     state.offset = state.compass ? wrapAngle(state.offset + wrapAngle(target - state.offset) * 0.03) : target;
     state.compass = true;
   }
@@ -1054,17 +1070,29 @@ function watchPlace(onFix, onFail) {
 }
 
 const EARTH = 6371008.8;
-function metersFromSpot(lat, lng) {
+function metersFromSpot(lat, lng, at = spot) {
   return {
-    x: deg(lng - SPOT.lng) * EARTH * Math.cos(deg(SPOT.lat)),
-    z: -deg(lat - SPOT.lat) * EARTH,
+    x: deg(lng - at.lng) * EARTH * Math.cos(deg(at.lat)),
+    z: -deg(lat - at.lat) * EARTH,
   };
 }
-function distanceToSpot(lat, lng) {
-  const dLat = deg(lat - SPOT.lat);
-  const dLng = deg(lng - SPOT.lng);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(deg(lat)) * Math.cos(deg(SPOT.lat)) * Math.sin(dLng / 2) ** 2;
+function distanceToSpot(lat, lng, at = spot) {
+  const dLat = deg(lat - at.lat);
+  const dLng = deg(lng - at.lng);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(deg(lat)) * Math.cos(deg(at.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * EARTH * Math.asin(Math.sqrt(a));
+}
+function nearestSpot(lat, lng) {
+  let best = spot;
+  let bestD = Infinity;
+  for (const place of Object.values(SPOTS)) {
+    const d = distanceToSpot(lat, lng, place);
+    if (d < bestD) {
+      best = place;
+      bestD = d;
+    }
+  }
+  return { place: best, distance: bestD };
 }
 
 // 영상은 object-fit: cover로 화면을 채우므로, 잘려 나간 만큼 줄어든 세로 화각을 3D 카메라에 맞춥니다.
@@ -1081,7 +1109,6 @@ function visibleFov(video, w, h) {
 
 // 실제 건물과 나무 자리에 보이지 않는 모형을 세워 깊이만 남기면, 모형 뒤에 있는 광고판 부분이 지워집니다.
 // 데이터는 tools/build-occluders.mjs로 만듭니다. ?occluders=show로 열면 모형이 보입니다.
-const OCCLUDERS_URL = new URL('occluders.json', import.meta.url);
 const SHOW_OCCLUDERS = new URLSearchParams(location.search).get('occluders') === 'show';
 
 const OCCLUDER_VERTEX = /* glsl */ `
@@ -1201,18 +1228,18 @@ function insideRing(x, z, b) {
   return hit;
 }
 
-async function loadOccluders() {
-  const response = await fetch(OCCLUDERS_URL);
-  if (!response.ok) throw new Error(`occluders.json ${response.status}`);
+async function loadOccluders(at) {
+  const response = await fetch(new URL(at.file, import.meta.url));
+  if (!response.ok) throw new Error(`${at.file} ${response.status}`);
   const data = await response.json();
   // 광고판 자리를 옮기고 데이터를 다시 만들지 않았다면, 엉뚱한 건물이 광고판을 가리게 되므로 쓰지 않습니다.
-  if (data.spot.lat !== SPOT.lat || data.spot.lng !== SPOT.lng) return null;
+  if (data.spot.lat !== at.lat || data.spot.lng !== at.lng) return null;
 
   // 광고판보다 먼저 그려 깊이를 남겨야 하므로 광고판과 다른 장면에 둡니다.
   const near = { value: 12 };
   const scene = new THREE.Scene();
   scene.add(new THREE.Mesh(footprintGeometry(data.buildings), occluderMaterial(near, 'building')));
-  scene.add(treeMesh(data.trees, occluderMaterial(near, 'tree')));
+  if (data.trees?.length) scene.add(treeMesh(data.trees, occluderMaterial(near, 'tree')));
   // 반경 밖의 고층 건물은 늘 광고판보다 뒤에 있어서 광고판을 가리지 않습니다.
   // 하늘로 가릴 때, 카메라에 찍힌 건물이 광고판 뒤 배경인지 가리는 데만 씁니다.
   const far = data.far && data.far.length ? new THREE.Mesh(footprintGeometry(data.far), occluderMaterial(near, 'far')) : null;
@@ -1527,11 +1554,14 @@ async function startAR() {
   const skyWatch = watchSky(video, camera);
   const drawSkyOverlay = SHOW_OCCLUDERS ? skyOverlay(sky) : null;
 
-  let occluders = null;
+  const occluderSets = {};
   let indoors = false;
-  loadOccluders().then((found) => {
-    occluders = found;
-  }).catch((error) => console.error(error));
+  for (const place of Object.values(SPOTS)) {
+    loadOccluders(place).then((found) => {
+      occluderSets[place.id] = found;
+    }).catch((error) => console.error(error));
+  }
+  const occludersOf = () => occluderSets[spot.id] || null;
 
   const resize = () => {
     const w = window.innerWidth;
@@ -1561,7 +1591,7 @@ async function startAR() {
       status.classList.add('is-off');
       return;
     }
-    status.textContent = status.dataset[key].replace(/\{(\w)\}/g, (_, name) => values[name] ?? '');
+    status.textContent = status.dataset[key].replace(/\{(\w+)\}/g, (_, name) => values[name] ?? '');
     status.classList.remove('is-off');
     if (!sticky) statusTimer = setTimeout(() => status.classList.add('is-off'), 6000);
   }
@@ -1583,13 +1613,18 @@ async function startAR() {
   // 위치가 늦게 잡혀도 앞쪽에 띄운 채로 계속 기다렸다가, 반경 안으로 잡히면 제자리로 옮깁니다.
   const giveUp = setTimeout(() => { if (!nearSince) request('ahead', 'searching'); }, 12000);
 
+  let spotLocked = false;
   const onFix = (coords) => {
+    if (!spotLocked) {
+      spot = nearestSpot(coords.latitude, coords.longitude).place;
+      spotLocked = true;
+    }
     const away = distanceToSpot(coords.latitude, coords.longitude);
     if (!nearSince) {
-      if (away > SPOT.radius) {
+      if (away > spot.radius) {
         // 오차 범위가 반경 안쪽까지 걸치면 멀다고 단정하지 않고 더 정확한 위치를 기다립니다.
-        if (away - coords.accuracy > SPOT.radius) {
-          const values = { d: formatDistance(away, PAGE_LANG) };
+        if (away - coords.accuracy > spot.radius) {
+          const values = { d: formatDistance(away, PAGE_LANG), place: placeName() };
           if (mode === 'locating') request('ahead', 'far', values);
           else if (mode === 'ahead' && aheadWhy !== 'far') {
             aheadWhy = 'far';
@@ -1607,6 +1642,7 @@ async function startAR() {
     accuracy = coords.accuracy;
     const p = metersFromSpot(coords.latitude, coords.longitude);
     eyeTarget.set(p.x, EYE, p.z);
+    const occluders = occludersOf();
     if (occluders) indoors = occluders.indoors(p.x, p.z);
     if (mode === 'onsite' && performance.now() > quietUntil) say(accuracy > 25 ? 'weak' : null, { a: Math.round(accuracy) }, true);
   };
@@ -1640,7 +1676,7 @@ async function startAR() {
     ad.show(clock.getElapsedTime());
     $('ad-langs').classList.add('is-on');
     $('ad-kinds').classList.add('is-on');
-    track('ooh_ar_shown', { mode: next, reason: why });
+    track('ooh_ar_shown', { mode: next, reason: why, spot: spot.id });
   }
 
   const pointer = $('pointer');
@@ -1683,6 +1719,7 @@ async function startAR() {
   function draw() {
     const onsite = mode === 'onsite';
     const skyMode = onsite && skyWatch.state.on ? (indoors ? 2 : 1) : 0;
+    const occluders = occludersOf();
     const models = Boolean(occluders) && onsite && !indoors;
     sky.uSkyMode.value = skyMode;
     sky.uCloudMin.value = skyWatch.state.cloudMin;
