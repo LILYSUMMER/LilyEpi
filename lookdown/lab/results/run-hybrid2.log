@@ -1,0 +1,8 @@
+hybrid/a: 300f avg 5.58ms lost 1 drift 1037.2px/0m err 0px/0m scale null
+hybrid/b: 360f avg 5.49ms lost 1 drift 1063.4px/2.011m err 9px/0.018m scale 1.012
+hybrid/c: 240f avg 5.43ms lost 1 drift 72.7px/0.704m err 2.2px/0.014m scale 1.009
+hybrid/b2: 360f avg 5.04ms lost 1 drift 1293.5px/2.157m err 61.5px/0.079m scale 0.926
+hybrid/b2: 360f avg 5ms lost 1 drift 1280.6px/2.156m err 59px/0.08m scale 0.898
+hybrid/a: 300f avg 4.35ms lost 1 drift 518.6px/0m err 0px/0m scale null
+hybrid/b: 360f avg 4.27ms lost 1 drift 532.4px/2.013m err 4.5px/0.018m scale 1.012
+EXIT

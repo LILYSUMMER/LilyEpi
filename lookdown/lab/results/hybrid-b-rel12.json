@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-15T01:51:29.776Z",
+  "tracker": "hybrid",
+  "scenario": "b",
+  "source": "video",
+  "step": true,
+  "device": {
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.0.0 Safari/537.36",
+    "platform": "Linux",
+    "model": null,
+    "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "screen": "640x480@1",
+    "frame": "640x480",
+    "fov": 67
+  },
+  "duration_s": 11.97,
+  "frames": 360,
+  "fps_avg": 30.1,
+  "update_ms_avg": 5.53,
+  "update_ms_max": 36,
+  "lost_frames": 1,
+  "lost_ratio": 0.003,
+  "drift_px_max": 1060.9,
+  "drift_px_end": 19.7,
+  "drift_m_max": 2.012,
+  "drift_m_end": 0.14,
+  "path_m": 4.734,
+  "err_px_avg": 10.2,
+  "err_px_max": 30.8,
+  "err_m_avg": 0.037,
+  "err_m_max": 0.143,
+  "gt": true,
+  "debug": {
+    "tracked": {
+      "avg": 50.897,
+      "max": 60
+    },
+    "inliers": {
+      "avg": 43.131,
+      "max": 59
+    },
+    "resid_px": {
+      "avg": 0.94,
+      "max": 2.168
+    },
+    "raw_px": {
+      "avg": 1.154,
+      "max": 2.265
+    },
+    "h": {
+      "avg": 1.411,
+      "max": 1.47
+    },
+    "dc_m": {
+      "avg": 0.012,
+      "max": 0.051
+    },
+    "zupt": {
+      "avg": 0,
+      "max": 0
+    },
+    "redetect": {
+      "avg": 0.011,
+      "max": 1
+    },
+    "ms_pre": {
+      "avg": 1.842,
+      "max": 10.4
+    },
+    "ms_lk": {
+      "avg": 3.31,
+      "max": 29.1
+    },
+    "ms_solve": {
+      "avg": 0.259,
+      "max": 3.2
+    },
+    "ms_total": {
+      "avg": 5.524,
+      "max": 35.9
+    }
+  },
+  "gt_path_m": 4.683,
+  "scale_est": 0.989,
+  "wall_s": 61,
+  "errors": []
+}

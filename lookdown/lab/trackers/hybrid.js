@@ -22,10 +22,11 @@ export const HYBRID_PARAMS = {
   maxFeatures: 60, minFeatures: 30, fastThreshold: 20, gridCols: 8, gridRows: 5, border: 8,
   roiNear: 0.5, roiFar: 3.0,  // 바닥 ROI: 카메라에서 이 거리 범위에 해당하는 행만
   lkWin: 15, lkIter: 20, lkEps: 0.01, lkMinEigen: 0.001, maxFlowPx: 40,   // LK 창·반복·허용 흐름
-  ransacIters: 40, inlierThr: 0.03, minInliers: 8,   // 바닥 좌표(m) 기준 인라이어 임계
+  ransacIters: 40, inlierThrMin: 0.004, inlierThrRel: 0.2, minInliers: 8,   // 인라이어 임계(m) = max(Min, Rel × 그 모델의 |ΔC|+|Δh|). 움직임이 클수록 느슨, 멈추면 5 mm
   maxStepM: 0.15, maxDhStep: 0.15, hMin: 0.3, hMax: 2.5,   // 프레임당 점프 거부, 높이 범위
-  zuptFlowPx: 0.3, zuptRateDeg: 3, zuptHold: 0.3,    // 정지 감지: 잔여 흐름 중앙값·각속도·지속 시간
-  alphaV: 0.5, alphaH: 0.3,   // 속도·높이 상보 필터 (이전 값 비중)
+  rotOnlyPx: 0.3,             // 회전 보상 후 잔여 흐름 중앙값이 이보다 작으면 '이동 없음'으로 본다(제자리 회전 보장, 정지 포함)
+  zuptFlowPx: 0.3, zuptRateDeg: 3, zuptHold: 0.3,    // 정지 감지: 잔여 흐름 중앙값·각속도·지속 시간 → 속도 0
+  alphaV: 0.5, alphaH: 0.5,   // 수평 속도·수직 속도 상보 필터 (이전 값 비중). 증분이 아니라 속도를 거르므로 적분량이 줄지 않는다
   lostFallback: 3,            // 연속 lost가 이 수 이상이면 자이로 전용 폴백
 };
 
@@ -39,6 +40,7 @@ export class HybridTracker {
     this.position = new THREE.Vector3(0, this.p.eye, 0);
     this.quaternion = new THREE.Quaternion();
     this.vel = new THREE.Vector2(0, 0);
+    this.velH = 0;
     this.h = this.p.eye;
     this.prev = null;           // { pyr, xy(Float32Array), n, q, h, t }
     this.lostCount = 0;
@@ -179,20 +181,25 @@ export class HybridTracker {
         // 점프 거부
         if (dc.length() > this.p.maxStepM) { dc = null; lost = true; }
         else {
-          // 높이: 범위·점프 검사, 상보 필터
+          // 회전 전용 프레임: 보상 후 잔여 흐름이 거의 없으면 이동도 높이 변화도 없다 (제자리 회전에서 이동 0 보장)
+          const rotOnly = dbg.resid_px < this.p.rotOnlyPx;
+          if (rotOnly) { dc.set(0, 0); hNew = this.h; }
+          // 높이: 범위·점프 검사
           if (Math.abs(hNew - this.h) > this.p.maxDhStep || hNew < this.p.hMin || hNew > this.p.hMax) hNew = this.h;
-          this.h = this.p.alphaH * this.h + (1 - this.p.alphaH) * hNew;
-          // ZUPT: 잔여 흐름도 작고 각속도도 작으면 정지
-          const still = dbg.resid_px < this.p.zuptFlowPx && rate < this.p.zuptRateDeg;
+          // ZUPT: 잔여 흐름도 작고 각속도도 작은 상태가 zuptHold초 지속되면 속도 0
+          const still = rotOnly && rate < this.p.zuptRateDeg;
           if (still) { if (this.stillSince === null) this.stillSince = t; } else this.stillSince = null;
           const zupt = this.stillSince !== null && t - this.stillSince >= this.p.zuptHold;
           dbg.zupt = zupt ? 1 : 0;
-          if (zupt) { this.vel.set(0, 0); }
+          if (zupt) { this.vel.set(0, 0); this.velH = 0; }
           else {
+            // 속도에 상보 필터. 증분을 거르면 적분량이 줄어드니 속도를 거른다
             const v = dc.clone().divideScalar(dt);
             this.vel.multiplyScalar(this.p.alphaV).addScaledVector(v, 1 - this.p.alphaV);
+            this.velH = this.p.alphaH * this.velH + (1 - this.p.alphaH) * ((hNew - this.h) / dt);
           }
           this.position.x += this.vel.x * dt; this.position.z += this.vel.y * dt;
+          this.h = THREE.MathUtils.clamp(this.h + this.velH * dt, this.p.hMin, this.p.hMax);
           this.position.y = this.h;
           dbg.dc_m = dc.length();
         }
@@ -222,7 +229,7 @@ export class HybridTracker {
   // P_i = dc + h·s_i 를 2점 RANSAC + 인라이어 최소제곱으로 푼다
   solve(obs) {
     const m = obs.length; if (m < this.p.minInliers) return null;
-    const thr = this.p.inlierThr;
+    const hPrev = this.h;
     let best = null;
     const fit = (idx) => {
       // 최소제곱: h = Σ(P−P̄)·(s−s̄) / Σ|s−s̄|², dc = P̄ − h·s̄
@@ -235,7 +242,10 @@ export class HybridTracker {
       if (!(h > this.p.hMin && h < this.p.hMax)) h = this.h;
       return { h, dc: new THREE.Vector2(Px - h * sx, Pz - h * sz) };
     };
-    const inliersOf = (mdl) => { const r = []; for (let i = 0; i < m; i++) { const ex = obs[i].P.x - mdl.dc.x - mdl.h * obs[i].s.x, ez = obs[i].P.y - mdl.dc.y - mdl.h * obs[i].s.y; if (ex * ex + ez * ez < thr * thr) r.push(i); } return r; };
+    const inliersOf = (mdl) => {
+      const thr = Math.max(this.p.inlierThrMin, this.p.inlierThrRel * (mdl.dc.length() + Math.abs(mdl.h - hPrev)));
+      const r = []; for (let i = 0; i < m; i++) { const ex = obs[i].P.x - mdl.dc.x - mdl.h * obs[i].s.x, ez = obs[i].P.y - mdl.dc.y - mdl.h * obs[i].s.y; if (ex * ex + ez * ez < thr * thr) r.push(i); } return r;
+    };
     for (let it = 0; it < this.p.ransacIters; it++) {
       const a = (Math.random() * m) | 0; let b = (Math.random() * m) | 0; if (b === a) b = (a + 1) % m;
       const mdl = fit([a, b]); const inl = inliersOf(mdl);
@@ -251,7 +261,7 @@ export class HybridTracker {
     const conf = dbg.tracked ? dbg.inliers / dbg.tracked : 0;
     return { position: this.position, quaternion: this.quaternion, confidence: lost ? 0 : conf, lost, fallback, points: dbg.tracked, debug: dbg };
   }
-  reset() { this.prev = null; this.vel.set(0, 0); this.h = this.p.eye; this.position.set(0, this.h, 0); this.lostCount = 0; this.stillSince = null; }
+  reset() { this.prev = null; this.vel.set(0, 0); this.velH = 0; this.h = this.p.eye; this.position.set(0, this.h, 0); this.lostCount = 0; this.stillSince = null; }
 }
 
 function median(a) { if (!a.length) return 0; const b = [...a].sort((x, y) => x - y); return b[b.length >> 1]; }

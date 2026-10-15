@@ -128,11 +128,17 @@ function drawOverlay(px, lost) {
 }
 
 /* ---------- 추적기 ---------- */
+// ?hp=inlierThrRel:0.2,zuptHold:0.5 처럼 hybrid 임계값을 URL로 덮어쓴다 (기기별 튜닝·스윕용)
+function hybridParams() {
+  const out = {}; const hp = q.get('hp'); if (!hp) return out;
+  for (const kv of hp.split(',')) { const [k, v] = kv.split(':'); if (k && v !== undefined && !Number.isNaN(+v)) out[k] = +v; }
+  return out;
+}
 let tracker = null; let trackerId = q.get('tracker') || 'gyro';
 $('sel-tracker').value = trackerId;
 async function makeTracker(id) {
   const t = id === 'gyro' ? new GyroTracker({ eye: EYE })
-    : id === 'hybrid' ? new HybridTracker({ eye: EYE, fov: FOV, stage: +q.get('stage') || 4 })
+    : id === 'hybrid' ? new HybridTracker({ eye: EYE, fov: FOV, stage: +q.get('stage') || 4, ...hybridParams() })
     : new AlvaTracker({ eye: EYE, fov: FOV, useFallback: id === 'alva-fb', scale: +q.get('scale') || 1 });
   await t.init(W, H);
   $('h-tracker').textContent = `tracker: ${id}`;

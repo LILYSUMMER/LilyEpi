@@ -1,0 +1,21 @@
+hybrid/a: 300f avg 5.75ms lost 0 drift 1033.9px/0m err 0px/0m scale null
+hybrid/b: 360f avg 5.74ms lost 0 drift 10.7px/0m err 396.9px/1.002m scale null
+hybrid/c: 240f avg 5.05ms lost 0 drift 64.1px/0m err 71.3px/0.395m scale null
+hybrid/b2: 360f avg 5.09ms lost 0 drift 10.7px/0m err 396.9px/1.002m scale null
+hybrid/a: 300f avg 5.36ms lost 0 drift 1033.9px/0m err 0px/0m scale null
+hybrid/b: 360f avg 5.58ms lost 0 drift 10.7px/0m err 396.9px/1.002m scale null
+hybrid/c: 240f avg 5.34ms lost 0 drift 64.1px/0m err 71.3px/0.395m scale null
+hybrid/b2: 360f avg 5.1ms lost 0 drift 10.7px/0m err 396.9px/1.002m scale null
+hybrid/a: 300f avg 5.81ms lost 1 drift 988.7px/0.044m err 19.4px/0.027m scale null
+hybrid/b: 360f avg 5.51ms lost 1 drift 1046.5px/2.006m err 3px/0.013m scale 0.985
+hybrid/c: 240f avg 5.42ms lost 1 drift 73.1px/0.708m err 0.5px/0.003m scale 0.936
+hybrid/b2: 360f avg 5.43ms lost 1 drift 1273.1px/2.179m err 56.1px/0.079m scale 0.892
+hybrid/a: 300f avg 5.49ms lost 1 drift 996.2px/0.064m err 21px/0.035m scale null
+hybrid/b: 360f avg 5.34ms lost 1 drift 1051.5px/2.007m err 6.8px/0.016m scale 1.033
+hybrid/c: 240f avg 5.27ms lost 1 drift 36.7px/0.546m err 19.5px/0.095m scale 1.225
+hybrid/b2: 360f avg 5.06ms lost 1 drift 1301.7px/2.171m err 62.4px/0.073m scale 0.942
+gyro/b2: 360f avg 0ms lost 0 drift 10.7px/0m err 396.9px/1.002m scale null
+alva/b: 360f avg 11.26ms lost 34 drift 17455.3px/6.539m err 794px/2.534m scale 0.291
+alva/c: 240f avg 9.72ms lost 46 drift 73.8px/0.999m err 66.4px/0.31m scale 0.663
+alva/b2: 360f avg 11.38ms lost 34 drift 14817.4px/6.488m err 741.4px/2.51m scale 0.292
+EXIT
