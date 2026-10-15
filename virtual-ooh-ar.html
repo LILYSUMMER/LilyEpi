@@ -52,33 +52,39 @@
             <nav class="langs" aria-label="언어"><a href="virtual-ooh-ar.html" aria-current="page" hreflang="ko">KO</a> | <a href="en/virtual-ooh-ar.html" hreflang="en" lang="en">EN</a></nav>
         </header>
         <main class="station">
-            <section class="stage" aria-label="광고판 미리 보기">
+            <section class="stage" aria-label="광고 미리 보기">
                 <div class="stage-frame" id="stage"></div>
                 <div class="stage-caption">
-                    <span>휴대폰으로 열면 실제 거리 위에 이렇게 떠 있습니다</span>
-                    <div class="stage-langs" role="group" aria-label="광고 언어">
-                        <button type="button" data-ad-lang="ko" lang="ko">한국어</button>
-                        <button type="button" data-ad-lang="en" lang="en">English</button>
-                        <button type="button" data-ad-lang="zh" lang="zh">中文</button>
-                        <button type="button" data-ad-lang="ja" lang="ja">日本語</button>
+                    <span data-text-product="휴대폰으로 열면 실제 거리 위에 컵이 이렇게 떠 있습니다">휴대폰으로 열면 실제 거리 위에 이렇게 떠 있습니다</span>
+                    <div class="stage-tools">
+                        <div class="stage-langs" role="group" aria-label="광고판과 제품">
+                            <button type="button" data-ad-kind="sign">광고판</button>
+                            <button type="button" data-ad-kind="product">컵</button>
+                        </div>
+                        <div class="stage-langs" role="group" aria-label="광고 언어">
+                            <button type="button" data-ad-lang="ko" lang="ko">한국어</button>
+                            <button type="button" data-ad-lang="en" lang="en">English</button>
+                            <button type="button" data-ad-lang="zh" lang="zh">中文</button>
+                            <button type="button" data-ad-lang="ja" lang="ja">日本語</button>
+                        </div>
                     </div>
                 </div>
             </section>
             <section class="info">
                 <span class="badge">AR 가상 옥외광고 · 체험 예시</span>
                 <h1>간판 없이, 거리 위에 광고를 띄웁니다</h1>
-                <p class="lead">예시로 만든 가게 ‘귤빛 카페’의 광고판을 밴쿠버 랍슨 스트리트 위에 띄워 두었습니다. 그 거리에서 휴대폰을 들면 그 자리에 떠 있는 광고판이 보이고, 다른 곳에서는 지금 계신 곳 앞쪽에 띄워 볼 수 있습니다.</p>
+                <p class="lead">예시로 만든 가게 ‘귤빛 카페’의 광고판을 밴쿠버 랍슨 스트리트와 서귀포 이중섭거리 위에 띄워 두었습니다. 광고판 대신 귤차 컵이 둥실 떠 있게도 해 두었으니, 화면에서 바꿔 보세요. 그 거리에 서면 그 자리에 보이고, 다른 곳에서는 지금 계신 곳 앞쪽에 띄워 볼 수 있습니다.</p>
                 <ol class="steps">
                     <li>휴대폰 카메라로 아래 QR 코드를 찍습니다.</li>
                     <li>[체험 시작]을 누르고 카메라와 위치 접근을 허용합니다.</li>
-                    <li>화면의 화살표를 따라 휴대폰을 돌리면 광고판이 보입니다.</li>
+                    <li>화면의 화살표를 따라 휴대폰을 돌리면 광고판이나 컵이 보입니다.</li>
                 </ol>
                 <div class="qr">
                     <img src="assets/virtual-ooh-ar/qr.svg" alt="휴대폰으로 이 체험을 여는 QR 코드" width="132" height="132">
                     <p><strong>휴대폰으로 열기</strong>epispace.kr/virtual-ooh-ar.html</p>
                 </div>
-                <p class="fine">광고판을 누르면 가게 안내가 열리고, 화면 아래 버튼으로 광고판 언어를 바꿀 수 있습니다. 귤빛 카페와 혜택은 예시입니다.</p>
-                <p class="fine credit">건물 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap 기여자</a> · 가로수 데이터: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
+                <p class="fine">광고판이나 컵을 누르면 가게 안내가 열립니다. 화면 버튼으로 둘을 바꿔 보고, 아래 버튼으로 언어를 바꿀 수 있습니다. 귤빛 카페와 혜택은 예시입니다.</p>
+                <p class="fine credit">건물 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap 기여자</a> · 랍슨 스트리트 가로수: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
                 <div class="cta">
                     <p>우리 거리에도 띄워 보고 싶다면</p>
                     <div class="row">
@@ -100,38 +106,59 @@
             <h1>AR 가상 옥외광고</h1>
             <p class="lead">간판을 세우지 않아도, 거리 위에 광고판이 떠 있습니다.</p>
             <div class="start-preview" id="start-stage"></div>
-            <div class="place-card">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-                <div>
-                    <strong>밴쿠버 랍슨 스트리트</strong>
-                    <p>뷰트 스트리트와 만나는 곳의 광장 위에 떠 있습니다. 다른 곳에서는 지금 계신 곳 앞쪽에 띄워 드립니다.</p>
-                    <a id="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">지도에서 보기</a>
+            <div class="start-kinds" role="group" aria-label="광고판과 제품">
+                <button type="button" data-ad-kind="sign">광고판</button>
+                <button type="button" data-ad-kind="product">컵</button>
+            </div>
+            <div class="place-list">
+                <div class="place-card">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    <div>
+                        <strong>밴쿠버 랍슨 스트리트</strong>
+                        <p>뷰트 스트리트와 만나는 곳의 광장 위에 떠 있습니다.</p>
+                        <a id="map-vancouver" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">지도에서 보기</a>
+                    </div>
+                </div>
+                <div class="place-card">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    <div>
+                        <strong>서귀포 이중섭거리</strong>
+                        <p>이중섭로 골목 위에 떠 있습니다.</p>
+                        <a id="map-seogwipo" href="https://www.google.com/maps/search/?api=1&amp;query=33.245547%2C126.564409" target="_blank" rel="noopener">지도에서 보기</a>
+                    </div>
                 </div>
             </div>
+            <p class="place-note">두 거리에서 멀면, 지금 계신 곳 앞쪽에 띄워 드립니다.</p>
         </div>
         <button class="btn btn-primary" id="btn-start" type="button" data-loading="준비하는 중...">체험 시작</button>
         <p class="fine">카메라와 위치 접근을 묻습니다. 아이폰은 동작 접근도 묻습니다. 귤빛 카페와 혜택은 예시입니다.</p>
-        <p class="fine credit">건물 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap 기여자</a> · 가로수 데이터: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
+        <p class="fine credit">건물 데이터 © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap 기여자</a> · 랍슨 스트리트 가로수: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
     </div>
 
     <div id="ar" class="ar-only"></div>
     <div class="ar-ui ar-only">
         <div class="ar-top">
-            <span class="chip chip-sample">예시 광고</span>
+            <div class="ar-top-left">
+                <span class="chip chip-sample">예시 광고</span>
+                <div class="ad-kinds" id="ad-kinds" role="group" aria-label="광고판과 제품">
+                    <button class="chip" type="button" data-ad-kind="sign">광고판</button>
+                    <button class="chip" type="button" data-ad-kind="product">컵</button>
+                </div>
+            </div>
             <button class="chip" id="btn-close" type="button">닫기</button>
         </div>
         <p class="status is-off" id="status" role="status"
            data-locating="위치를 확인하는 중..."
-           data-far="랍슨 스트리트까지 {d}. 대신 지금 계신 곳 앞쪽에 띄웠어요."
+           data-far="{place}까지 {d}. 대신 지금 계신 곳 앞쪽에 띄웠어요."
            data-searching="아직 위치를 찾는 중이라 우선 앞쪽에 띄웠어요."
-           data-found="위치를 찾아서 광고판을 제자리로 옮겼어요."
+           data-found="위치를 찾아서 제자리로 옮겼어요."
            data-nocompass="나침반을 쓸 수 없어 앞쪽에 띄웠어요."
-           data-weak="위치 오차가 ±{a}m라 광고판이 조금 어긋날 수 있어요."></p>
-        <div class="pointer" id="pointer" data-label="광고판" hidden>
+           data-weak="위치 오차가 ±{a}m라 조금 어긋날 수 있어요."></p>
+        <div class="pointer" id="pointer" data-label="광고판" data-label-product="컵" hidden>
             <span class="arrow"></span>
             <span id="pointer-label">광고판</span>
         </div>
-        <p class="hint" id="hint">광고판을 눌러 보세요</p>
+        <p class="hint" id="hint" data-text-product="컵을 눌러 보세요">광고판을 눌러 보세요</p>
         <div class="ad-langs" id="ad-langs" role="group" aria-label="광고 언어">
             <button class="chip" type="button" data-ad-lang="ko" lang="ko">한국어</button>
             <button class="chip" type="button" data-ad-lang="en" lang="en">English</button>
@@ -139,8 +166,8 @@
             <button class="chip" type="button" data-ad-lang="ja" lang="ja">日本語</button>
         </div>
         <div class="loc-help" id="loc-help" aria-live="polite" hidden>
-            <strong>위치 접근이 꺼져 있어 광고판을 앞쪽에 띄웠어요.</strong>
-            <p data-how="chrome">아래 버튼으로 위치를 허용하면 광고판이 제자리로 옮겨 가요.</p>
+            <strong>위치 접근이 꺼져 있어 앞쪽에 띄웠어요.</strong>
+            <p data-how="chrome">아래 버튼으로 위치를 허용하면 제자리로 옮겨 가요.</p>
             <p data-how="inapp">앱 안에서 열린 화면이라 위치를 쓸 수 없어요. 메뉴에서 Safari나 Chrome으로 열어 주세요.</p>
             <ol data-how="ios">
                 <li>설정 → 개인정보 보호 및 보안 → 위치 서비스 → <span data-ios-app>Safari 웹 사이트</span> → ‘앱을 사용하는 동안’</li>

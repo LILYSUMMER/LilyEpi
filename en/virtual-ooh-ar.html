@@ -52,33 +52,39 @@
             <nav class="langs" aria-label="Language"><a href="../virtual-ooh-ar.html" hreflang="ko" lang="ko">KO</a> | <a href="virtual-ooh-ar.html" aria-current="page" hreflang="en">EN</a></nav>
         </header>
         <main class="station">
-            <section class="stage" aria-label="Preview of the sign">
+            <section class="stage" aria-label="Preview of the ad">
                 <div class="stage-frame" id="stage"></div>
                 <div class="stage-caption">
-                    <span>On a phone, it floats over the real street like this</span>
-                    <div class="stage-langs" role="group" aria-label="Language on the sign">
-                        <button type="button" data-ad-lang="ko" lang="ko">한국어</button>
-                        <button type="button" data-ad-lang="en" lang="en">English</button>
-                        <button type="button" data-ad-lang="zh" lang="zh">中文</button>
-                        <button type="button" data-ad-lang="ja" lang="ja">日本語</button>
+                    <span data-text-product="On a phone, the cup floats over the real street like this">On a phone, it floats over the real street like this</span>
+                    <div class="stage-tools">
+                        <div class="stage-langs" role="group" aria-label="Sign or product">
+                            <button type="button" data-ad-kind="sign">Sign</button>
+                            <button type="button" data-ad-kind="product">Cup</button>
+                        </div>
+                        <div class="stage-langs" role="group" aria-label="Language on the ad">
+                            <button type="button" data-ad-lang="ko" lang="ko">한국어</button>
+                            <button type="button" data-ad-lang="en" lang="en">English</button>
+                            <button type="button" data-ad-lang="zh" lang="zh">中文</button>
+                            <button type="button" data-ad-lang="ja" lang="ja">日本語</button>
+                        </div>
                     </div>
                 </div>
             </section>
             <section class="info">
                 <span class="badge">Virtual out-of-home · Sample</span>
                 <h1>An ad over the street, with no sign to put up</h1>
-                <p class="lead">We put a sign for a sample shop, Gyulbit Café, over Robson Street in Vancouver. Hold up your phone there and you’ll see it floating in place. Anywhere else, it appears in front of you.</p>
+                <p class="lead">We put a sign for a sample shop, Gyulbit Café, over Robson Street in Vancouver and Lee Jung-seop Street in Seogwipo. We also let a cup of tangerine tea float there instead — switch between them on the screen. Stand on either street and you’ll see it in place. Anywhere else, it appears in front of you.</p>
                 <ol class="steps">
                     <li>Scan the QR code below with your phone camera.</li>
                     <li>Tap Start and allow camera and location access.</li>
-                    <li>Follow the arrow on the screen to find the sign.</li>
+                    <li>Follow the arrow on the screen to find the sign or the cup.</li>
                 </ol>
                 <div class="qr">
                     <img src="../assets/virtual-ooh-ar/qr-en.svg" alt="QR code that opens this sample on your phone" width="132" height="132">
                     <p><strong>Open on your phone</strong>epispace.kr/en/virtual-ooh-ar.html</p>
                 </div>
-                <p class="fine">Tap the sign to open the shop card, and use the buttons at the bottom to change the language on the sign. Gyulbit Café and its offer are made up for this sample.</p>
-                <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Tree data: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
+                <p class="fine">Tap the sign or the cup to open the shop card. Use the buttons on the screen to switch between them, and the ones below to change the language. Gyulbit Café and its offer are made up for this sample.</p>
+                <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Robson Street trees: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
                 <div class="cta">
                     <p>Want one on your street?</p>
                     <div class="row">
@@ -100,47 +106,68 @@
             <h1>Virtual out-of-home</h1>
             <p class="lead">A sign floats over the street, with nothing put up.</p>
             <div class="start-preview" id="start-stage"></div>
-            <div class="place-card">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-                <div>
-                    <strong>Robson Street, Vancouver</strong>
-                    <p>It floats over the plaza where Bute Street meets Robson. Anywhere else, we’ll put it in front of you.</p>
-                    <a id="map-link" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">Open in Maps</a>
+            <div class="start-kinds" role="group" aria-label="Sign or product">
+                <button type="button" data-ad-kind="sign">Sign</button>
+                <button type="button" data-ad-kind="product">Cup</button>
+            </div>
+            <div class="place-list">
+                <div class="place-card">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    <div>
+                        <strong>Robson Street, Vancouver</strong>
+                        <p>It floats over the plaza where Bute Street meets Robson.</p>
+                        <a id="map-vancouver" href="https://www.google.com/maps/search/?api=1&amp;query=49.2856%2C-123.127619" target="_blank" rel="noopener">Open in Maps</a>
+                    </div>
+                </div>
+                <div class="place-card">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+                    <div>
+                        <strong>Lee Jung-seop Street, Seogwipo</strong>
+                        <p>It floats over the alley on Ijungseop-ro.</p>
+                        <a id="map-seogwipo" href="https://www.google.com/maps/search/?api=1&amp;query=33.245547%2C126.564409" target="_blank" rel="noopener">Open in Maps</a>
+                    </div>
                 </div>
             </div>
+            <p class="place-note">Away from both streets, we’ll put it in front of you.</p>
         </div>
         <button class="btn btn-primary" id="btn-start" type="button" data-loading="Getting ready...">Start</button>
         <p class="fine">We’ll ask for camera and location access, and iPhone also asks for motion access. Gyulbit Café and its offer are made up for this sample.</p>
-        <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Tree data: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
+        <p class="fine credit">Building data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · Robson Street trees: Contains information licensed under the <a href="https://opendata.vancouver.ca/pages/licence/" target="_blank" rel="noopener">Open Government Licence – Vancouver</a>.</p>
     </div>
 
     <div id="ar" class="ar-only"></div>
     <div class="ar-ui ar-only">
         <div class="ar-top">
-            <span class="chip chip-sample">Sample ad</span>
+            <div class="ar-top-left">
+                <span class="chip chip-sample">Sample ad</span>
+                <div class="ad-kinds" id="ad-kinds" role="group" aria-label="Sign or product">
+                    <button class="chip" type="button" data-ad-kind="sign">Sign</button>
+                    <button class="chip" type="button" data-ad-kind="product">Cup</button>
+                </div>
+            </div>
             <button class="chip" id="btn-close" type="button">Close</button>
         </div>
         <p class="status is-off" id="status" role="status"
            data-locating="Finding your location..."
-           data-far="You’re {d} from Robson Street, so the sign is right in front of you."
-           data-searching="Still finding your location, so the sign is in front of you for now."
-           data-found="Got your location, so the sign has moved to its real spot."
-           data-nocompass="This phone has no compass, so the sign is in front of you."
-           data-weak="Your location is off by about {a} m, so the sign may sit a little off."></p>
-        <div class="pointer" id="pointer" data-label="Sign" hidden>
+           data-far="You’re {d} from {place}, so it’s right in front of you."
+           data-searching="Still finding your location, so it’s in front of you for now."
+           data-found="Got your location, so it has moved to its real spot."
+           data-nocompass="This phone has no compass, so it’s in front of you."
+           data-weak="Your location is off by about {a} m, so it may sit a little off."></p>
+        <div class="pointer" id="pointer" data-label="Sign" data-label-product="Cup" hidden>
             <span class="arrow"></span>
             <span id="pointer-label">Sign</span>
         </div>
-        <p class="hint" id="hint">Tap the sign</p>
-        <div class="ad-langs" id="ad-langs" role="group" aria-label="Language on the sign">
+        <p class="hint" id="hint" data-text-product="Tap the cup">Tap the sign</p>
+        <div class="ad-langs" id="ad-langs" role="group" aria-label="Language on the ad">
             <button class="chip" type="button" data-ad-lang="ko" lang="ko">한국어</button>
             <button class="chip" type="button" data-ad-lang="en" lang="en">English</button>
             <button class="chip" type="button" data-ad-lang="zh" lang="zh">中文</button>
             <button class="chip" type="button" data-ad-lang="ja" lang="ja">日本語</button>
         </div>
         <div class="loc-help" id="loc-help" aria-live="polite" hidden>
-            <strong>Location access is off, so the sign is in front of you.</strong>
-            <p data-how="chrome">Allow location with the button below and the sign will move to its real spot.</p>
+            <strong>Location access is off, so it’s in front of you.</strong>
+            <p data-how="chrome">Allow location with the button below and it will move to its real spot.</p>
             <p data-how="inapp">This page is open inside another app, which can’t share your location. Open it in Safari or Chrome from the app’s menu.</p>
             <ol data-how="ios">
                 <li>Settings → Privacy &amp; Security → Location Services → <span data-ios-app>Safari Websites</span> → While Using the App</li>
