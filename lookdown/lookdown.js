@@ -43,7 +43,9 @@ document.documentElement.lang = LANG;
 const lines = await fetch(new URL('lines.json', import.meta.url)).then((r) => r.json());
 const text = (key) => lines[LANG][key];
 // 점쾌: fortunes.json의 lines 중 하나를 무작위로(서버 없음). ?n=번호 로 고정, ?item=0 으로 실루엣만 끌 수 있습니다.
-const fortunes = await fetch(new URL('fortunes.json', import.meta.url)).then((r) => r.json()).then((f) => (f.lines || []).filter((l) => l && l.ko)).catch(() => []);
+const fortuneData = await fetch(new URL('fortunes.json', import.meta.url)).then((r) => r.json()).catch(() => ({}));
+const fortunes = (fortuneData.lines || []).filter((l) => l && l.ko);
+const closingText = () => { const c = fortuneData.closing; return c ? (c[LANG] || c.en || c.ko || '') : ''; };
 function pickFortune() {
   if (!fortunes.length) return { n: -1, text: text('line'), shape: null };
   const forced = parseInt(q.get('n'), 10);
@@ -89,6 +91,7 @@ const S = {
   item: 0,              // 점쾌의 물건이 떠오른 정도
   fortune: null,        // 이번에 말한 점쾌 {n, text, shape}
   wander: 0,            // Yuni가 물건 둘레를 돌아다니는 정도
+  closed: false,        // 마무리 한마디(「내일 아침 주머니부터 보세요.」)를 했는지
   night: 1,             // 카메라 화면의 어두움 0~1. 어두울수록 Yuni가 또렷합니다
   placed: false,
 };
@@ -530,19 +533,88 @@ function build() {
       const head = new THREE.Mesh(new THREE.SphereGeometry(0.022, 18, 14), m); head.position.y = 0.14; g.add(head);
       return g;
     },
-    card(below) {     // 납작한 것: 카드·종이
+    card(below) {     // 납작한 것: 카드·사진
       const g = new THREE.Group();
       const c = new THREE.Mesh(new THREE.BoxGeometry(0.086, 0.004, 0.054), itemMaterial(below, 0xe9e4d8, 0x8a857a)); c.position.y = 0.01; c.rotation.y = 0.3; g.add(c);
       return g;
     },
+    hat(below) {      // 마녀 모자: 챙 + 뾰족한 고깔
+      const g = new THREE.Group(); const m = itemMaterial(below, 0x22202c, 0x0c0b12);
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.006, 32), m); brim.position.y = 0.01; g.add(brim);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.13, 24), m); cone.position.y = 0.075; cone.rotation.z = 0.18; g.add(cone);
+      const band = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.014, 24), itemMaterial(below, 0x6a2a7a, 0x3a1444)); band.position.y = 0.02; g.add(band);
+      return g;
+    },
+    key(below) {      // 열쇠: 고리 + 대 + 이
+      const g = new THREE.Group(); const m = itemMaterial(below, 0xc9a24e, 0x6b531f, { roughness: 0.45, metalness: 0.6 });
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.018, 0.005, 10, 24), m); ring.rotation.x = Math.PI / 2; ring.position.set(0, 0.012, 0.04); g.add(ring);
+      const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.009, 0.006, 0.07), m); shaft.position.set(0, 0.012, -0.013); g.add(shaft);
+      [-0.044, -0.034].forEach((z, i) => { const t = new THREE.Mesh(new THREE.BoxGeometry(0.007, 0.006, 0.007), m); t.position.set(0.008, 0.012, z); g.add(t); });
+      return g;
+    },
+    candy(below) {    // 사탕 세 개: 포장지 끝이 비죽한 알
+      const g = new THREE.Group();
+      [[0xe8553f, -0.035, 0.0, 0.4], [0xf2b45a, 0.01, -0.03, -0.3], [0x6fb3a8, 0.03, 0.03, 0.9]].forEach(([col, x, z, rot]) => {
+        const m = itemMaterial(below, col, (col >> 1) & 0x7f7f7f);
+        const c = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.016, 16, 12), m); body.scale.set(1.3, 0.85, 1); c.add(body);
+        [-1, 1].forEach((side) => { const w = new THREE.Mesh(new THREE.ConeGeometry(0.009, 0.018, 8), m); w.rotation.z = side * Math.PI / 2; w.position.x = side * 0.028; c.add(w); });
+        c.position.set(x, 0.014, z); c.rotation.y = rot; g.add(c);
+      });
+      return g;
+    },
+    beanie(below) {   // 털모자: 반구 + 접은 단 + 방울
+      const g = new THREE.Group(); const m = itemMaterial(below, 0x8a3b3b, 0x401818);
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.052, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), m); dome.position.y = 0.012; g.add(dome);
+      const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.054, 0.052, 0.024, 24), m); cuff.position.y = 0.014; g.add(cuff);
+      const pom = new THREE.Mesh(new THREE.SphereGeometry(0.016, 14, 10), itemMaterial(below, 0xf1ece2, 0x8a857a)); pom.position.y = 0.072; g.add(pom);
+      return g;
+    },
+    lipbalm(below) {  // 립밤: 작은 원통 + 뚜껑
+      const g = new THREE.Group();
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.05, 14), itemMaterial(below, 0xf0d9c8, 0x7a6558)); tube.rotation.z = Math.PI / 2; tube.rotation.y = 0.4; tube.position.y = 0.01; g.add(tube);
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0098, 0.0098, 0.022, 14), itemMaterial(below, 0xc94a5a, 0x5c1f29)); cap.rotation.z = Math.PI / 2; cap.rotation.y = 0.4; cap.position.set(Math.cos(0.4) * 0.016, 0.01, -Math.sin(0.4) * 0.016); g.add(cap);
+      return g;
+    },
+    earbud(below) {   // 이어폰 한 짝: 알 + 줄기
+      const g = new THREE.Group(); const m = itemMaterial(below, 0xf4f2ee, 0x8f8d88);
+      const bud = new THREE.Mesh(new THREE.SphereGeometry(0.013, 16, 12), m); bud.position.y = 0.014; g.add(bud);
+      const stem = new THREE.Mesh(new THREE.CapsuleGeometry(0.005, 0.03, 4, 10), m); stem.rotation.x = 0.5; stem.position.set(0.004, 0.012, 0.02); g.add(stem);
+      return g;
+    },
+    sock(below) {     // 양말 한 짝: 꺾인 관
+      const g = new THREE.Group(); const m = itemMaterial(below, 0x5a6b8a, 0x27304a);
+      const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.018, 0.07, 6, 14), m); leg.rotation.x = Math.PI / 2; leg.position.set(0, 0.018, 0.02); g.add(leg);
+      const foot = new THREE.Mesh(new THREE.CapsuleGeometry(0.018, 0.045, 6, 14), m); foot.rotation.z = Math.PI / 2; foot.position.set(0.028, 0.018, -0.02); g.add(foot);
+      const heel = new THREE.Mesh(new THREE.SphereGeometry(0.018, 14, 10), m); heel.position.set(0, 0.018, -0.02); g.add(heel);
+      return g;
+    },
+    mask(below) {     // 가면: 납작한 타원 + 눈구멍 자리
+      const g = new THREE.Group(); const m = itemMaterial(below, 0xe9e4d8, 0x8a857a);
+      const face = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), m); face.scale.set(0.8, 0.35, 1.05); face.position.y = 0.014; g.add(face);
+      [-0.017, 0.017].forEach((x) => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.009, 10, 8), itemMaterial(below, 0x101418, 0x000000)); e.scale.set(1, 0.4, 0.7); e.position.set(x, 0.03, 0.01); g.add(e); });
+      return g;
+    },
+    hairtie(below) {  // 머리끈: 작은 고리
+      const g = new THREE.Group();
+      const t = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.0045, 10, 28), itemMaterial(below, 0x2a2a30, 0x111114)); t.rotation.x = Math.PI / 2; t.position.y = 0.008; g.add(t);
+      return g;
+    },
+    handle(below) {   // 호박 바구니 손잡이만: 바구니는 남아요
+      const g = new THREE.Group();
+      const h = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.006, 8, 28, Math.PI), itemMaterial(below, 0x1a1410, 0x000000)); h.position.y = 0.012; h.rotation.y = 0.3; g.add(h);
+      return g;
+    },
   };
   const items = {};   // kind → { above, below }
+  const SMALL = { tooth: 1.4, key: 1.5, earbud: 1.6, hairtie: 1.5, lipbalm: 1.5, candy: 1.3 };   // 작은 것은 1.3 m 앞에서도 보이게 조금 키웁니다
   for (const kind of Object.keys(SHAPES)) {
     const above = SHAPES[kind](false); above.visible = false; scene.add(above);
     const below = SHAPES[kind](true); below.visible = false; below.traverse((o) => { if (o.isMesh) o.renderOrder = 3; }); deep.add(below);
+    if (SMALL[kind]) { above.scale.setScalar(SMALL[kind]); below.scale.setScalar(SMALL[kind]); }
     items[kind] = { above, below };
   }
-  const itemHeight = { bucket: 0.12, glove: 0.03, tooth: 0.05, string: 0.02, person: 0.16, card: 0.012 };   // 떠올랐을 때 바닥이 수면 아래 얼마나 잠기는지(물건 높이에 맞춤)
+  const itemHeight = { bucket: 0.12, glove: 0.03, tooth: 0.05, string: 0.02, person: 0.16, card: 0.012, hat: 0.14, key: 0.02, candy: 0.03, beanie: 0.08, lipbalm: 0.02, earbud: 0.03, sock: 0.04, mask: 0.03, hairtie: 0.012, handle: 0.08 };   // 떠올랐을 때 바닥이 수면 아래 얼마나 잠기는지(물건 높이에 맞춤)
 
   // 수면 위 동심원 물결: Yuni 둘레로 천천히 번집니다(uRipples 0번은 Yuni 전용).
   let rippleIdx = 1;
@@ -683,7 +755,7 @@ async function run() {
     puddle.position.copy(p);
     puddle.visible = true;
     S.placed = true;
-    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.lookUp = 0; S.item = 0; S.wander = 0; S.fortune = null; S.startle = -10; S.encore = false;
+    S.open = 0; S.light = 0; S.up = 0; S.clarity = 0; S.ears = 0; S.lookUp = 0; S.item = 0; S.wander = 0; S.fortune = null; S.closed = false; S.startle = -10; S.encore = false;
     S.phase = 'pooling';
     S.t0 = clock.getElapsedTime();
     U.uRipples.value.forEach((r) => r.set(0, 0, 0, 0));
@@ -886,12 +958,14 @@ async function run() {
       if (k > T.speak) {
         // 점쾌 문장은 결과를 캡처할 수 있게 가라앉을 때까지 남겨 둡니다.
         S.t0 = t;
-        if (S.fortune && S.fortune.shape && items[S.fortune.shape]) { S.phase = 'item'; ripple(new THREE.Vector2(-0.17 / (PUDDLE / 2), -0.07 / (PUDDLE / 2)), 0.6, t); }
-        else { S.phase = 'leaving'; S.pulse = t; }
+        // 물건이 없는 문장도 같은 길이로 머물며 마무리 한마디를 합니다.
+        S.phase = 'item';
+        if (S.fortune && S.fortune.shape && items[S.fortune.shape]) ripple(new THREE.Vector2(-0.17 / (PUDDLE / 2), -0.07 / (PUDDLE / 2)), 0.6, t);
       }
     } else if (S.phase === 'item') {
       // 점쾌의 물건이 옆에 떠오르고, Yuni는 그 둘레를 천천히 돌아다닙니다. 탭하면 물결만. 돌려주기는 1단계.
       S.up = 1; S.item = easeOut(k / 1.2); S.wander = smooth((k - 0.8) / 2);
+      if (!S.closed && k > 2.5 && closingText()) { S.closed = true; caption(closingText()); mumble(); }
       if (k > T.item) { S.phase = 'leaving'; S.t0 = t; S.pulse = t; }
     } else if (S.phase === 'leaving') {
       // 반짝 한 번(1.1초) 하고 가라앉습니다.
@@ -938,6 +1012,7 @@ async function run() {
 
     // 점쾌의 물건: 웅덩이 왼쪽 앞에서 떠올라 바닥만 잠긴 채 둥둥. 보는 사람 쪽을 향하고 살짝 기울어 위에서도 보입니다.
     const kind = S.fortune && S.fortune.shape && items[S.fortune.shape] ? S.fortune.shape : null;
+    if (!kind) S.wander = 0;
     for (const k2 of Object.keys(items)) { if (k2 !== kind) { items[k2].above.visible = false; items[k2].below.visible = false; } }
     if (kind) {
       const { above, below } = items[kind];

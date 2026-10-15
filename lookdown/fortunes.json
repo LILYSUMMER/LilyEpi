@@ -1,9 +1,106 @@
 {
-  "_readme": "0단계 점쾌. Yuni가 떠올라 이 중 한 줄을 무작위로 말합니다(클라이언트 무작위, 서버 없음). 원본은 EPI제작/2026-10-15_ep3-halloween/AR_점쾌_20.md — 거기 20줄을 여기 lines에 그대로 옮기면 됩니다. 각 줄: ko(필수), en, zh(없으면 en→ko 순으로 대신), shape(떠오르는 실루엣: glove 장갑 / tooth 이·작은 것 / string 끈·긴 것 / person 사람 / card 납작한 것 / bucket 호박 사탕통, 없으면 안 떠오름). 테스트: ?n=0 (0부터 세는 번호).",
+  "_readme": "0단계 점쾌 「오늘 밤 당신이 잃어버릴 것」. Yuni가 떠올라 lines 중 한 줄을 무작위로 말합니다(클라이언트 무작위, 서버 없음). 원본: EPI제작/2026-10-15_ep3-halloween/AR_점쾌_20.md (2026-10-15 판, 20줄 그대로). 끝엔 항상 closing. 각 줄: ko(필수), en, zh(없으면 en→ko 순으로 대신), shape(옆에 떠오르는 실루엣. 없으면 문장만). shape 종류: glove 장갑, tooth 이, hat 마녀 모자, card 카드·사진, key 열쇠, candy 사탕, beanie 털모자, string 끈, person 사람, lipbalm 립밤, earbud 이어폰, sock 양말, mask 가면, hairtie 머리끈, handle 바구니 손잡이, bucket 호박 사탕통. 테스트: ?n=0 (0부터 세는 번호), ?item=0 (실루엣 끄기).",
+  "closing": {
+    "ko": "내일 아침 주머니부터 보세요.",
+    "en": "Check your pockets tomorrow morning.",
+    "zh": "明天早上先看看口袋。"
+  },
   "lines": [
-    { "ko": "장갑 한 짝. 오른손이요.", "en": "One glove. The right one.", "shape": "glove" },
-    { "ko": "송곳니 한 짝. 웃다가 빠져요.", "en": "One fang. It slips out while you laugh.", "shape": "tooth" },
-    { "ko": "후드 끈 한쪽. 우산은 안 쓰시잖아요.", "en": "One hoodie string. You never use an umbrella anyway.", "shape": "string" },
-    { "ko": "친구 한 명. 사람 많은 데서요. 내일 찾아요.", "en": "One friend. Somewhere crowded. You'll find them tomorrow.", "shape": "person" }
+    {
+      "ko": "장갑 한 짝. 오른손이요.",
+      "en": "One glove. The right one.",
+      "shape": "glove"
+    },
+    {
+      "ko": "송곳니 한 짝. 웃다가 빠져요.",
+      "en": "One fang. It falls out when you laugh.",
+      "shape": "tooth"
+    },
+    {
+      "ko": "마녀 모자. 바람이 가져가요.",
+      "en": "A witch hat. The wind takes it.",
+      "shape": "hat"
+    },
+    {
+      "ko": "컴패스 카드. 그래서 걸어서 집에 가요.",
+      "en": "Your Compass card. So you walk home.",
+      "shape": "card"
+    },
+    {
+      "ko": "열쇠. 근데 집 열쇠는 아니에요.",
+      "en": "A key. Not the house key, though.",
+      "shape": "key"
+    },
+    {
+      "ko": "사탕 세 개. 주머니에 구멍이 있어요.",
+      "en": "Three candies. There's a hole in your pocket.",
+      "shape": "candy"
+    },
+    {
+      "ko": "털모자. 벗은 걸 잊어요.",
+      "en": "Your toque. You forget you took it off.",
+      "shape": "beanie"
+    },
+    {
+      "ko": "후드 끈 한쪽. 우산은 안 쓰시잖아요.",
+      "en": "One hoodie string. You don't use umbrellas anyway.",
+      "shape": "string"
+    },
+    {
+      "ko": "친구 한 명. 사람 많은 데서요. 내일 찾아요.",
+      "en": "One friend. In the crowd. You'll find them tomorrow.",
+      "shape": "person"
+    },
+    {
+      "ko": "목소리. 소리 지르다가요.",
+      "en": "Your voice. From shouting."
+    },
+    {
+      "ko": "립밤. 늘 그래요.",
+      "en": "Lip balm. It's always lip balm.",
+      "shape": "lipbalm"
+    },
+    {
+      "ko": "이어폰 한 짝. 왼쪽이요.",
+      "en": "One earbud. The left.",
+      "shape": "earbud"
+    },
+    {
+      "ko": "양말 한 짝. 어떻게인지는 저도 몰라요.",
+      "en": "One sock. Don't ask me how.",
+      "shape": "sock"
+    },
+    {
+      "ko": "가면. 그래서 다시 당신 얼굴로 돌아가요.",
+      "en": "Your mask. So you go back to your own face.",
+      "shape": "mask"
+    },
+    {
+      "ko": "두 시간. 어디 갔는지 몰라요.",
+      "en": "Two hours. Nobody knows where they went."
+    },
+    {
+      "ko": "배터리. 11%에서요.",
+      "en": "Your battery. At 11%."
+    },
+    {
+      "ko": "머리끈. 지금 손목에 있는 거요.",
+      "en": "Your hair tie. The one on your wrist right now.",
+      "shape": "hairtie"
+    },
+    {
+      "ko": "사진 한 장. 찍긴 했는데 못 찾아요.",
+      "en": "One photo. You took it, you just can't find it.",
+      "shape": "card"
+    },
+    {
+      "ko": "호박 바구니 손잡이. 바구니는 남아요.",
+      "en": "The pumpkin pail's handle. The pail stays.",
+      "shape": "handle"
+    },
+    {
+      "ko": "아무것도요. 대신 뭘 주웠을 거예요. 웅덩이가 봤어요.",
+      "en": "Nothing. You picked something up instead. The puddle saw."
+    }
   ]
 }
