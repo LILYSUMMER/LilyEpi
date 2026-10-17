@@ -474,8 +474,8 @@ function build() {
     }) : [];
     return { group: g, body, ears, eyes };
   }
-  const yuniAbove = makeYuni(false); yuniAbove.earScale = 1; yuniAbove.glow = GLOW;
-  const yuniBelow = makeYuni(true); yuniBelow.earScale = 1; yuniBelow.glow = GLOW * 0.8;
+  const yuniAbove = makeYuni(false); yuniAbove.glow = GLOW;
+  const yuniBelow = makeYuni(true); yuniBelow.glow = GLOW * 0.8;
   yuniBelow.group.traverse((o) => { if (o.isMesh) o.renderOrder = 3; });
   scene.add(yuniAbove.group);
   deep.add(yuniBelow.group);          // deep은 puddle 안(z-up)이라 아래서 자세를 맞춥니다.
@@ -483,7 +483,6 @@ function build() {
   /* 진짜 Yuni: lookdown/assets/yuni.glb 가 있으면 코드 메시 대신 씁니다(없거나 못 읽으면 코드 메시 그대로).
      조건(모델 쪽과 약속): 미터 단위, Y 위, 정면 +Z, 원점은 눈높이 몸 중심, 노드 Body·EarL·EarR 나란히, PBR 재질.
      위·아래 두 벌로 복제해 수면(y=0)에서 자르고, 아래 벌은 포털 스텐실 안에서만 보입니다. 귀(왕관) 노드는 축을 감싸 코드가 돌립니다. */
-  const GLB_EAR_SCALE = 0.25;   // 왕관은 귀보다 크므로 각도를 줄여 '출렁' 정도로. 쫑긋 선 자세(0.12rad)가 모델의 원래 자세
   async function loadYuniModel() {
     if (q.get('yuni') === 'code') return;
     const gltf = await new GLTFLoader().loadAsync(new URL('assets/yuni.glb', import.meta.url).href);
@@ -519,6 +518,7 @@ function build() {
         const pivot = new THREE.Group(); pivot.position.copy(node.position); pivot.quaternion.copy(node.quaternion); pivot.scale.copy(node.scale);
         node.position.set(0, 0, 0); node.quaternion.identity(); node.scale.set(1, 1, 1);
         node.parent.add(pivot); pivot.add(node); pivot.userData.side = side; ears.push(pivot);
+        node.traverse((o) => { if (o.isMesh) o.userData.crown = true; });
       }
       const body = root.getObjectByName(bodyNode.name);
       return { root, body, ears, meshes };
@@ -526,7 +526,7 @@ function build() {
     for (const [y, below] of [[yuniAbove, false], [yuniBelow, true]]) {
       const v = variant(below);
       y.group.clear(); y.group.add(v.root);
-      y.body = v.body; y.ears = v.ears; y.eyes = []; y.meshes = v.meshes; y.earScale = GLB_EAR_SCALE; y.glow = below ? 0.8 : 1; y.model = true;
+      y.body = v.body; y.ears = v.ears; y.eyes = []; y.meshes = v.meshes; y.glow = below ? 0.8 : 1; y.model = true;
     }
     if (DEBUG_GLB) console.log('yuni.glb', { tris: gltf.scene.children.map((c) => c.name + ':' + (c.geometry ? c.geometry.index.count / 3 : '?')).join(' '), bodyBox: bodyBox.min.toArray().map((n) => n.toFixed(3)) + ' ~ ' + bodyBox.max.toArray().map((n) => n.toFixed(3)) });
   }
@@ -1090,8 +1090,9 @@ async function run() {
 
     // 귀: 쉴 땐 살짝 벌어지고, 관심이 생기면 쫑긋 섭니다. 두드리면 옆으로 누웠다(놀람) 돌아오고, 돌아갈 땐 뒤로 젖힙니다(안심).
     const earAngle = THREE.MathUtils.lerp(THREE.MathUtils.lerp(0.55, 0.12, S.ears), 1.15, startle) + Math.sin(t * 0.9) * 0.03;
-    // 코드 귀는 각도 그대로, 모델 왕관은 '쫑긋 선 자세'를 0으로 보고 그 차이만 작게(틈이 보이지 않게)
-    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { ear.rotation.z = -ear.userData.side * (y.model ? (earAngle - 0.12) * y.earScale : earAngle); }
+    // 코드 귀는 옆으로 기울입니다. 모델의 물줄기 왕관은 머리 곡면에 얹힌 고리라 어떤 움직임이든 밑동이 떨어져 틈이 보입니다(10/17 확인).
+    // 그래서 왕관은 움직이지 않고, 놀람·관심은 왕관의 빛(아래 crownGlow)과 몸의 움찔(bob)로만 냅니다. 모델 쪽에서 밑동을 머리 안쪽으로 5mm 묻어 주면 작은 움직임을 다시 넣을 수 있습니다.
+    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { if (!y.model) ear.rotation.z = -ear.userData.side * earAngle; }
 
     // 점쾌의 물건: 웅덩이 왼쪽 앞에서 떠올라 바닥만 잠긴 채 둥둥. 보는 사람 쪽을 향하고 살짝 기울어 위에서도 보입니다.
     const kind = S.fortune && S.fortune.shape && items[S.fortune.shape] ? S.fortune.shape : null;
@@ -1117,8 +1118,10 @@ async function run() {
     // C. 밤에 더 또렷: 카메라 화면이 어두울수록 또렷하고, 밝으면 희미합니다.
     const vivid = 0.45 + 0.55 * S.night;
     if (yuniAbove.model) {
-      for (const m of yuniAbove.meshes) { m.material.emissiveIntensity = yuniAbove.glow * pulse * vivid; m.material.opacity = 0.7 + 0.3 * S.night; }
-      for (const m of yuniBelow.meshes) m.material.emissiveIntensity = yuniBelow.glow * pulse * vivid;
+      // 왕관은 관심이 생기면 조금, 두드리면 확 밝아졌다 돌아옵니다(귀 대신)
+      const crownGlow = 0.85 + 0.15 * S.ears + 1.4 * startle;
+      for (const m of yuniAbove.meshes) { m.material.emissiveIntensity = yuniAbove.glow * pulse * vivid * (m.userData.crown ? crownGlow : 1); m.material.opacity = 0.7 + 0.3 * S.night; }
+      for (const m of yuniBelow.meshes) m.material.emissiveIntensity = yuniBelow.glow * pulse * vivid * (m.userData.crown ? crownGlow : 1);
     } else {
       yuniAbove.body.material.emissiveIntensity = GLOW * pulse * vivid;
       yuniAbove.body.material.opacity = 0.7 + 0.3 * S.night;
