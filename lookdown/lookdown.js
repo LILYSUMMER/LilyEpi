@@ -1090,9 +1090,14 @@ async function run() {
 
     // 귀: 쉴 땐 살짝 벌어지고, 관심이 생기면 쫑긋 섭니다. 두드리면 옆으로 누웠다(놀람) 돌아오고, 돌아갈 땐 뒤로 젖힙니다(안심).
     const earAngle = THREE.MathUtils.lerp(THREE.MathUtils.lerp(0.55, 0.12, S.ears), 1.15, startle) + Math.sin(t * 0.9) * 0.03;
-    // 코드 귀는 옆으로 기울입니다. 모델의 물줄기 왕관은 머리 곡면에 얹힌 고리라 어떤 움직임이든 밑동이 떨어져 틈이 보입니다(10/17 확인).
-    // 그래서 왕관은 움직이지 않고, 놀람·관심은 왕관의 빛(아래 crownGlow)과 몸의 움찔(bob)로만 냅니다. 모델 쪽에서 밑동을 머리 안쪽으로 5mm 묻어 주면 작은 움직임을 다시 넣을 수 있습니다.
-    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) { if (!y.model) ear.rotation.z = -ear.userData.side * earAngle; }
+    // 코드 귀는 옆으로 기울입니다. 모델의 물줄기 왕관(10/17 2판: 밑동을 머리 안쪽 5mm에 묻음)은 모델 쪽 한계 안에서만 출렁입니다:
+    // 기울임 10° 이하, 세로 늘임 1.08배 이하. 쉴 땐 2° 벌어지고 살짝 낮으며, 두드리면 8° 바깥으로 기울며 1.07배 솟았다 돌아옵니다. 빛 반응(crownGlow)은 같이.
+    const crownTilt = THREE.MathUtils.degToRad(2 * (1 - S.ears) + 8 * startle);
+    const crownStretch = 0.98 + 0.02 * S.ears + 0.07 * startle;
+    for (const y of [yuniAbove, yuniBelow]) for (const ear of y.ears) {
+      if (y.model) { ear.rotation.set(0, 0, -ear.userData.side * crownTilt); ear.scale.set(1, crownStretch, 1); }
+      else ear.rotation.z = -ear.userData.side * earAngle;
+    }
 
     // 점쾌의 물건: 웅덩이 왼쪽 앞에서 떠올라 바닥만 잠긴 채 둥둥. 보는 사람 쪽을 향하고 살짝 기울어 위에서도 보입니다.
     const kind = S.fortune && S.fortune.shape && items[S.fortune.shape] ? S.fortune.shape : null;
