@@ -17,14 +17,14 @@
     </url>
     <url>
         <loc>https://epispace.kr/news.html</loc>
-        <lastmod>2026-10-05</lastmod>
+        <lastmod>2026-10-16</lastmod>
         <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/news.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/news.html"/>
         <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/news.html"/>
     </url>
     <url>
         <loc>https://epispace.kr/en/news.html</loc>
-        <lastmod>2026-10-05</lastmod>
+        <lastmod>2026-10-16</lastmod>
         <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/news.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/news.html"/>
         <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/news.html"/>
@@ -42,6 +42,20 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/cherry-blossom-ar.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/cherry-blossom-ar.html"/>
         <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/cherry-blossom-ar.html"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/virtual-ooh-ar.html</loc>
+        <lastmod>2026-10-16</lastmod>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/virtual-ooh-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/virtual-ooh-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/virtual-ooh-ar.html"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/en/virtual-ooh-ar.html</loc>
+        <lastmod>2026-10-16</lastmod>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/virtual-ooh-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/virtual-ooh-ar.html"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/virtual-ooh-ar.html"/>
     </url>
     <url>
         <loc>https://epispace.kr/proposal-download.html</loc>

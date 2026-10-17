@@ -157,6 +157,7 @@
         "inLanguage": "en",
         "publisher": {"@type": "Organization", "name": "Epispace", "url": "https://epispace.kr"},
         "blogPost": [
+            {"@type": "BlogPosting", "headline": "An ad over the street, with no sign to put up", "datePublished": "2026-10-15", "image": "https://epispace.kr/assets/news/virtual-ooh.jpg", "url": "https://epispace.kr/en/news.html#news-ooh"},
             {"@type": "BlogPosting", "headline": "Joined 2025 The Next Step", "datePublished": "2025-11-21", "image": "https://epispace.kr/assets/news/the-next-step.jpg", "url": "https://epispace.kr/en/news.html#news-next"},
             {"@type": "BlogPosting", "headline": "Offline AR launched on Lee Jung-seop Street", "datePublished": "2025-11", "image": "https://epispace.kr/assets/news/service-screens.jpg", "url": "https://epispace.kr/en/news.html#news-launch"},
             {"@type": "BlogPosting", "headline": "AR booth at the Seogwipo Youth Ieum Camp", "datePublished": "2025-10-25", "image": "https://epispace.kr/assets/news/youth-camp.jpg", "url": "https://epispace.kr/en/news.html#news-youth"},
@@ -257,6 +258,17 @@
 
             <!-- News Grid -->
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="newsGrid">
+                <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="update" data-news-id="news-ooh">
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">Update</span>
+                            <span class="text-gray-500 text-sm">15 Oct 2026</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">An ad over the street, with no sign to put up</h3>
+                        <p class="text-gray-600 mb-4">We hung a sample shop’s sign over Robson Street in Vancouver and Lee Jung-seop Street in Seogwipo.</p>
+                        <button onclick="openNewsDetail('news-ooh')" class="text-primary font-semibold hover:text-primary-dark">Read</button>
+                    </div>
+                </article>
                 <article class="news-item scroll-fade bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-category="event" data-news-id="news-next">
                     <div class="p-6">
                         <div class="flex items-center gap-2 mb-3">
@@ -366,6 +378,21 @@
             <h2 class="text-2xl font-bold text-gray-900">From the field</h2>
             <p class="text-gray-600 mt-2">What we opened on the street, and how the walk continued into the shops.</p>
         </div>
+        <article id="news-ooh" data-title="An ad over the street, with no sign to put up" class="news-article max-w-3xl mx-auto px-4 py-12 border-b border-gray-100">
+            <p class="text-sm text-gray-500">15 October 2026</p>
+            <h2 class="text-2xl font-bold text-gray-900 mt-2 mb-4">An ad over the street, with no sign to put up</h2>
+            <div class="news-body space-y-4">
+<figure><img src="/assets/news/virtual-ooh.jpg" alt="Preview of the Gyulbit Café sign floating over a street"><figcaption class="text-sm text-gray-500 mt-2">A sample sign we float over the street, with nothing put up. On a phone, it sits on the real street like this.</figcaption></figure>
+<p>We made an ad that floats over the street, with no sign to put up. Two places: Robson Street in Vancouver, and Lee Jung-seop Street in Seogwipo, where we first opened. Over both of them we hung a sample shop, Gyulbit Café.</p>
+<p>Stand on either street and you’ll see it in place. Open it anywhere else and it appears in front of you. Nothing to install. The phone browser is the screen.</p>
+<h3>Tap the sign and the shop opens</h3>
+<p>Tap the sign and the shop card opens. You can switch the language to Korean, English, Chinese, or Japanese. We also let a cup of tangerine tea float there instead. Switch between them on the screen.</p>
+<h3>It hides behind buildings and trees</h3>
+<p>A sign that punches through a facade is hard to believe is on the street. On Robson Street we use that street’s buildings and street trees, and hide the sign wherever something other than sky sits in front of it. The alley on Lee Jung-seop Street reads buildings the same way. When there is no sky — at night, for instance — we fall back to the models to decide what is in front and what is behind.</p>
+<p>Gyulbit Café and its offer are made up for this sample. There is no real sign. The place, the words and the language can change at any time. Want one on your street? Try the sample first, then come to us.</p>
+<p><a class="inline-block mt-2 px-6 py-3 bg-primary text-white rounded-full font-semibold" href="virtual-ooh-ar.html">Try the sample</a></p>
+</div>
+        </article>
         <article id="news-next" data-title="We stood at 2025 The Next Step" class="news-article max-w-3xl mx-auto px-4 py-12 border-b border-gray-100">
             <p class="text-sm text-gray-500">21 November 2025</p>
             <h2 class="text-2xl font-bold text-gray-900 mt-2 mb-4">We stood at 2025 The Next Step</h2>
