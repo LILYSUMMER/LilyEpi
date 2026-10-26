@@ -1,5 +1,5 @@
 {
-  "_readme": "0단계 점쾌 「오늘 밤 당신이 잃어버릴 것」. Yuni가 떠올라 lines 중 한 줄을 무작위로 말합니다(클라이언트 무작위, 서버 없음). 원본: EPI제작/2026-10-15_ep3-halloween/AR_점쾌_20.md (2026-10-15 판, 20줄 그대로). 끝엔 항상 closing. 각 줄: ko(필수), en, zh(없으면 en→ko 순으로 대신), shape(옆에 떠오르는 실루엣. 없으면 문장만). shape 종류: glove 장갑, tooth 이, hat 마녀 모자, card 카드·사진, key 열쇠, candy 사탕, beanie 털모자, string 끈, person 사람, lipbalm 립밤, earbud 이어폰, sock 양말, mask 가면, hairtie 머리끈, handle 바구니 손잡이, bucket 호박 사탕통. 테스트: ?n=0 (0부터 세는 번호), ?item=0 (실루엣 끄기).",
+  "_readme": "0단계 점쾌 「오늘 밤 당신이 잃어버릴 것」. 윤슬이가 떠올라 lines 중 한 줄을 무작위로 말합니다(클라이언트 무작위, 서버 없음). 원본: EPI제작/2026-10-15_ep3-halloween/AR_점쾌_20.md (2026-10-15 판, 20줄 그대로). 끝엔 항상 closing. 각 줄: ko(필수), en, zh(없으면 en→ko 순으로 대신), shape(옆에 떠오르는 실루엣. 없으면 문장만). shape 종류: glove 장갑, tooth 이, hat 마녀 모자, card 카드·사진, key 열쇠, candy 사탕, beanie 털모자, string 끈, person 사람, lipbalm 립밤, earbud 이어폰, sock 양말, mask 가면, hairtie 머리끈, handle 바구니 손잡이, bucket 호박 사탕통. 테스트: ?n=0 (0부터 세는 번호), ?item=0 (실루엣 끄기).",
   "closing": {
     "ko": "내일 아침 주머니부터 보세요.",
     "en": "Check your pockets tomorrow morning.",

@@ -1,11 +1,11 @@
 {
-    "name": "에피스페이스 | 로컬 스토리 AR",
+    "name": "에피스페이스 | 브랜드와 장소를 위한 IP 디벨롭 스튜디오",
     "short_name": "에피스페이스",
-    "description": "그 장소의 이야기를 AR로 되살려, 사람들이 골목을 걷고 가게에 들르게 합니다.",
+    "description": "사람은 지나가기만 해요. 그 자리에 이름을 만들고, 다시 오게 남겨 둡니다. 자리 이름만 보내 주세요.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#FF6B00",
+    "theme_color": "#00A76A",
     "orientation": "portrait-primary",
     "scope": "/",
     "lang": "ko",
@@ -26,14 +26,6 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
-        }
-    ],
-    "shortcuts": [
-        {
-            "name": "벚꽃 AR 체험",
-            "short_name": "벚꽃 AR",
-            "description": "에피스페이스 벚꽃 터널 AR 포토존",
-            "url": "/cherry-blossom-ar.html"
         }
     ]
 }

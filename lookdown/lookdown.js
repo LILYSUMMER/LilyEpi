@@ -4,7 +4,7 @@ import { HybridTracker } from './lab/trackers/hybrid.js';
 
 /* =========================================================================
    LOOK DOWN · 0단계 「비춤」
-   바닥을 비추면 웅덩이가 고이고, 물속에서 빛이 먼저 비친 뒤 Yuni가 떠올라 한마디 합니다.
+   바닥을 비추면 웅덩이가 고이고, 물속에서 빛이 먼저 비친 뒤 윤슬이가 떠올라 한마디 합니다.
    앱 없이 링크 하나. 서버 없음. 입력은 탭뿐.
 
    바닥 인식: iOS Safari 웹에는 바닥 평면 인식이 없어서, 자이로(기기 방향)와 눈높이로 바닥을 셈합니다.
@@ -15,14 +15,14 @@ import { HybridTracker } from './lab/trackers/hybrid.js';
 // ---- 수치. 단위는 m, 초 ----
 const EYE = 1.4;              // 휴대폰을 든 눈높이. 바닥까지의 거리 계산에 씁니다.
 const PUDDLE = 0.82;          // 웅덩이 지름
-const YUNI_R = 0.055;         // Yuni 머리 반지름 → 지름 11cm (브리프 제안 8~12cm)
+const YUNI_R = 0.055;         // 윤슬이 머리 반지름 → 지름 11cm (브리프 제안 8~12cm)
 const YUNI_UP = 0.045;        // 다 떠올랐을 때 머리 중심이 수면 위로 올라온 높이
 const CAMERA_FOV = 67;        // 휴대폰 기본 카메라 세로 화각
 const LOOK_DOWN = -0.42;      // 카메라 앞 방향의 y가 이보다 낮으면 '바닥을 비추는 중'
 const T = { pool: 2.0, light: 1.5, rise: 1.0, speak: 4.5, item: 5.0, sink: 2.5, stay: 9.0, video: 15 };  // 고임 → 물속 빛 → 수면을 깨고 올려다봄 → 한마디 → 분실물 → 반짝 한 번 하고 가라앉음. stay: 다시 불렀을 때 머무는 초, video: 영상 최대 초
 const MAX_RIPPLES = 8;
 const GOLD = new THREE.Color('#F2B45A');
-const GLOW = 0.62;             // Yuni 몸의 기본 발광. 반짝임 펄스는 여기의 1.27배까지만 (과노출 금지)
+const GLOW = 0.62;             // 윤슬이 몸의 기본 발광. 반짝임 펄스는 여기의 1.27배까지만 (과노출 금지)
 const DEEP = new THREE.Color('#061423');
 const DEEP_LIT = new THREE.Color('#0d2a44');
 
@@ -81,10 +81,10 @@ const S = {
   phase: 'idle',        // idle → pooling → light → rising → speaking → item → leaving → ended. ended에서 물을 탭하면 light → rising → stay → leaving → ended
   encore: false,        // 가라앉은 뒤 다시 불러낸 상태(한마디·분실물 없이 머물다 감)
   t0: 0,                // 단계가 바뀐 시각
-  clickAt: 0,           // 버튼을 누른 시각(performance.now). 3초 안 Yuni 지표
+  clickAt: 0,           // 버튼을 누른 시각(performance.now). 3초 안 윤슬이 지표
   open: 0,              // 웅덩이 고인 정도 0~1
   light: 0,             // 물속 빛 0~1
-  up: 0,                // Yuni 떠오른 정도 0~1
+  up: 0,                // 윤슬이 떠오른 정도 0~1
   clarity: 0,           // 물이 맑아진 정도
   pulse: -10,           // 반짝임 펄스 시작 시각
   ears: 0,              // 귀 각도: 0 쉼, 1 쫑긋
@@ -92,9 +92,9 @@ const S = {
   lookUp: 0,            // 수면을 깨고 보는 사람을 올려다보는 정도
   item: 0,              // 점쾌의 물건이 떠오른 정도
   fortune: null,        // 이번에 말한 점쾌 {n, text, shape}
-  wander: 0,            // Yuni가 물건 둘레를 돌아다니는 정도
+  wander: 0,            // 윤슬이가 물건 둘레를 돌아다니는 정도
   closed: false,        // 마무리 한마디(「내일 아침 주머니부터 보세요.」)를 했는지
-  night: 1,             // 카메라 화면의 어두움 0~1. 어두울수록 Yuni가 또렷합니다
+  night: 1,             // 카메라 화면의 어두움 0~1. 어두울수록 윤슬이가 또렷합니다
   placed: false,
 };
 
@@ -344,7 +344,7 @@ function build() {
   });
   const stencilIn = (m) => { m.stencilWrite = true; m.stencilRef = 1; m.stencilFunc = THREE.EqualStencilFunc; m.stencilZPass = THREE.KeepStencilOp; return m; };
 
-  // 3) 수면: 거리 영상이 물결에 굴절되고, 가운데로 갈수록 깊은 파랑. 금빛은 Yuni 쪽에서 비칩니다.
+  // 3) 수면: 거리 영상이 물결에 굴절되고, 가운데로 갈수록 깊은 파랑. 금빛은 윤슬이 쪽에서 비칩니다.
   const surfMat = new THREE.ShaderMaterial({
     uniforms: U, vertexShader: vert,
     fragmentShader: /* glsl */ `
@@ -369,7 +369,7 @@ function build() {
         float df = 1.0 - smoothstep(inR*0.15, inR, r);
         vec3 deepCol = mix(uDeep, uDeepLit, 0.5+0.5*sin(uTime*0.3)) * (0.6 + uTint*0.8);
         vec3 col = mix(street*0.85, deepCol, df*(0.92 - uClarity*0.3));
-        // 물속 빛: Yuni 자리에서 금빛이 번져 올라옵니다.
+        // 물속 빛: 윤슬이 자리에서 금빛이 번져 올라옵니다.
         float dy = length(vLocal - uYuni);
         col += uGold * uLight * exp(-dy*dy*9.0) * 0.55;
         float spec = pow(clamp(length(n)*22.0, 0.0, 1.0), 3.0);
@@ -394,7 +394,7 @@ function build() {
   surfMesh.renderOrder = 4;
   puddle.add(maskMesh, surfMesh);
 
-  // 2) 물속(포털 안): 어두운 바닥, 떠다니는 금빛 알갱이, Yuni의 잠긴 아랫몸.
+  // 2) 물속(포털 안): 어두운 바닥, 떠다니는 금빛 알갱이, 윤슬이의 잠긴 아랫몸.
   // 주의: Group에 renderOrder를 주면 three.js가 그 아래 전부를 groupOrder로 묶어 먼저/나중에 그려 버립니다. 메시에만 줍니다.
   const deep = new THREE.Group();
   puddle.add(deep);
@@ -437,7 +437,7 @@ function build() {
     sp.renderOrder = 3; deep.add(sp); return sp;
   });
 
-  /* Yuni: 불투명한 따뜻한 빛의 둥근 몸 + 작은 고양이 귀 + 검은 점 눈 두 개. 입·코·윤곽선 없음. 눈을 감지 않음. */
+  /* 윤슬이: 불투명한 따뜻한 빛의 둥근 몸 + 작은 고양이 귀 + 검은 점 눈 두 개. 입·코·윤곽선 없음. 눈을 감지 않음. */
   const ABOVE = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)];
   const BELOW = [new THREE.Plane(new THREE.Vector3(0, -1, 0), 0)];
   function bodyMaterial(below) {
@@ -481,7 +481,7 @@ function build() {
   const yuniLight = new THREE.PointLight(GOLD, 0, 1.2, 2);
   scene.add(yuniLight);
 
-  /* 점쾌의 물건: 공통 실루엣 5종 + 호박 사탕통. 위아래 두 벌로 만들어 수면에서 자릅니다(Yuni와 같은 방식). */
+  /* 점쾌의 물건: 공통 실루엣 5종 + 호박 사탕통. 위아래 두 벌로 만들어 수면에서 자릅니다(윤슬이와 같은 방식). */
   function itemMaterial(below, color, emissive, extra = {}) {
     const m = new THREE.MeshStandardMaterial({ color, emissive, emissiveIntensity: below ? 0.25 : 0.55, roughness: 0.85, metalness: 0, side: THREE.DoubleSide, clippingPlanes: below ? BELOW : ABOVE, transparent: true, opacity: below ? 0.9 : 1, ...extra });
     if (below) stencilIn(m);
@@ -618,7 +618,7 @@ function build() {
   }
   const itemHeight = { bucket: 0.12, glove: 0.03, tooth: 0.05, string: 0.02, person: 0.16, card: 0.012, hat: 0.14, key: 0.02, candy: 0.03, beanie: 0.08, lipbalm: 0.02, earbud: 0.03, sock: 0.04, mask: 0.03, hairtie: 0.012, handle: 0.08 };   // 떠올랐을 때 바닥이 수면 아래 얼마나 잠기는지(물건 높이에 맞춤)
 
-  // 수면 위 동심원 물결: Yuni 둘레로 천천히 번집니다(uRipples 0번은 Yuni 전용).
+  // 수면 위 동심원 물결: 윤슬이 둘레로 천천히 번집니다(uRipples 0번은 윤슬이 전용).
   let rippleIdx = 1;
   function ripple(local, strength, t) {
     const rp = U.uRipples.value[rippleIdx++ % (MAX_RIPPLES - 1) + 1];
@@ -763,7 +763,7 @@ async function run() {
     ray.setFromCamera(ndc, camera);
     const t = clock.getElapsedTime();
     if (S.phase === 'idle') { placePuddle(floorPoint(ray.ray.direction, new THREE.Vector3()) || aheadPoint()); return; }
-    // 고인 뒤의 탭은 물결뿐입니다. (Yuni가 떠 있으면 귀가 옆으로 누웠다 돌아옵니다. 분실물을 탭해도 물결만.)
+    // 고인 뒤의 탭은 물결뿐입니다. (윤슬이가 떠 있으면 귀가 옆으로 누웠다 돌아옵니다. 분실물을 탭해도 물결만.)
     const hit = ray.intersectObject(surfMesh, false)[0];
     const local = hit && hit.uv ? new THREE.Vector2(hit.uv.x * 2 - 1, hit.uv.y * 2 - 1) : new THREE.Vector2(0, 0);
     ripple(local, 0.9, t);
@@ -795,7 +795,7 @@ async function run() {
   const endEl = $('end');
   const wordmark = $('wordmark');
   wordmark.addEventListener('load', () => { wordmark.hidden = false; endEl.querySelectorAll('.mark-text, .mark-reflect').forEach((el) => { el.hidden = true; }); });
-  // 공유 버튼은 Yuni가 올라올 때부터 보입니다(Yuni가 있을 때 찍어야 하니까). 가라앉은 뒤엔 워드마크와 한 줄이 더해집니다.
+  // 공유 버튼은 윤슬이가 올라올 때부터 보입니다(윤슬이가 있을 때 찍어야 하니까). 가라앉은 뒤엔 워드마크와 한 줄이 더해집니다.
   function showShare() { if (endEl.hidden) { endEl.hidden = false; endEl.classList.add('is-early'); requestAnimationFrame(() => endEl.classList.add('is-on')); } }
   // 나가기 화면에도 점쾌 문장을 남깁니다(화면 캡처가 곧 결과 카드).
   function showEnd() { showShare(); caption(''); $('end-fortune').textContent = S.fortune ? S.fortune.text : ''; endEl.classList.remove('is-early'); }
@@ -978,7 +978,7 @@ async function run() {
         }
       }
     } else if (S.phase === 'stay') {
-      // 다시 불려 나온 Yuni: 말 없이 머뭅니다. 두드리면 더 머물고, 가만두면 가라앉습니다.
+      // 다시 불려 나온 윤슬이: 말 없이 머뭅니다. 두드리면 더 머물고, 가만두면 가라앉습니다.
       S.up = 1; S.wander = smooth(k / 2);
       if (k > T.stay) { S.phase = 'leaving'; S.t0 = t; S.pulse = t; }
     } else if (S.phase === 'speaking') {
@@ -991,7 +991,7 @@ async function run() {
         if (S.fortune && S.fortune.shape && items[S.fortune.shape]) ripple(new THREE.Vector2(-0.17 / (PUDDLE / 2), -0.07 / (PUDDLE / 2)), 0.6, t);
       }
     } else if (S.phase === 'item') {
-      // 점쾌의 물건이 옆에 떠오르고, Yuni는 그 둘레를 천천히 돌아다닙니다. 탭하면 물결만. 돌려주기는 1단계.
+      // 점쾌의 물건이 옆에 떠오르고, 윤슬이는 그 둘레를 천천히 돌아다닙니다. 탭하면 물결만. 돌려주기는 1단계.
       S.up = 1; S.item = easeOut(k / 1.2); S.wander = smooth((k - 0.8) / 2);
       if (!S.closed && k > 2.5 && closingText()) { S.closed = true; caption(closingText()); mumble(); }
       if (k > T.item) { S.phase = 'leaving'; S.t0 = t; S.pulse = t; }
@@ -1014,7 +1014,7 @@ async function run() {
     const sk = t - S.startle;
     const startle = sk >= 0 && sk < 1.4 ? Math.sin(Math.PI * Math.min(1, sk / 1.4)) : 0;
 
-    // Yuni 자세: 수면 아래 -0.16m에서 YUNI_UP까지 떠오르고, 둘둘 흔들리며, 보는 사람 쪽을 향합니다.
+    // 윤슬이 자세: 수면 아래 -0.16m에서 YUNI_UP까지 떠오르고, 둘둘 흔들리며, 보는 사람 쪽을 향합니다.
     const bob = Math.sin(t * 1.1) * 0.004 + Math.sin(t * 0.63) * 0.003 - 0.012 * startle;
     const yLocal = -0.16 + (YUNI_UP + 0.16) * S.up + bob * S.up;
     // 돌아다니기: 물건이 떠 있을 땐 그 반대편을 중심으로 천천히 한 바퀴씩. 물건 자리(-0.17, 0.09)와는 겹치지 않는 궤도.
@@ -1088,7 +1088,7 @@ async function run() {
     }
     pos.needsUpdate = true;
 
-    // Yuni 둘레의 동심원 물결: 떠오르는 동안과 말할 때 잔잔히 번집니다.
+    // 윤슬이 둘레의 동심원 물결: 떠오르는 동안과 말할 때 잔잔히 번집니다.
     const ring = U.uRipples.value[0];
     if (S.up > 0.05 && (t - ring.z > 2.2 || ring.w < 0.001)) ring.set(U.uYuni.value.x, U.uYuni.value.y, t, 0.45);
 
@@ -1097,7 +1097,7 @@ async function run() {
     if (DEBUG && trackDbg && (frameNo++ % 10 === 0)) $('tag').textContent = `trk ${trackDbg.ms_total.toFixed(1)}ms in ${trackDbg.inliers}/${trackDbg.tracked} h ${trackDbg.h.toFixed(2)} xz ${camera.position.x.toFixed(2)},${camera.position.z.toFixed(2)}${tracker.lostCount ? ' lost' + tracker.lostCount : ''}`;
   });
 
-  // Yuni는 웅덩이 자리에만 있으므로 카메라가 웅덩이를 벗어나면 화면 밖으로 나갑니다. 끌어내는 조작은 없습니다.
+  // 윤슬이는 웅덩이 자리에만 있으므로 카메라가 웅덩이를 벗어나면 화면 밖으로 나갑니다. 끌어내는 조작은 없습니다.
 
   // 체류 시간
   // 공유 시트에 다녀와도 세션은 이어지므로 숨겨질 때마다 보냅니다. GA에서는 세션당 마지막 값(가장 큰 s)을 보면 됩니다.

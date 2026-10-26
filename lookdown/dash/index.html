@@ -65,7 +65,7 @@
   <section class="card wide"><h2>지금</h2><div class="tiles" id="now"></div><div class="note">실시간(최근 30분) 이벤트 수. 왼쪽부터 브리프의 지표 넷.</div></section>
   <section class="card wide"><h2>깔때기</h2><div id="funnel"></div><div class="note" id="funnel-note"></div></section>
   <section class="card wide"><h2>날마다</h2><div id="daily"></div><div class="note">링크 클릭(lookdown_open)과 공유(lookdown_share). 호버하면 값.</div></section>
-  <section class="card"><h2>Yuni가 보이기까지</h2><div id="seen"></div><div class="note" id="seen-note"></div></section>
+  <section class="card"><h2>윤슬이가 보이기까지</h2><div id="seen"></div><div class="note" id="seen-note"></div></section>
   <section class="card"><h2>체류 시간</h2><div id="dwell"></div><div class="note" id="dwell-note"></div></section>
   <section class="card wide"><h2>점쾌 번호별</h2><div id="fortune"></div><div class="note" id="fortune-note"></div></section>
   <section class="card"><h2>공유</h2><div id="share"></div><div class="note" id="share-note"></div></section>
@@ -83,7 +83,7 @@ if (q.get('property')) LS.set('ld_prop', cfg.prop); if (q.get('client')) LS.set(
 const DEMO = q.has('demo');
 let token = null, days = 14;
 const EVENTS = ['lookdown_open', 'lookdown_started', 'lookdown_pool', 'lookdown_yuni_seen', 'lookdown_line', 'lookdown_end', 'lookdown_share'];
-const LABEL = { lookdown_open: '링크 클릭', lookdown_started: '카메라 켬', lookdown_pool: '웅덩이 고임', lookdown_yuni_seen: 'Yuni 봄', lookdown_line: '한마디 들음', lookdown_end: '끝까지 봄', lookdown_share: '공유 버튼' };
+const LABEL = { lookdown_open: '링크 클릭', lookdown_started: '카메라 켬', lookdown_pool: '웅덩이 고임', lookdown_yuni_seen: '윤슬이 봄', lookdown_line: '한마디 들음', lookdown_end: '끝까지 봄', lookdown_share: '공유 버튼' };
 const FORTUNES = await fetch('../fortunes.json').then((r) => r.json()).then((f) => f.lines.map((l) => l.ko)).catch(() => []);
 
 /* ---------- 설정·로그인 ---------- */
@@ -197,7 +197,7 @@ async function load() {
       const by = Object.fromEntries(rows.map((r) => [r.d[0], r.m[0]]));
       const open = by.lookdown_open || 0;
       hbars($('funnel'), EVENTS.map((e) => ({ label: LABEL[e], v: by[e] || 0 })), { sub: (r) => (open ? Math.round(100 * r.v / open) + '%' : '') });
-      $('funnel-note').textContent = `최근 ${days}일. 비율은 링크 클릭 대비. 브리프 지표: Yuni 봄 ${open ? Math.round(100 * (by.lookdown_yuni_seen || 0) / open) : 0}% · 한마디 ${open ? Math.round(100 * (by.lookdown_line || 0) / open) : 0}% · 공유 ${fmt(by.lookdown_share || 0)}회.`;
+      $('funnel-note').textContent = `최근 ${days}일. 비율은 링크 클릭 대비. 브리프 지표: 윤슬이 봄 ${open ? Math.round(100 * (by.lookdown_yuni_seen || 0) / open) : 0}% · 한마디 ${open ? Math.round(100 * (by.lookdown_line || 0) / open) : 0}% · 공유 ${fmt(by.lookdown_share || 0)}회.`;
     }),
     card('daily', null, async () => {
       const rows = await get('daily', () => report(['date', 'eventName'], ['eventCount'], ['lookdown_open', 'lookdown_share']));
@@ -211,7 +211,7 @@ async function load() {
       if (!vals.length) { $('seen').innerHTML = ''; $('seen-note').innerHTML = needDim('ms'); return; }
       histogram($('seen'), vals, { bins: [[0, 2], [2, 3], [3, 4], [4, 6], [6, 10], [10, Infinity]], unit: 's', mark: (a, b) => b <= 3 });
       const within = vals.filter((v) => v <= 3).length;
-      $('seen-note').textContent = `탭(시작)부터 Yuni가 보이기까지. 3초 안에 보인 비율 ${Math.round(100 * within / vals.length)}% (${within}/${vals.length}). 브리프 목표 지표.`;
+      $('seen-note').textContent = `탭(시작)부터 윤슬이가 보이기까지. 3초 안에 보인 비율 ${Math.round(100 * within / vals.length)}% (${within}/${vals.length}). 브리프 목표 지표.`;
     }),
     card('dwell', 'dwell-note', async () => {
       const rows = await get('dwell', () => report(['customEvent:s'], ['eventCount'], ['lookdown_dwell']));

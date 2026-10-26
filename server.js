@@ -23,11 +23,17 @@ const options = {
 };
 
 const server = https.createServer(options, function (req, res) {
-    // 요청된 URL을 파일 경로로 변환
-    let filePath = '.' + req.url;
-    if (filePath === './') {
-        filePath = './index.html';
+    const url = new URL(req.url, 'https://localhost');
+    let pathname = decodeURIComponent(url.pathname);
+
+    if (/^\/fifa-ar(\/|\/index\.html|\.html)?$/i.test(pathname)) {
+        res.writeHead(301, { Location: '/' });
+        res.end();
+        return;
     }
+
+    if (pathname.endsWith('/')) pathname += 'index.html';
+    let filePath = '.' + pathname;
 
     // CORS 헤더 추가
     res.setHeader('Access-Control-Allow-Origin', '*');

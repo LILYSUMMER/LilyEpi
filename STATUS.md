@@ -1,4 +1,4 @@
-# LOOK DOWN (Yuni WebAR) — 구현 상태 감사 리포트
+# LOOK DOWN (윤슬이 WebAR) — 구현 상태 감사 리포트
 
 기준: `main` 커밋 `3b8eea2` (2026-10-14). 대상은 `lookdown/` 폴더(0단계 「비춤」)이고, 레포의 다른 AR 데모(`rain-portal-ar.html`, `cherry-blossom-ar.html`, `virtual-ooh-ar.html`)는 lookdown이 가져다 쓰지 않는 한 "참고 가능한 코드"로만 적는다. 근거 없는 추측은 쓰지 않았고, 코드에 없으면 **없음**으로 표기했다.
 
@@ -48,7 +48,7 @@
 
 | 세부 | 상태 | 근거 |
 | --- | --- | --- |
-| Yuni 형태 | **코드로 만든 three.js 메시.** GLB·알파 비디오·스프라이트 아님. 구(`SphereGeometry(YUNI_R=0.055, 48, 32)`, y 스케일 1.06) + 귀 2개(`ConeGeometry`) + 눈 2개(`CircleGeometry`). 입·코 없음 | `lookdown.js:408-432` `makeYuni(below)`, `:400-406` `bodyMaterial()` |
+| 윤슬이 형태 | **코드로 만든 three.js 메시.** GLB·알파 비디오·스프라이트 아님. 구(`SphereGeometry(YUNI_R=0.055, 48, 32)`, y 스케일 1.06) + 귀 2개(`ConeGeometry`) + 눈 2개(`CircleGeometry`). 입·코 없음 | `lookdown.js:408-432` `makeYuni(below)`, `:400-406` `bodyMaterial()` |
 | 수면 위/아래 분리 | 같은 메시를 2벌 만들어 위쪽은 `clippingPlanes=ABOVE`(y≥0), 아래쪽은 `BELOW`(y≤0)+스텐실 안에서만 그림 | `lookdown.js:398-399`, `:403`, `:433-436` |
 | 재질 | `MeshStandardMaterial` color `0xd9a35c`, emissive `#F2B45A`, emissiveIntensity `GLOW=0.62`(아래쪽 ×0.8), roughness 1 | `lookdown.js:22-23`, `:401-404` |
 | 애니메이션 종류 | 코드로 구동, 총 **7종**: ① 떠오름(`S.up`, easeOut 2.4초) ② 둘둘 흔들림(`bob`, `sway`) ③ 보는 사람 쪽으로 회전(`facing`) ④ 귀 쫑긋(`S.ears`) ⑤ 귀 놀람(`startle`, 1.4초 사인) ⑥ 귀 뒤로(`S.back`) ⑦ 반짝임 펄스(1.5초, ×1.27) | `lookdown.js:673-697`, `:700-709` |
@@ -74,14 +74,14 @@
 | --- | --- | --- |
 | 포털 마스크 방식 | ✅ **WebGL 스텐실.** ① `maskMat`(ShaderMaterial, colorWrite=false)이 blob 모양 안에 stencil=1을 씀(`AlwaysStencilFunc`/`ReplaceStencilOp`) ② 물속 재질은 `stencilIn()`으로 `EqualStencilFunc`(=1)일 때만 그림 ③ `surfMat`(수면)은 스텐실 없이 위에 덮음. 렌더 순서 mask 1 → floor 2 → 물속 3 → 수면 4 | `lookdown.js:255`(`stencil: true`), `:300-309`, `:355-358`, `:365-369`, `:435` |
 | 웅덩이 모양 | 셰이더 `blob()`: 반지름 `0.76 + 0.09·sin(3θ+1.7) + 0.05·sin(5θ−0.6) + 0.03·sin(8θ+3.1)` | `lookdown.js:268-274` |
-| 물결 셰이더 파라미터 | `rippleNormal()`: 최대 `MAX_RIPPLES=8`개 (0번은 Yuni 둘레 전용, 2.2초마다 강도 0.45), 파형 `sin(dist·30 − age·6)·e^(−dist·3.5)·e^(−age·1.1)·strength`. 배경 잔물결 진폭 0.010. 굴절 세기 `n·0.8` | `lookdown.js:275-286`, `:326-331`, `:441-446`, `:726-727` |
+| 물결 셰이더 파라미터 | `rippleNormal()`: 최대 `MAX_RIPPLES=8`개 (0번은 윤슬이 둘레 전용, 2.2초마다 강도 0.45), 파형 `sin(dist·30 − age·6)·e^(−dist·3.5)·e^(−age·1.1)·strength`. 배경 잔물결 진폭 0.010. 굴절 세기 `n·0.8` | `lookdown.js:275-286`, `:326-331`, `:441-446`, `:726-727` |
 | 수면 색 | 영상 ×0.85를 중심으로 갈수록 `deepCol`(DEEP↔DEEP_LIT 사인 혼합 × (0.6+uTint·0.8))로 `df·(0.92 − clarity·0.3)` 혼합. 금빛 `exp(−9·d²)·uLight·0.55`. 알파 `mix(0.94, 0.5, df·clarity)·edge` | `lookdown.js:332-347` |
 | 스케일 결정 | 전부 상수. `PUDDLE=0.82`m, `YUNI_R=0.055`m, `YUNI_UP=0.045`m. 거리에 따른 자동 스케일 없음 | `lookdown.js:15-17` |
-| 위치 결정 | `floorPoint()` 결과(0.7~2.6m 클램프)를 `puddle.position`에 복사. Yuni는 `puddle.position + (sway.x, yLocal, −sway.y)` | `lookdown.js:526-530`, `:566-568`, `:675-679` |
+| 위치 결정 | `floorPoint()` 결과(0.7~2.6m 클램프)를 `puddle.position`에 복사. 윤슬이는 `puddle.position + (sway.x, yLocal, −sway.y)` | `lookdown.js:526-530`, `:566-568`, `:675-679` |
 | 카메라 화각 정합 | `CAMERA_FOV=67`을 영상 cover 크롭 비율로 보정(`visibleFov()`). 기기별 실제 화각 읽기 없음 | `lookdown.js:18`, `:142-150` |
 | 가림(occlusion) | ❌ 없음. 실물이 웅덩이 앞에 있어도 가리지 못함. (참고: `assets/virtual-ooh-ar/ooh-ar.js`에 OSM 건물 기반 오클루더가 있으나 lookdown 미사용) | — |
-| 조명/색온도 매칭 | 🟡 `uTint`는 고정값 `(0.55, 0.62, 0.7)`. 평균 밝기(`S.night`)로 Yuni 발광·불투명도만 바꿈. 색온도 추정 없음 | `lookdown.js:291`, `:703-709` |
-| 조명 | `HemisphereLight(0x9fb8d0, 0x1a2430, 0.5)` + Yuni 위치 `PointLight(GOLD, 0~0.35, 1.2, 2)` | `lookdown.js:266`, `:438`, `:708-709` |
+| 조명/색온도 매칭 | 🟡 `uTint`는 고정값 `(0.55, 0.62, 0.7)`. 평균 밝기(`S.night`)로 윤슬이 발광·불투명도만 바꿈. 색온도 추정 없음 | `lookdown.js:291`, `:703-709` |
+| 조명 | `HemisphereLight(0x9fb8d0, 0x1a2430, 0.5)` + 윤슬이 위치 `PointLight(GOLD, 0~0.35, 1.2, 2)` | `lookdown.js:266`, `:438`, `:708-709` |
 
 ### F. 배포·진입 — 🟡 부분
 
@@ -101,7 +101,7 @@
 | `lookdown_started` | camera, sensor, ms(버튼→시작) | `:512` |
 | `lookdown_no_camera` | in_app, ios | `:487` |
 | `lookdown_pool` | ms | `:577` |
-| `lookdown_yuni_seen` | ms(버튼→Yuni 35% 떠오름) | `:637` |
+| `lookdown_yuni_seen` | ms(버튼→윤슬이 35% 떠오름) | `:637` |
 | `lookdown_line` | ms | `:643` |
 | `lookdown_done` / `lookdown_bye` | — | `:647`, `:655` |
 | `lookdown_tap_water` | — | `:556` |
@@ -126,17 +126,17 @@
 | --- | --- | --- | --- |
 | 공간 | `EYE = 1.4` | `lookdown.js:14` | 눈높이(m). 틀리면 웅덩이 거리·크기가 어긋남 |
 | 공간 | `PUDDLE = 0.82` | `:15` | 웅덩이 지름(m) |
-| 공간 | `YUNI_R = 0.055`, `YUNI_UP = 0.045` | `:16-17` | Yuni 머리 반지름, 수면 위 높이 |
+| 공간 | `YUNI_R = 0.055`, `YUNI_UP = 0.045` | `:16-17` | 윤슬이 머리 반지름, 수면 위 높이 |
 | 공간 | `CAMERA_FOV = 67` | `:18` | 기기 카메라 세로 화각. 기기마다 다름 |
 | 공간 | `LOOK_DOWN = -0.42` | `:19` | 바닥 판정 임계 |
 | 공간 | 거리 클램프 `0.7 ~ 2.6` | `:528` | 웅덩이 최소·최대 거리 |
 | 공간 | 0.5초 (바닥 응시 시간) | `:624` | 자동 고임 지연 |
 | 공간 | 바닥판 `PUDDLE*8`, 깊이 `-0.45` | `:367-368` | 물속 바닥 크기·깊이 |
-| 공간 | Yuni 시작 깊이 `-0.16` | `:678` | 떠오르기 전 위치 |
+| 공간 | 윤슬이 시작 깊이 `-0.16` | `:678` | 떠오르기 전 위치 |
 | 타이밍 | `T = {pool 1.6, light 0.9, rise 2.4, speak 0.8, hold 6.0, linger 10, bye 3.2, sink 3.0}` | `:20` | 연출 길이(초) |
 | 타이밍 | 펄스 1.5초·×1.27, 놀람 1.4초, 귀 쫑긋 0.6초, 웅얼거림 간격 3초·연타 창 2.5초 | `:700-701`, `:674`, `:636`, `:552` | 애니/반응 시간 |
 | 타이밍 | 밝기 샘플 0.6초, 센서 대기 0.8초 | `:601`, `:506` | 폴링 주기 |
-| 색 | `GOLD #F2B45A`, `DEEP #061423`, `DEEP_LIT #0d2a44`, Yuni color `0xd9a35c`, 눈 `0x120c08`, `GLOW 0.62`, `uTint (0.55,0.62,0.7)`, Hemisphere `0x9fb8d0/0x1a2430 ×0.5` | `:22-25`, `:401`, `:425`, `:291`, `:266` | 0화 첫 프레임에서 뽑아 고정해야 함(브리프 10/16). 현재는 임의값 |
+| 색 | `GOLD #F2B45A`, `DEEP #061423`, `DEEP_LIT #0d2a44`, 윤슬이 color `0xd9a35c`, 눈 `0x120c08`, `GLOW 0.62`, `uTint (0.55,0.62,0.7)`, Hemisphere `0x9fb8d0/0x1a2430 ×0.5` | `:22-25`, `:401`, `:425`, `:291`, `:266` | 0화 첫 프레임에서 뽑아 고정해야 함(브리프 10/16). 현재는 임의값 |
 | 색 | CSS `--deep #0b1420`, `--ink #F6F3EC`, `--ink-soft #C8C4BA`, `--gold #F2B45A` | `lookdown.css:3-7` | UI 색 |
 | 조도 | 밤/낮 임계 `0.18 / 0.63`, 보간 `0.35`, 선명도 `0.45+0.55·night` | `lookdown.js:598-599`, `:703` | 어두움 판정 |
 | 셰이더 | blob 계수 `0.76/0.09/0.05/0.03`, 물결 `30/6/3.5/1.1`, 잔물결 `0.010`, 굴절 `0.8`, 금빛 `9.0/0.55`, 스펙 `22/3/0.45`, 림 `0.92/0.6`, 알파 `0.94/0.5`, df `0.15` | `:270-272`, `:283`, `:327-345` | 물 느낌 전체 |
@@ -218,11 +218,11 @@
 1. `updateCamera()` — 오일러→쿼터니언 1회, 앞 방향 벡터 1회 (`:518-523`)
 2. `videoTex.needsUpdate = true` — 카메라 프레임 GPU 업로드 (1280×720)
 3. 상태 머신 분기 (`pooling/rising/speaking/done/leaving/gone`) (`:631-662`)
-4. Yuni 자세: 삼각함수 약 10회, `atan2` 1회, 두 그룹 position/rotation 갱신 (`:677-692`)
+4. 윤슬이 자세: 삼각함수 약 10회, `atan2` 1회, 두 그룹 position/rotation 갱신 (`:677-692`)
 5. 귀 4개 rotation, 재질 emissive/opacity 갱신 6개 (`:694-709`)
 6. 알갱이 36개 position 갱신 + `needsUpdate` (`:716-723`)
 7. 물결 uniform 갱신 (`:726-727`)
-8. `renderer.render()` — 드로우콜: 마스크 1, 바닥 1, 스프라이트 1, 포인트 1, Yuni 아래(구+귀2) 3, Yuni 위(구+귀2+눈2) 5, 수면 1 ≈ **14 드로우콜**. 수면 프래그먼트는 픽셀당 물결 루프 8회 + 영상 샘플 1회
+8. `renderer.render()` — 드로우콜: 마스크 1, 바닥 1, 스프라이트 1, 포인트 1, 윤슬이 아래(구+귀2) 3, 윤슬이 위(구+귀2+눈2) 5, 수면 1 ≈ **14 드로우콜**. 수면 프래그먼트는 픽셀당 물결 루프 8회 + 영상 샘플 1회
 
 프레임 밖: 0.6초마다 8×8 `drawImage`+`getImageData` (`:590-601`).
 

@@ -18,7 +18,7 @@
 | 지금 | 실시간 30분 | 브리프의 지표 넷 |
 | 깔때기 | open → started → pool → yuni_seen → line → end → share | 링크 클릭 대비 비율 |
 | 날마다 | open, share | 하루 단위 |
-| Yuni가 보이기까지 | yuni_seen의 `ms` | 3초 안에 보인 비율 (브리프 목표) |
+| 윤슬이가 보이기까지 | yuni_seen의 `ms` | 3초 안에 보인 비율 (브리프 목표) |
 | 체류 시간 | dwell의 `s` | 중앙값·분포. 숨겨질 때마다 보내므로 한 사람이 여러 번 |
 | 점쾌 번호별 | line의 `n` | 20줄이 고르게 나오는지 |
 | 공유 | share의 `kind`·`method` | 사진/영상 × 시트/내려받기/취소 |
