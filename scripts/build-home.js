@@ -48,17 +48,18 @@ function get(obj, dotted) {
   return dotted.split('.').reduce((cur, key) => (cur == null ? undefined : cur[key]), obj);
 }
 
-function media(item, eager) {
+function media(item, eager, extraClass) {
   if (!item.image) return '';
   const src = item.image.startsWith('/') ? item.image : '/assets/images/' + item.image;
   const file = path.join(root, src.slice(1));
   const fit = item.fit === 'contain' ? ' is-contain' : '';
+  const klass = ['frame', item.frame, extraClass, fit].filter(Boolean).join(' ');
   if (!fs.existsSync(file)) {
-    return `<div class="frame ${item.frame} slot${fit}"><span>${escapeHtml(item.image)} · ${escapeHtml(item.ratioNote)}</span></div>`;
+    return `<div class="${klass} slot"><span>${escapeHtml(item.image)} · ${escapeHtml(item.ratioNote || '')}</span></div>`;
   }
   const loading = eager ? 'eager' : 'lazy';
   const priority = eager ? ' fetchpriority="high"' : '';
-  return `<img class="frame ${item.frame}${fit}" src="${escapeHtml(src)}" alt="${escapeHtml(item.alt)}" width="1200" height="900" loading="${loading}"${priority}>`;
+  return `<img class="${klass}" src="${escapeHtml(src)}" alt="${escapeHtml(item.alt)}" width="1200" height="900" loading="${loading}"${priority}>`;
 }
 
 function prepare(data) {
@@ -69,34 +70,47 @@ function prepare(data) {
     const current = item.current ? ' aria-current="page"' : '';
     return `<a href="${escapeHtml(item.href)}" hreflang="${escapeHtml(item.hreflang)}"${current}>${escapeHtml(item.code)}</a>`;
   }).join('\n<span aria-hidden="true">|</span>\n');
-  view.heroMedia = media(data.hero, true);
-  view.servicesHtml = data.services.map((item, index) => `
-<article class="service">
-  <span class="idx">${String(index + 1).padStart(2, '0')}</span>
+  view.heroMedia = media(data.hero, true, 'hero-img');
+  view.painHtml = data.pain.map((item, index) => `
+<li class="pain-item">
+  <span class="pain-num">${String(index + 1).padStart(2, '0')}</span>
   <div>
     <h3>${escapeHtml(item.title)}</h3>
     <p>${escapeHtml(item.body)}</p>
+  </div>
+</li>`).join('\n');
+  view.workHtml = data.work.map((item) => `
+<li class="work-tile">
+  <a href="${escapeHtml(item.href)}">
+    <div class="work-visual">
+      ${item.image ? media(item, false) : `<div class="swatch ${escapeHtml(item.swatch || '')}"></div>`}
+    </div>
+    <div class="work-meta">
+      <span class="work-tag">${escapeHtml(item.tag)}</span>
+      <span class="work-title">${escapeHtml(item.title)}</span>
+      <span class="work-body">${escapeHtml(item.body)}</span>
+    </div>
+  </a>
+</li>`).join('\n');
+  view.firmHtml = data.firm.map((item) => `
+<article class="firm-pillar">
+  <div class="firm-copy">
+    <span class="firm-idx">${escapeHtml(item.idx)}</span>
+    <h3>${escapeHtml(item.title)}</h3>
+    <p>${escapeHtml(item.body)}</p>
+    <p class="firm-from">${escapeHtml(item.from)}</p>
   </div>
   ${media(item, false)}
 </article>`).join('\n');
   view.bundlesHtml = data.bundles.map((item) => `
 <article class="bundle ${escapeHtml(item.className)}" id="${escapeHtml(item.id)}">
-  ${media(item, false)}
   <div>
-    <h2${item.id === 'starter' ? ' id="starter-title"' : ''}>${escapeHtml(item.title)}</h2>
+    <h3${item.id === 'starter' ? ' id="starter-title"' : ''}>${escapeHtml(item.title)}</h3>
     <ul>${item.includes.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ul>
     <p class="price">${escapeHtml(item.price)}</p>
   </div>
 </article>`).join('\n');
   view.proofHtml = data.proof.map((line) => `<li>${escapeHtml(line)}</li>`).join('\n');
-  view.openedHtml = data.opened.map((item) => `
-<li>
-  <a href="${escapeHtml(item.href)}">
-    ${item.image ? media(item, false) : `<div class="swatch ${escapeHtml(item.swatch || '')}"></div>`}
-    <span class="open-title">${escapeHtml(item.title)}</span>
-    <span class="open-body">${escapeHtml(item.body)}</span>
-  </a>
-</li>`).join('\n');
   view.processHtml = data.process.map((item, index) => `
 <li>
   <span class="num">${String(index + 1).padStart(2, '0')}</span>

@@ -13,7 +13,7 @@
   "emailMailto": "mailto:contact@epispace.kr",
   "meta": {
     "title": "Epispace — 보고, 찍고, 그 자리에 들어가는 로컬 마케팅",
-    "description": "에피스페이스는 숏폼 영상, 거리 위 AR, 자체 캐릭터 IP를 하나로 묶습니다. 상권, 축제, 지역 브랜드를 위해 만듭니다. 밴쿠버에 있고, 제주에서 시작했습니다.",
+    "description": "상권은 열려 있는데 발길이 멈춥니다. 에피스페이스는 숏폼·거리 WebAR·캐릭터 IP를 하나의 마케팅 펌으로 묶습니다. 제주에서 연 프로젝트들이 모여 만들어졌습니다.",
     "ogImage": "/assets/images/og-image.jpg",
     "ogImageAlt": "Epispace — 보고, 찍고, 그 자리에 들어가는 로컬 마케팅"
   },
@@ -24,10 +24,9 @@
     "cta": "3분 영상 보기"
   },
   "nav": [
-    { "href": "#services", "label": "하는 일" },
-    { "href": "#starter", "label": "상권 스타터" },
-    { "href": "#proof", "label": "해본 일" },
-    { "href": "#opened", "label": "열어 둔 것" },
+    { "href": "#work", "label": "작업" },
+    { "href": "#firm", "label": "펌이 된 이유" },
+    { "href": "#offer", "label": "제안" },
     { "href": "#contact", "label": "문의" }
   ],
   "langs": [
@@ -35,187 +34,203 @@
     { "code": "KO", "href": "/ko/", "current": true, "hreflang": "ko" }
   ],
   "hero": {
-    "kicker": "제주에서 밴쿠버로",
-    "headline": "보고, 찍고, 그 자리에 들어가는 로컬 마케팅.",
-    "sub": "에피스페이스는 숏폼 영상, 거리 위 AR, 자체 캐릭터 IP를 하나로 묶습니다. 상권, 축제, 지역 브랜드를 위해 만듭니다. 밴쿠버에 있고, 제주에서 시작했습니다.",
-    "primaryCta": "3분 영상 보기",
-    "secondaryCta": "파일럿으로 시작 — CAD $4,800",
+    "kicker": "Epispace · 제주에서 밴쿠버로",
+    "headline": "거리는 열려 있는데, 아무도 안 멈춥니다.",
+    "sub": "광고는 스치고, 발길은 줄어듭니다. 에피스페이스는 보고, 그 자리에서 찍고, 들어가 보는 마케팅으로 그걸 고칩니다. 피치덱이 아니라, 이미 연 프로젝트에서 나왔습니다.",
+    "primaryCta": "작업 한눈에 보기",
+    "secondaryCta": "파일럿 시작 — CAD $4,800",
     "caption": "서귀포 이중섭거리",
     "image": "/assets/home/hero-ar.jpg",
     "alt": "서귀포 이중섭이 살던 방 앞에서 휴대폰을 들어 비추는 사람",
-    "frame": "frame-portrait",
+    "frame": "frame-hero",
     "fit": "cover",
     "ratioNote": "3:4"
   },
-  "servicesHeading": "하는 일",
-  "services": [
+  "painHeading": "먼저 깨지는 것",
+  "painLead": "상권, 축제, 지역 브랜드가 같은 구멍을 갖고 있습니다.",
+  "pain": [
     {
-      "title": "멈추게 하고, 찾아오게 하는 영상.",
-      "body": "릴스, 틱톡, 쇼츠. 지역 장소를 발견으로 바꾸는 크리에이터 숏폼입니다. 밴쿠버에서 지역 브랜드를 소개하는 크리에이터가 맡고, 그 릴스는 광고 없이 수만 조회가 나옵니다.",
-      "image": "/assets/home/field-youth-camp.jpg",
-      "alt": "바닷가에 친 에피스페이스 천막, 서귀포 청년이음캠프",
-      "frame": "frame-land",
-      "fit": "cover",
-      "ratioNote": "4:5"
+      "title": "온라인은 문 앞까지 못 옵니다.",
+      "body": "릴스와 광고는 조회가 나옵니다. 광장은 조용합니다. 폰에서 거리로 이어지는 다리가 없습니다."
     },
     {
-      "title": "거리가 이야기를 합니다. 앱은 필요 없습니다.",
-      "body": "브라우저에서 열리는 WebAR 스토리 트레일과 AR 포토존입니다. 그 자리의 NFC나 QR을 찍으면, 장소에 숨은 이야기가 나옵니다. 광장, 상점가, 축제 터를 위해 만듭니다.",
-      "image": "/assets/news/service-screens.jpg",
-      "alt": "이중섭거리 WebAR 화면",
-      "frame": "frame-wide",
-      "fit": "cover",
-      "ratioNote": "4:5"
+      "title": "자리에는 이야기가 있는데, 보여줄 게 없습니다.",
+      "body": "역사, 사람, 시즌 행사는 지나가는 표지판에만 남습니다. 머물 이유가 없습니다."
     },
     {
-      "title": "원하면, 그 자리만의 캐릭터.",
-      "body": "자체 캐릭터는 캠페인이 끝나도 상권이나 브랜드의 얼굴로 남습니다. 우리의 웅디(Woongdee)로 시작하거나, 그 자리를 위해 새로 맡길 수 있습니다. 항상 선택입니다. 캐릭터 없이도 마케팅은 됩니다.",
-      "image": "/assets/news/lookdown.jpg",
-      "alt": "바닥 웅덩이에서 올려다보는 웅디(Woongdee)",
-      "frame": "frame-11",
-      "fit": "cover",
-      "ratioNote": "1:1"
+      "title": "캠페인 하나가 예산과 함께 끝납니다.",
+      "body": "포스터나 외주 영상은 남길 자산이 없습니다. 다음 시즌은 또 처음부터입니다."
     }
   ],
-  "bundles": [
-    {
-      "id": "starter",
-      "className": "is-main",
-      "title": "그 거리에서 시작하세요.",
-      "includes": [
-        "WebAR 스토리 트레일 파일럿 (5곳, 6주)",
-        "상권 채널용 숏폼 세트",
-        "캐릭터는 선택"
-      ],
-      "price": "파일럿 — CAD $4,800 · 전체 트레일은 CAD $18,000부터",
-      "image": "/assets/news/service-screens.jpg",
-      "alt": "휴대폰 속 이중섭거리 트레일",
-      "frame": "frame-169",
-      "fit": "cover",
-      "ratioNote": "16:9"
-    },
-    {
-      "id": "event",
-      "className": "",
-      "title": "축제와 팝업을 위해.",
-      "includes": [
-        "AR 포토존과 현장 미션",
-        "행사 기록 영상"
-      ],
-      "price": "별도 견적",
-      "image": "",
-      "alt": "",
-      "frame": "",
-      "fit": "",
-      "ratioNote": ""
-    },
-    {
-      "id": "partner",
-      "className": "",
-      "title": "매달 같이하는 마케팅.",
-      "includes": [
-        "매달 영상, 시즌 AR, 분기 로드맵"
-      ],
-      "price": "별도 견적",
-      "image": "",
-      "alt": "",
-      "frame": "",
-      "fit": "",
-      "ratioNote": ""
-    }
-  ],
-  "priceAnchor": "파일럿은 CAD $4,800부터 · 전체 트레일은 CAD $18,000부터 · 숏폼 한 편은 CAD $200부터",
-  "openedHeading": "이미 열어 둔 것",
-  "openedLead": "영상 한 편으로 끝내지 않습니다. 거리, 축제, 가게 광고, 바닥의 캐릭터까지 이어서 열 수 있습니다. 아래는 이미 열어 둔 실험입니다.",
-  "opened": [
+  "workHeading": "여태 열어 둔 것",
+  "workLead": "한눈에 보세요. 선반 위 데모가 아닙니다. 각각이 펌을 만든 벽돌입니다.",
+  "work": [
     {
       "href": "/lee.html",
+      "tag": "AR · 서귀포",
       "title": "서귀포의 환상",
-      "body": "이중섭의 그림을 눈앞 공간에 띄워 본 초기 AR입니다.",
-      "image": "/assets/home/field-youth-camp.jpg",
+      "body": "이중섭의 그림을 눈앞 공간에 띄운 초기 AR.",
+      "image": "/assets/news/youth-camp.jpg",
       "alt": "바닷가의 서귀포의 환상 천막",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/ar.html",
-      "title": "이중섭 미술관 WebXR",
-      "body": "미술관 자리에서 NFC와 AR로 열어 본 실험입니다.",
+      "tag": "WebXR · 미술관",
+      "title": "이중섭 미술관",
+      "body": "미술관 자리에서 NFC와 AR로 연 실험.",
       "image": "/assets/home/hero-ar.jpg",
       "alt": "이중섭이 살던 방에서 휴대폰을 든 사람",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/cherry-blossom-ar.html",
+      "tag": "축제 · 포토존",
       "title": "벚꽃 터널",
-      "body": "축제용 AR 포토존입니다. 앱 없이 브라우저에서 열립니다.",
+      "body": "앱 없이 브라우저에서 열리는 축제 포토존.",
       "image": "/assets/cherry-blossom-ar/layer1_bg.png",
       "alt": "벚꽃 터널 그림",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/virtual-ooh-ar.html",
+      "tag": "거리 · 가상 OOH",
       "title": "간판 없는 거리 광고",
-      "body": "물리 간판 없이, 거리 위에 광고판을 띄웁니다.",
+      "body": "물리 간판 없이 거리 위에 광고판을 띄움.",
       "image": "/assets/news/virtual-ooh.jpg",
       "alt": "거리 위에 떠 있는 가상 광고판",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/rain-portal-ar.html",
+      "tag": "AR · 장면",
       "title": "Beneath the Rain",
       "body": "비 오는 장면을 카메라 위에 엽니다.",
       "image": "",
       "alt": "",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": "is-rain"
     },
     {
       "href": "/lookdown/",
+      "tag": "캐릭터 · IP",
       "title": "LOOK DOWN",
-      "body": "바닥을 비추면 웅덩이가 고이고, 캐릭터가 올라옵니다.",
+      "body": "바닥을 비추면 웅덩이에서 웅디가 올라옵니다.",
       "image": "/assets/news/lookdown.jpg",
       "alt": "실제 바닥 웅덩이 안의 웅디",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     }
   ],
-  "proofHeading": "해본 일",
+  "firmHeading": "그 조각들이 모여 펌이 됐습니다.",
+  "firmLead": "서비스 세 개가 아닙니다. 온라인에서 멈추게 하고, 거리로 데려오고, 남는 얼굴을 남기는 한 스택입니다.",
+  "firm": [
+    {
+      "idx": "01",
+      "title": "멈추게 하고, 찾아오게 하는 영상.",
+      "body": "릴스·틱톡·쇼츠. 지역 장소를 발견으로 바꾸는 크리에이터 숏폼입니다. 서귀포 현장 촬영부터, 밴쿠버 지역 브랜드 릴스 수만 조회까지.",
+      "from": "축제 필름과 거리 촬영에서 자랐습니다",
+      "image": "/assets/news/the-next-step.jpg",
+      "alt": "로컬 액티베이션 현장 촬영",
+      "frame": "frame-firm",
+      "fit": "cover",
+      "ratioNote": "16:9"
+    },
+    {
+      "idx": "02",
+      "title": "거리가 이야기합니다. 앱은 없습니다.",
+      "body": "브라우저 WebAR 트레일과 포토존. 그 자리의 NFC·QR을 찍으면 숨은 이야기가 나옵니다. 광장, 상점가, 축제 터용입니다.",
+      "from": "미술관 NFC, 벚꽃, 가상 OOH, 비 장면에서 자랐습니다",
+      "image": "/assets/news/service-screens.jpg",
+      "alt": "이중섭거리 WebAR 화면",
+      "frame": "frame-firm",
+      "fit": "cover",
+      "ratioNote": "16:9"
+    },
+    {
+      "idx": "03",
+      "title": "캠페인 뒤에도 남는 캐릭터.",
+      "body": "예산이 끝나도 상권·브랜드의 얼굴이 남도록 하는 선택 IP입니다. 웅디로 시작하거나, 그 자리만의 캐릭터를 맡길 수 있습니다.",
+      "from": "LOOK DOWN과 웅디 단편에서 자랐습니다",
+      "image": "/assets/news/lookdown.jpg",
+      "alt": "바닥 웅덩이에서 올려다보는 웅디",
+      "frame": "frame-firm",
+      "fit": "cover",
+      "ratioNote": "1:1"
+    }
+  ],
+  "offerHeading": "이렇게 삽니다",
+  "offerLead": "한 거리에서 작게 시작합니다. 된 것만 넓힙니다.",
+  "bundles": [
+    {
+      "id": "starter",
+      "className": "is-main",
+      "title": "거리 파일럿",
+      "includes": [
+        "WebAR 스토리 트레일 파일럿 (5곳, 6주)",
+        "상권 채널용 숏폼 세트",
+        "캐릭터는 선택"
+      ],
+      "price": "CAD $4,800 · 전체 트레일은 CAD $18,000부터"
+    },
+    {
+      "id": "event",
+      "className": "",
+      "title": "축제 / 팝업",
+      "includes": [
+        "AR 포토존과 현장 미션",
+        "행사 기록 영상"
+      ],
+      "price": "별도 견적"
+    },
+    {
+      "id": "partner",
+      "className": "",
+      "title": "월간 파트너",
+      "includes": [
+        "매달 영상 + 시즌 AR + 분기 로드맵"
+      ],
+      "price": "별도 견적"
+    }
+  ],
+  "priceAnchor": "파일럿 CAD $4,800 · 전체 트레일 CAD $18,000부터 · 숏폼 한 편 CAD $200부터",
+  "proofHeading": "근거",
   "proof": [
     "한국관광공사 예비관광벤처 선정 (2025)",
     "제주 서귀포 이중섭거리 WebAR 스토리 트레일",
     "NFC 태그 AR 콘텐츠, 특허 출원",
-    "WOONGDEE: Still Here, Unreflected — 자체 AI 단편, 해외 영화제 10곳 이상 출품",
-    "지역 브랜드 릴스, 광고 없이 조회 6만 이상 (@lilyyoon2026)"
+    "WOONGDEE: Still Here, Unreflected — AI 단편, 해외 영화제 10곳+",
+    "지역 브랜드 릴스, 조회 6만+ (@lilyyoon2026)"
   ],
   "processHeading": "진행 방식",
   "process": [
-    { "title": "먼저 봅니다", "body": "3분 영상으로 보거나, 광장에서 10분 데모를 봅니다" },
-    { "title": "작게 파일럿", "body": "계약금은 최소로 잡고, 동작하는 초안으로 확인합니다" },
-    { "title": "된 것만 넓힙니다", "body": "파일럿에서 확인된 곳부터 장소, 영상, 시즌을 늘립니다" }
+    { "title": "먼저 봅니다", "body": "3분 영상, 또는 광장 10분 대면 데모" },
+    { "title": "작게 파일럿", "body": "계약금은 최소. 동작하는 초안으로 확인합니다." },
+    { "title": "된 것만 넓힙니다", "body": "파일럿 데이터로 장소·영상·시즌을 늘립니다." }
   ],
   "cta": {
     "title": "사기 전에 먼저 보세요.",
     "watch": "3분 워크스루 보기",
     "demo": "광장 10분 대면 데모",
-    "email": "이메일 문의 — contact@epispace.kr"
+    "email": "이메일 — contact@epispace.kr"
   },
-  "footer": "Epispace — IP와 로컬 마케팅 스튜디오 · 제주에서 밴쿠버로 · contact@epispace.kr",
+  "footer": "Epispace — 로컬 마케팅 펌 · 제주에서 밴쿠버로 · contact@epispace.kr",
   "phone": "010-8513-3668",
   "phoneHref": "tel:+821085133668",
   "address": "제주특별자치도 서귀포시 중정로 86, 3층 302-D호",

@@ -13,7 +13,7 @@
   "emailMailto": "mailto:contact@epispace.kr",
   "meta": {
     "title": "Epispace — Local marketing people can see, scan, and step into",
-    "description": "Epispace bundles short-form video, on-street AR experiences, and original character IP into one offer — built for commercial districts, festivals, and local brands. Based in Vancouver, founded in Jeju.",
+    "description": "Local places lose foot traffic to screens. Epispace turns short-form video, street WebAR, and character IP into one marketing firm — built from live projects in Jeju and Vancouver.",
     "ogImage": "/assets/images/og-image.jpg",
     "ogImageAlt": "Epispace — local marketing people can see, scan, and step into"
   },
@@ -24,10 +24,9 @@
     "cta": "See a 3-min walkthrough"
   },
   "nav": [
-    { "href": "#services", "label": "What we do" },
-    { "href": "#starter", "label": "Starter" },
-    { "href": "#proof", "label": "Proof" },
-    { "href": "#opened", "label": "Opened" },
+    { "href": "#work", "label": "Work" },
+    { "href": "#firm", "label": "The firm" },
+    { "href": "#offer", "label": "Offer" },
     { "href": "#contact", "label": "Contact" }
   ],
   "langs": [
@@ -35,187 +34,203 @@
     { "code": "KO", "href": "/ko/", "current": false, "hreflang": "ko" }
   ],
   "hero": {
-    "kicker": "Jeju → Vancouver",
-    "headline": "Local marketing people can see, scan, and step into.",
-    "sub": "Epispace bundles short-form video, on-street AR experiences, and original character IP into one offer — built for commercial districts, festivals, and local brands. Based in Vancouver, founded in Jeju.",
-    "primaryCta": "See a 3-min walkthrough",
-    "secondaryCta": "Start with a pilot — CAD $4,800",
+    "kicker": "Epispace · Jeju → Vancouver",
+    "headline": "Your street is open. Nobody stops.",
+    "sub": "Ads scroll past. Foot traffic thins. Epispace fixes that with marketing people can watch, scan on the spot, and walk into — built from real projects, not a pitch deck.",
+    "primaryCta": "See the work",
+    "secondaryCta": "Start a pilot — CAD $4,800",
     "caption": "Lee Jung-seob Street, Seogwipo",
     "image": "/assets/home/hero-ar.jpg",
     "alt": "A person holding a phone up in front of Lee Jung-seob’s room in Seogwipo",
-    "frame": "frame-portrait",
+    "frame": "frame-hero",
     "fit": "cover",
     "ratioNote": "3:4"
   },
-  "servicesHeading": "What we do",
-  "services": [
+  "painHeading": "What breaks first",
+  "painLead": "Commercial streets, festivals, and local brands share the same hole.",
+  "pain": [
     {
-      "title": "Video that makes people stop — and visit.",
-      "body": "Creator-led short-form video (Reels · TikTok · Shorts) that turns local places into discoveries. Led by a Vancouver discovery creator whose local-brand reels reach tens of thousands of organic views.",
-      "image": "/assets/home/field-youth-camp.jpg",
-      "alt": "Epispace tent by the sea at the Seogwipo youth camp",
-      "frame": "frame-land",
-      "fit": "cover",
-      "ratioNote": "4:5"
+      "title": "Online never reaches the door.",
+      "body": "Reels and ads get views. The plaza stays quiet. There is no bridge from the phone to the street."
     },
     {
-      "title": "The street tells its story. No app needed.",
-      "body": "WebAR story trails and AR photo zones that run in the browser — scan an NFC tag or QR at the spot, and the place's hidden story appears. Built for plazas, shopping streets, and festival sites.",
-      "image": "/assets/news/service-screens.jpg",
-      "alt": "WebAR screens from the Lee Jung-seob Street trail",
-      "frame": "frame-wide",
-      "fit": "cover",
-      "ratioNote": "4:5"
+      "title": "The place has a story. Nothing shows it.",
+      "body": "History, makers, and seasonal events stay on signs people walk past. No reason to linger."
     },
     {
-      "title": "A character of your own — if you want one.",
-      "body": "An original character gives a district or brand a face people remember after the campaign ends. Start with our Woongdee, or commission one made for your place. Optional, always — the marketing works without it.",
-      "image": "/assets/news/lookdown.jpg",
-      "alt": "Woongdee looking up from a puddle on the floor",
-      "frame": "frame-11",
-      "fit": "cover",
-      "ratioNote": "1:1"
+      "title": "One campaign dies when the budget ends.",
+      "body": "A poster run or a hired film leaves nothing ownable. Next season starts from zero."
     }
   ],
-  "bundles": [
-    {
-      "id": "starter",
-      "className": "is-main",
-      "title": "Start with your street.",
-      "includes": [
-        "WebAR story-trail pilot (5 stops, 6 weeks)",
-        "Short-form video set for the district's channels",
-        "Character option available"
-      ],
-      "price": "Pilot — CAD $4,800 · Full trails from CAD $18,000",
-      "image": "/assets/news/service-screens.jpg",
-      "alt": "The street trail on a phone, stop by stop",
-      "frame": "frame-169",
-      "fit": "cover",
-      "ratioNote": "16:9"
-    },
-    {
-      "id": "event",
-      "className": "",
-      "title": "For festivals and pop-ups.",
-      "includes": [
-        "AR photo zone + on-site missions",
-        "Event recap video"
-      ],
-      "price": "Custom quote",
-      "image": "",
-      "alt": "",
-      "frame": "",
-      "fit": "",
-      "ratioNote": ""
-    },
-    {
-      "id": "partner",
-      "className": "",
-      "title": "A marketing partner, monthly.",
-      "includes": [
-        "Monthly video + seasonal AR activations + quarterly roadmap"
-      ],
-      "price": "Custom quote",
-      "image": "",
-      "alt": "",
-      "frame": "",
-      "fit": "",
-      "ratioNote": ""
-    }
-  ],
-  "priceAnchor": "Pilots start at CAD $4,800 · Full trails from CAD $18,000 · Single short videos from CAD $200",
-  "openedHeading": "Already open",
-  "openedLead": "It does not stop at one film. A street, a festival, a shop ad, and a character on the ground can follow. These are already open.",
-  "opened": [
+  "workHeading": "Everything we’ve opened",
+  "workLead": "One glance. These are live pieces — each one a brick that built the firm.",
+  "work": [
     {
       "href": "/lee.html",
+      "tag": "AR · Seogwipo",
       "title": "Fantasy of Seogwipo",
-      "body": "An early AR test that places Lee Jung-seob’s picture in the space in front of you.",
-      "image": "/assets/home/field-youth-camp.jpg",
+      "body": "Lee Jung-seob’s picture in the space in front of you.",
+      "image": "/assets/news/youth-camp.jpg",
       "alt": "The Fantasy of Seogwipo tent by the sea",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/ar.html",
-      "title": "Lee Jung-seob Museum, WebXR",
-      "body": "Opened at the museum with NFC and AR, on a phone.",
+      "tag": "WebXR · Museum",
+      "title": "Lee Jung-seob Museum",
+      "body": "NFC + AR on a phone, opened at the museum.",
       "image": "/assets/home/hero-ar.jpg",
       "alt": "A phone held up inside Lee Jung-seob’s room",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/en/cherry-blossom-ar.html",
+      "tag": "Festival · Photo zone",
       "title": "Cherry blossom tunnel",
-      "body": "A festival photo zone in the browser. Nothing to install.",
+      "body": "Browser photo zone. Nothing to install.",
       "image": "/assets/cherry-blossom-ar/layer1_bg.png",
       "alt": "Cherry blossom tunnel artwork",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/en/virtual-ooh-ar.html",
+      "tag": "Street · Virtual OOH",
       "title": "An ad over the street",
-      "body": "A sign in the air, with no physical board to put up.",
+      "body": "A sign in the air. No physical board.",
       "image": "/assets/news/virtual-ooh.jpg",
       "alt": "A virtual billboard hanging over a street",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     },
     {
       "href": "/rain-portal-ar.html",
+      "tag": "AR · Scene",
       "title": "Beneath the Rain",
       "body": "A rain scene that opens on the camera.",
       "image": "",
       "alt": "",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": "is-rain"
     },
     {
       "href": "/lookdown/",
+      "tag": "Character · IP",
       "title": "LOOK DOWN",
-      "body": "Point at the ground. A puddle gathers, and a character comes up.",
+      "body": "Point at the ground. Woongdee rises from a puddle.",
       "image": "/assets/news/lookdown.jpg",
       "alt": "Woongdee in a puddle on a real floor",
-      "frame": "frame-card",
+      "frame": "frame-work",
       "fit": "cover",
       "ratioNote": "",
       "swatch": ""
     }
   ],
-  "proofHeading": "Proof",
-  "proof": [
-    "Selected: Korea Tourism Organization tourism-venture program (2025)",
-    "WebAR story trail launched in Seogwipo, Jeju — Lee Jung-seop Street",
-    "NFC-tag AR content — patent pending",
-    "WOONGDEE: Still Here, Unreflected — original AI short film, submitted to 10+ international festivals",
-    "Local-brand reel with 60K+ organic views (@lilyyoon2026)"
+  "firmHeading": "Those pieces gathered into a firm.",
+  "firmLead": "Not three separate services. One stack: get people to stop online, bring them to the street, leave a face that stays.",
+  "firm": [
+    {
+      "idx": "01",
+      "title": "Video that makes people stop — and visit.",
+      "body": "Creator-led short-form (Reels · TikTok · Shorts) that turns a local place into a discovery. From field shoots in Seogwipo to Vancouver brand reels with tens of thousands of organic views.",
+      "from": "Grew from festival films and on-street shoots",
+      "image": "/assets/news/the-next-step.jpg",
+      "alt": "On-street filming for a local activation",
+      "frame": "frame-firm",
+      "fit": "cover",
+      "ratioNote": "16:9"
+    },
+    {
+      "idx": "02",
+      "title": "The street tells its story. No app.",
+      "body": "WebAR trails and photo zones in the browser. Scan NFC or QR at the spot — the hidden story appears. Built for plazas, shopping streets, and festival sites.",
+      "from": "Grew from museum NFC, cherry blossom, virtual OOH, rain",
+      "image": "/assets/news/service-screens.jpg",
+      "alt": "WebAR screens from the Lee Jung-seob Street trail",
+      "frame": "frame-firm",
+      "fit": "cover",
+      "ratioNote": "16:9"
+    },
+    {
+      "idx": "03",
+      "title": "A character that outlives the campaign.",
+      "body": "Optional IP so a district or brand keeps a face after the budget ends. Start with Woongdee, or commission one for your place.",
+      "from": "Grew from LOOK DOWN and the Woongdee short film",
+      "image": "/assets/news/lookdown.jpg",
+      "alt": "Woongdee looking up from a puddle on the floor",
+      "frame": "frame-firm",
+      "fit": "cover",
+      "ratioNote": "1:1"
+    }
   ],
-  "processHeading": "Process",
+  "offerHeading": "How to buy it",
+  "offerLead": "Start small on one street. Expand what works.",
+  "bundles": [
+    {
+      "id": "starter",
+      "className": "is-main",
+      "title": "Street pilot",
+      "includes": [
+        "WebAR story-trail pilot (5 stops, 6 weeks)",
+        "Short-form video set for the district’s channels",
+        "Character option available"
+      ],
+      "price": "CAD $4,800 · Full trails from CAD $18,000"
+    },
+    {
+      "id": "event",
+      "className": "",
+      "title": "Festival / pop-up",
+      "includes": [
+        "AR photo zone + on-site missions",
+        "Event recap video"
+      ],
+      "price": "Custom quote"
+    },
+    {
+      "id": "partner",
+      "className": "",
+      "title": "Monthly partner",
+      "includes": [
+        "Monthly video + seasonal AR + quarterly roadmap"
+      ],
+      "price": "Custom quote"
+    }
+  ],
+  "priceAnchor": "Pilots CAD $4,800 · Full trails from CAD $18,000 · Single shorts from CAD $200",
+  "proofHeading": "Receipts",
+  "proof": [
+    "Korea Tourism Organization tourism-venture program (2025)",
+    "WebAR story trail live on Lee Jung-seob Street, Seogwipo",
+    "NFC-tag AR content — patent pending",
+    "WOONGDEE: Still Here, Unreflected — AI short, 10+ festivals",
+    "Local-brand reel, 60K+ organic views (@lilyyoon2026)"
+  ],
+  "processHeading": "How we work",
   "process": [
-    { "title": "Watch first", "body": "3-min video walkthrough, or a 10-min demo at your plaza" },
-    { "title": "Pilot, small", "body": "minimal deposit, we prove it with a working draft" },
-    { "title": "Scale what worked", "body": "expand stops, video, and seasons from the pilot data" }
+    { "title": "Watch first", "body": "3-min walkthrough, or a 10-min demo at your plaza" },
+    { "title": "Pilot small", "body": "Minimal deposit. We prove it with a working draft." },
+    { "title": "Scale what worked", "body": "Expand stops, video, and seasons from pilot data." }
   ],
   "cta": {
     "title": "See it before you buy it.",
     "watch": "Watch the 3-min walkthrough",
     "demo": "Book a 10-min plaza demo",
-    "email": "Email us — contact@epispace.kr"
+    "email": "Email — contact@epispace.kr"
   },
-  "footer": "Epispace — IP & local marketing studio · Jeju → Vancouver · contact@epispace.kr",
+  "footer": "Epispace — local marketing firm · Jeju → Vancouver · contact@epispace.kr",
   "phone": "010-8513-3668",
   "phoneHref": "tel:+821085133668",
   "address": "302-D, 3F, 86 Jungjeong-ro, Seogwipo, Jeju",
