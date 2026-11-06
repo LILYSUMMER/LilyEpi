@@ -3,16 +3,16 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
         <loc>https://epispace.kr/</loc>
-        <lastmod>2026-10-22</lastmod>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/"/>
+        <lastmod>2026-11-01</lastmod>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/ko/"/>
         <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/"/>
     </url>
     <url>
-        <loc>https://epispace.kr/en/</loc>
-        <lastmod>2026-10-22</lastmod>
-        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/"/>
+        <loc>https://epispace.kr/ko/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/"/>
+        <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/ko/"/>
         <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/"/>
     </url>
     <url>
@@ -56,6 +56,22 @@
         <xhtml:link rel="alternate" hreflang="ko" href="https://epispace.kr/virtual-ooh-ar.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="https://epispace.kr/en/virtual-ooh-ar.html"/>
         <xhtml:link rel="alternate" hreflang="x-default" href="https://epispace.kr/virtual-ooh-ar.html"/>
+    </url>
+    <url>
+        <loc>https://epispace.kr/lee.html</loc>
+        <lastmod>2026-11-01</lastmod>
+    </url>
+    <url>
+        <loc>https://epispace.kr/ar.html</loc>
+        <lastmod>2026-11-01</lastmod>
+    </url>
+    <url>
+        <loc>https://epispace.kr/rain-portal-ar.html</loc>
+        <lastmod>2026-11-01</lastmod>
+    </url>
+    <url>
+        <loc>https://epispace.kr/lookdown/</loc>
+        <lastmod>2026-11-01</lastmod>
     </url>
     <url>
         <loc>https://epispace.kr/proposal-download.html</loc>

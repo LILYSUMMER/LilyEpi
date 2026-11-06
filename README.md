@@ -1,5 +1,11 @@
 # Epispace - 제주 Web-AR 관광 솔루션
 
+홈 문구는 `content/en.json`과 `content/ko.json`만 고칩니다. 두 파일의 키는 같아야 합니다.
+로컬에서는 `node scripts/build-home.js`를 실행하면 `index.html`과 `ko/index.html`이 다시 만들어집니다.
+`main`에 push하면 GitHub Action이 같은 빌드를 돌려 결과를 커밋합니다.
+
+
+
 앱 설치 없이 브라우저에서 바로 즐기는 Jeju AR 여행, Epispace의 랜딩 페이지입니다.
 
 ## 🚀 프로젝트 개요

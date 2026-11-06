@@ -771,6 +771,13 @@ async function run() {
   }
   track('lookdown_started', { camera: hasCamera, sensor: sensorReady, track: tracker ? 'hybrid' : 'gyro', ms: Math.round(performance.now() - S.clickAt) });
 
+  // 1단계 「돌려보내기」(lookdown-v1.js): ?v=1 일 때만 불러옵니다. 없으면 0단계 그대로 돕니다.
+  let v1 = null;
+  if (q.get('v') === '1') {
+    try { v1 = await (await import('./lookdown-v1.js')).createV1({ S, T, LANG, look, camera, puddle, items, hint, caption, ripple, mumble, track, PUDDLE, sensorReady, sceneEl }); }
+    catch (e) { console.warn('v1 off', e); }
+  }
+
   /* 바닥 자리 셈하기 */
   const camQuat = new THREE.Quaternion();
   const forward = new THREE.Vector3();
@@ -1060,6 +1067,7 @@ async function run() {
     } else if (S.phase === 'ended') {
       S.up = 0; S.item = 0; S.wander = 0; S.light = 0;
     }
+    if (v1) v1.update(t, dt);   // 1단계: 응시·읽기·돌려보내기·두고 가기 단계
     S.clarity += ((S.up > 0.2 ? 1 : 0) - S.clarity) * dt * 1.5;
     U.uOpen.value = S.open;
     U.uClarity.value = S.clarity;
@@ -1108,6 +1116,7 @@ async function run() {
       const sink = itemHeight[kind] || 0.03;
       const itemY = -0.14 + (0.14 - sink * 0.18) * S.item + Math.sin(t * 0.9 + 1) * 0.004 * S.item;
       const itemLocal = new THREE.Vector3(-0.17, itemY, 0.09);
+      if (v1) v1.adjustItem(itemLocal);   // 1단계: 건져 올리면 들리고, 돌려보내면 옆으로 미끄러집니다
       const itemTilt = -0.5 * S.item;
       above.position.copy(puddle.position).add(itemLocal);
       above.rotation.set(0, facing, Math.sin(t * 0.7) * 0.05 * S.item); above.rotateX(itemTilt);
@@ -1121,7 +1130,7 @@ async function run() {
     const pk = t - S.pulse;
     const pulse = pk >= 0 && pk < 1.5 ? 1 + 0.27 * Math.sin(Math.PI * pk / 1.5) : 1;
     // C. 밤에 더 또렷: 카메라 화면이 어두울수록 또렷하고, 밝으면 희미합니다.
-    const vivid = 0.45 + 0.55 * S.night;
+    const vivid = (0.45 + 0.55 * S.night) * (v1 ? v1.fade : 1);   // 1단계: 돌려보낸 만큼 옅어집니다
     if (yuniAbove.model) {
       // 왕관은 관심이 생기면 조금, 두드리면 확 밝아졌다 돌아옵니다(귀 대신)
       const crownGlow = 0.85 + 0.15 * S.ears + 1.4 * startle;

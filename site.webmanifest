@@ -1,14 +1,14 @@
 {
-    "name": "에피스페이스 | 브랜드와 장소를 위한 IP 디벨롭 스튜디오",
-    "short_name": "에피스페이스",
-    "description": "사람은 지나가기만 해요. 그 자리에 이름을 만들고, 다시 오게 남겨 둡니다. 자리 이름만 보내 주세요.",
+    "name": "Epispace",
+    "short_name": "Epispace",
+    "description": "Local marketing people can see, scan, and step into.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#00A76A",
     "orientation": "portrait-primary",
     "scope": "/",
-    "lang": "ko",
+    "lang": "en",
     "categories": ["business", "travel"],
     "icons": [
         {
